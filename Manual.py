@@ -7,9 +7,6 @@ st.set_page_config(page_title="AI vs. Human analysis: A smart comparison tool",
 
 load_sidebar()
 
-
-
-
 st.title("Welcome to the manualy page!")
 st.write("Here we can manual alter the chart.")
 
