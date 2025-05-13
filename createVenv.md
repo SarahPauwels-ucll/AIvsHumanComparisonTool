@@ -3,5 +3,5 @@ voer deze stappen uit voor het opzetten van de venv:
 ```console
 python -m venv streamlit_env
 streamlit_env\Scripts\activate
-pip install streamlit
+pip install -r requirements.txt
 ```
