@@ -18,4 +18,9 @@ textColor = '#FFFFFF'
 font = "sans serif"
 
 [global]
-showWarningOnDirectExecution =false
+#false
+showWarningOnDirectExecution = true
+
+[client]
+# "none"
+showErrorDetails = "full"
