@@ -12,7 +12,7 @@ st.title("Welcome to the manual page!")
 st.write("Here we can manualy alter the chart.")
 
 
-image_path = os.path.join("image", "image.jpg")
+image_path = os.path.join("image", "image.jpeg")
 # Check if the image exists
 if os.path.exists(image_path):
     st.image(image_path, caption="Uploaded Dental Image",  use_container_width=True)

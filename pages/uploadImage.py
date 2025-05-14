@@ -20,18 +20,18 @@ def upload_files():
         name, ext = os.path.splitext(filename)
         ext = ext.replace('.', '')
 
-        if ext == 'jpg':
+        if ext == 'jpeg':
                 os.makedirs("image", exist_ok=True)
-                with open(os.path.join("image","image.jpg"),"wb") as f:
+                with open(os.path.join("image","image.jpeg"),"wb") as f:
                     f.write(file.getbuffer())
                 st.session_state["upload_errors"].append(f"File '{name}' is uploaded successfully")
 
         else:
-             st.session_state["upload_errors"].append(f"Cannot use files with extension '{ext}' use 'jpg' instead")
+             st.session_state["upload_errors"].append(f"Cannot use files with extension '{ext}' use 'jpeg' instead")
 
 # layout
 st.header("Upload Dental image")
-st.error("Please ensure the image is an 'jpg'")
+st.error("Please ensure the image is an 'jpeg'")
 with st.container(border=True):
     files = st.file_uploader("Image uploader", accept_multiple_files=True, key="uploaded_files")
 
