@@ -39,6 +39,3 @@ def load_sidebar():
     age = st.sidebar.number_input("Select age", step=1, value=stored_age)
     if age and age != stored_age:
         controller.set("Age", age)
-
-    cookies = controller.getAll()
-    print(cookies)
