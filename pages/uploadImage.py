@@ -22,7 +22,7 @@ def upload_files():
             if file_size / 1e6 < 25:
 
                 os.makedirs("image", exist_ok=True)
-                with open(os.path.join("image",file.name),"wb") as f:
+                with open(os.path.join("image","image.jpg"),"wb") as f:
                     f.write(file.getbuffer())
                 
             else: # should show warning
@@ -36,7 +36,7 @@ st.markdown(" # Upload Data")
 
 # upload files 
 st.header("Upload Dental image")
-st.error("Please ensure the image is an bla bla bla bla bla")
+st.error("Please ensure the image is an jpg")
 with st.container(border=True):
     files = st.file_uploader("Image uploader", accept_multiple_files=True, key="uploaded_files")
 
