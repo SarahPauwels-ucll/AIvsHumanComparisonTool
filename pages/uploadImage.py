@@ -1,5 +1,6 @@
 from st_pages import Page, add_page_title
 import streamlit as st
+from sidebar import load_sidebar
 import os
    
 st.set_page_config(page_title="Upload image",
@@ -30,6 +31,8 @@ def upload_files():
              st.session_state["upload_errors"].append(f"Cannot use files with extension '{ext}' use 'jpeg' instead")
 
 # layout
+load_sidebar()
+
 st.header("Upload Dental image")
 st.error("Please ensure the image is an 'jpeg'")
 with st.container(border=True):
