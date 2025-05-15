@@ -38,7 +38,7 @@ def get_tooth_image(tooth_number, status,height=80):
         img= Image.open(f"icons/Icon_bridge_pontic/{tooth_number}.png")   
     else:
         img= Image.open(f"icons/Icon_normal_teeth/{tooth_number}.png")
-        print(tooth_number)
+        print("tooth number: "+tooth_number+ " has an invalid tooth condition")
     w, h = img.size
     new_w = int(w * (height / h))
     return img.resize((new_w, height))
