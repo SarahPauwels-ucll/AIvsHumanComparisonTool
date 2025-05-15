@@ -44,16 +44,25 @@ def get_tooth_image(tooth_number, status,height=80):
     return img.resize((new_w, height))
 
 def load_teeth(teeth):
-    top_row = list(reversed(range(11, 19))) + list(range(21, 29)) 
-    bottom_row = list(reversed(range(31, 39))) + list(range(41, 49)) 
-
     st.title("Dental Chart")
-    cols = st.columns(16)
-    for i, tooth_num in enumerate(top_row):
-        with cols[i]:
-            st.image(get_tooth_image(tooth_num, teeth[tooth_num]))
+    st.markdown("""
+    <style>
+    .st-key-tooth-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    with st.container(key="tooth-container"):
+        top_row = list(reversed(range(11, 19))) + list(range(21, 29)) 
+        bottom_row = list(reversed(range(31, 39))) + list(range(41, 49)) 
 
-    cols = st.columns(16)
-    for i, tooth_num in enumerate(bottom_row):
-        with cols[i]:
-            st.image(get_tooth_image(tooth_num, teeth[tooth_num]))
+        cols = st.columns(16)
+        for i, tooth_num in enumerate(top_row):
+            with cols[i]:
+                st.image(get_tooth_image(tooth_num, teeth[tooth_num]))
+
+        cols = st.columns(16)
+        for i, tooth_num in enumerate(bottom_row):
+            with cols[i]:
+                st.image(get_tooth_image(tooth_num, teeth[tooth_num]))
