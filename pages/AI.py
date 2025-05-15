@@ -16,7 +16,16 @@ st.write("Here we can see the AI results.")
 image_path = os.path.join("AIOutput", "image.jpg")
 # Check if the image exists
 if os.path.exists(image_path):
-    st.image(image_path, caption="Uploaded Dental Image",  use_container_width=True)
+    st.markdown("""
+    <style>
+    .st-key-photo-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    with st.container(key="photo-container"):
+        st.image(image_path, caption="Uploaded Dental Image",  use_container_width=True)
 else:
     st.warning("No image has been uploaded yet.")
 
