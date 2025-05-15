@@ -3,7 +3,7 @@ from PIL import Image
 
 #example input
 teeth = {
-    11: "jfslkjflkds", 12: "implant", 13: None, 14: None, 15: "impacted", 16: None, 17: None, 18: None,
+    11: None, 12: "implant", 13: None, 14: None, 15: "impacted", 16: None, 17: None, 18: None,
     21: None, 22: None, 23: None, 24: "missing", 25: "bridgde,rcf", 26: "crown,implant", 27: None, 28: "df,rcf",
     31: "bridge", 32: "normal", 33: None, 34: "crown,rcf", 35: None, 36: None, 37: None, 38: None,
     41: None, 42: None, 43: "crown", 44: None, 45: "brigde,pontic", 46: "brigde,implant", 47: "df", 48: None
