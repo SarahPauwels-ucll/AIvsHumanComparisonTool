@@ -42,16 +42,26 @@ if has_image_been_uploaded:
         st.session_state.show_tooth_config_dialog = False
 
     def toggle_tooth_presence(presence: str, tooth_number: int):
-        if teeth[tooth_number] == presence:
-            if "," in presence:
-                if "missing" in presence:
+        if teeth[tooth_number] == presence or teeth[tooth_number] is None:
+            if presence == "missing":
+                if "missing" in str(teeth[tooth_number]):
+                    teeth[tooth_number] = None
+                else:
                     teeth[tooth_number] = "missing"
-                if "normal" in presence:
+            if presence == "normal":
+                if "normal" in str(teeth[tooth_number]):
+                    teeth[tooth_number] = None
+                else:
                     teeth[tooth_number] = "normal"
-            else:
+
+        elif presence in str(teeth[tooth_number]):
+            if presence == "missing" or presence == "normal":
                 teeth[tooth_number] = None
+
+            else:
+                teeth[tooth_number] = str(teeth[tooth_number]).replace(f",{presence}", "")
         else:
-            teeth[tooth_number] = presence
+            teeth[tooth_number] = str(teeth[tooth_number]) + f",{presence}"
 
     @st.dialog( " ", width="large")
     def show_options():
@@ -59,6 +69,7 @@ if has_image_been_uploaded:
         missing_properties = ["Implant", "Implant bridge", "Implant crown", "Bridge"]
         present_properties = ["Dental filling", "Root canal filling", "Crown", "Bridge", "Impacted"]
         # order: missing/present, implant, bridge/crown, dental filling, root canal filling
+        # crown(+root canal fill), bridge(+root canal fill), dental fill, dental fill+root canal fill, impacted
 
         st.title(f"Tooth {tooth_number}")
         col1, col2 = st.columns(2)
@@ -84,15 +95,19 @@ if has_image_been_uploaded:
                 impacted_checkbox = st.checkbox("Impacted")
 
             if missing_checkbox:
-                implant_checkbox = st.checkbox("Implant", on_change=toggle_tooth_presence, args=("missing,implant",tooth_number))
-                if implant_checkbox:
-                    crown_checkbox = st.checkbox("Crown", on_change=toggle_tooth_presence, args=("missing,implant,crown",tooth_number))
+                if "crown" in str(teeth[tooth_number]):
+                    implant_checkbox = st.checkbox("Implant", disabled=True)
+                else:
+                    implant_checkbox = st.checkbox("Implant", on_change=toggle_tooth_presence, args=("implant",tooth_number))
+                if implant_checkbox and not "bridge" in str(teeth[tooth_number]):
+                    crown_checkbox = st.checkbox("Crown", on_change=toggle_tooth_presence, args=("crown",tooth_number))
                 else:
                     crown_checkbox = st.checkbox("Crown", disabled=True)
-                if implant_checkbox:
-                    bridge_checkbox = st.checkbox("Bridge", on_change=toggle_tooth_presence, args=("missing,implant,bridge",tooth_number))
+                if not "crown" in str(teeth[tooth_number]):
+                    bridge_checkbox = st.checkbox("Bridge", on_change=toggle_tooth_presence, args=("bridge",tooth_number))
                 else:
-                    bridge_checkbox = st.checkbox("Bridge", on_change=toggle_tooth_presence, args=("missing,bridge,pontic",tooth_number))
+                    crown_checkbox = st.checkbox("Bridge", disabled=True)
+                    #bridge_checkbox = st.checkbox("Bridge", on_change=toggle_tooth_presence, args=("bridge",tooth_number))
 
 
         col1, col2 = st.columns(2)
