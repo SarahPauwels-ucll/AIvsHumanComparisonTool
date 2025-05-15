@@ -44,7 +44,6 @@ def get_tooth_image(tooth_number, status,height=80):
     return img.resize((new_w, height))
 
 def load_teeth(teeth):
-    st.title("Dental Chart")
     st.markdown("""
     <style>
     .st-key-tooth-container {
