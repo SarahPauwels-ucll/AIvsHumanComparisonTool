@@ -3,7 +3,7 @@ import streamlit as st
 from sidebar import load_sidebar
 import os
    
-st.set_page_config(page_title="compairison",
+st.set_page_config(page_title="comparison",
                    layout="wide")
 
 
