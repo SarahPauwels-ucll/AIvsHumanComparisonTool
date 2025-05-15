@@ -11,12 +11,12 @@ teeth = {
 def get_tooth_image(tooth_number, status):
     if status is None:
         return Image.open(f"icons/Icon_normal_teeth/{tooth_number}.png")
-    elif status == "filled":
-        return Image.open(f"icons/filled/{tooth_number}.png")
+    elif status == "implant":
+        return Image.open(f"icons/Icon_implant/{tooth_number}.png")
     elif status == "missing":
-        return Image.open(f"icons/missing/{tooth_number}.png")
+        return Image.open(f"icons/Icon_missing_teeth/{tooth_number}.png")
     else:
-        return Image.open(f"icons/unknown/{tooth_number}.png")
+        return Image.open(f"icons/Icon_impacted/{tooth_number}.png")
 
 def load_teeth(teeth):
     top_row = list(reversed(range(11, 19))) + list(range(21, 29)) 
