@@ -1,22 +1,44 @@
 import streamlit as st
 from PIL import Image
+
+#example input
 teeth = {
-    11: None, 12: None, 13: None, 14: None, 15: None, 16: None, 17: None, 18: None,
-    21: None, 22: None, 23: None, 24: None, 25: None, 26: None, 27: None, 28: None,
-    31: None, 32: None, 33: None, 34: None, 35: None, 36: None, 37: None, 38: None,
-    41: None, 42: None, 43: None, 44: None, 45: None, 46: None, 47: None, 48: None
+    11: "jfslkjflkds", 12: "implant", 13: None, 14: None, 15: "impacted", 16: None, 17: None, 18: None,
+    21: None, 22: None, 23: None, 24: "missing", 25: "bridgde,rcf", 26: "crown,implant", 27: None, 28: "df,rcf",
+    31: "bridge", 32: "normal", 33: None, 34: "crown,rcf", 35: None, 36: None, 37: None, 38: None,
+    41: None, 42: None, 43: "crown", 44: None, 45: "brigde,pontic", 46: "brigde,implant", 47: "df", 48: None
 }
 
-
 def get_tooth_image(tooth_number, status,height=80):
-    if status is None:
+    if status is None or status=="normal":
         img= Image.open(f"icons/Icon_normal_teeth/{tooth_number}.png")
     elif status == "implant":
         img= Image.open(f"icons/Icon_implant/{tooth_number}.png")
     elif status == "missing":
         img= Image.open(f"icons/Icon_missing_teeth/{tooth_number}.png")
-    else:
+    elif status == "impacted":
         img= Image.open(f"icons/Icon_impacted/{tooth_number}.png")
+    elif status=="df":
+        img= Image.open(f"icons/Icon_df/{tooth_number}.png")
+    elif status=="df,rcf":
+        img= Image.open(f"icons/Icon_df_rcf/{tooth_number}.png")
+    elif status=="crown":
+        img= Image.open(f"icons/Icon_crown/{tooth_number}.png")
+    elif status=="crown,rcf":
+        img= Image.open(f"icons/Icon_crown_rcf/{tooth_number}.png")
+    elif status=="crown,implant":
+        img= Image.open(f"icons/Icon_crown_implant/{tooth_number}.png")
+    elif status=="bridge":
+        img= Image.open(f"icons/Icon_bridge_tooth/{tooth_number}.png")
+    elif status=="bridgde,rcf":
+        img= Image.open(f"icons/Icon_bridge_tooth_rcf/{tooth_number}.png")
+    elif status=="brigde,implant":
+        img= Image.open(f"icons/Icon_bridge_implant/{tooth_number}.png")
+    elif status=="brigde,pontic":
+        img= Image.open(f"icons/Icon_bridge_pontic/{tooth_number}.png")   
+    else:
+        img= Image.open(f"icons/Icon_normal_teeth/{tooth_number}.png")
+        print(tooth_number)
     w, h = img.size
     new_w = int(w * (height / h))
     return img.resize((new_w, height))

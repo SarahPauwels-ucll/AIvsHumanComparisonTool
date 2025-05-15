@@ -139,9 +139,9 @@ if has_image_been_uploaded:
             st.markdown(custom_css, unsafe_allow_html=True)
             if st.button(str(n), key=button_key):
                 show_tooth_modal(n)
-    
+
     load_teeth(teeth)
-    
+
     bottom_cols = st.columns(len(bottom_left_nums + bottom_right_nums))
     bottom_nums = bottom_left_nums + bottom_right_nums
     for column, n in zip(bottom_cols, bottom_nums):
