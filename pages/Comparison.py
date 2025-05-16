@@ -49,6 +49,15 @@ if os.path.exists(ai_image_path) and os.path.exists(image_path) :
             st.image(ai_image_path,  use_container_width=True)
 else:
     st.warning("No image has been uploaded yet.")
-
-load_teeth(manualteeth)
-print(compair(manualteeth, AIteeth))
+    st.markdown("""
+    <style>
+    .st-key-tooth-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    with st.container(key="tooth-container"):
+        top_row = list(reversed(range(11, 19))) + list(range(21, 29)) 
+        bottom_row = list(reversed(range(31, 39))) + list(range(41, 49)) 
+        load_teeth(teeth)
