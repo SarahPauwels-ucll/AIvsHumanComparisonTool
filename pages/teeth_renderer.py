@@ -137,15 +137,25 @@ def render_teeth():
                 if st.button(str(n), key=button_key):
                     show_tooth_modal(n)
 
-    top_cols = st.columns(len(top_left_nums + top_right_nums))
-    top_nums = top_left_nums + top_right_nums
-    render_button_row(top_cols,top_nums)
+    st.markdown("""
+    <style>
+    .st-key-tooth-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    with st.container(key="tooth-container"):
 
-    load_teeth(teeth)
+        top_cols = st.columns(len(top_left_nums + top_right_nums))
+        top_nums = top_left_nums + top_right_nums
+        render_button_row(top_cols,top_nums)
 
-    bottom_cols = st.columns(len(bottom_left_nums + bottom_right_nums))
-    bottom_nums = bottom_left_nums + bottom_right_nums
-    render_button_row(bottom_cols,bottom_nums)
+        load_teeth(teeth)
 
-    if st.session_state.show_tooth_config_dialog:
-        show_options()
+        bottom_cols = st.columns(len(bottom_left_nums + bottom_right_nums))
+        bottom_nums = bottom_left_nums + bottom_right_nums
+        render_button_row(bottom_cols,bottom_nums)
+
+        if st.session_state.show_tooth_config_dialog:
+            show_options()
