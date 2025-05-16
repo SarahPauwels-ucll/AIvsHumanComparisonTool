@@ -1,7 +1,7 @@
 import streamlit as st
 from st_pages import Page, add_page_title
 
-from pages.teeth_renderer import render_teeth
+from teeth_renderer import render_teeth
 from sidebar import load_sidebar
 from teeth import load_teeth
 import os
