@@ -61,16 +61,18 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 with st.container(key="container"):
-    
+    st.subheader("Differences Top Teeth")
     top_row = list(reversed(range(11, 19))) + list(range(21, 29)) 
     cols = st.columns(16)
     for i, tooth_num in enumerate(top_row):
         if tooth_num in differences:
             with cols[i]:
                 st.image(get_tooth_image(tooth_num, differences[tooth_num]))
-                
+    
+    st.subheader("your input")          
     load_teeth(manualteeth)
 
+    st.subheader("Differences bottom Teeth")
     bottom_row = list(reversed(range(31, 39))) + list(range(41, 49)) 
     cols2 = st.columns(16)
     for i, tooth_num in enumerate(bottom_row):
