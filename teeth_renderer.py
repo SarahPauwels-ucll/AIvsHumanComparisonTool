@@ -1,20 +1,15 @@
 import os
-
 import streamlit as st
-
 from teeth import load_teeth
+from input.teethSet import teeth as teethInput
+from AIOutput.teethSet import teeth as teethAI
 
 def render_teeth(page: str):
     if not page:
         raise Exception("page can't be empty")
     @st.cache_data()
-    def get_teeth_data() -> dict[int, str | None]:
-        teeth_dict = {
-            11: None, 12: None, 13: None, 14: None, 15: None, 16: None, 17: None, 18: None,
-            21: None, 22: None, 23: None, 24: None, 25: None, 26: None, 27: None, 28: None,
-            31: None, 32: None, 33: None, 34: None, 35: None, 36: None, 37: None, 38: None,
-            41: None, 42: None, 43: None, 44: None, 45: None, 46: None, 47: None, 48: None
-        }
+    def get_teeth_data(teeth) -> dict[int, str | None]:
+        teeth_dict = teeth
         return teeth_dict
 
     def check_checkbox_status(checkbox_name: str, tooth_number: int) -> bool:
@@ -26,7 +21,10 @@ def render_teeth(page: str):
     if st.session_state.get(f"teeth_dict_{page}"):
         teeth = st.session_state[f"teeth_dict_{page}"]
     else:
-        teeth = get_teeth_data()
+        if page=="ai":
+            teeth = get_teeth_data(teethAI)
+        else:
+            teeth = get_teeth_data(teethInput)
         st.session_state[f"teeth_dict_{page}"] = teeth
     if "show_tooth_config_dialog" not in st.session_state:
         st.session_state.show_tooth_config_dialog = False
