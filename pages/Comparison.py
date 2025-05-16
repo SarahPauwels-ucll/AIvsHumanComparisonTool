@@ -61,8 +61,8 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 with st.container(key="container"):
+    
     top_row = list(reversed(range(11, 19))) + list(range(21, 29)) 
-
     cols = st.columns(16)
     for i, tooth_num in enumerate(top_row):
         if tooth_num in differences:
@@ -72,7 +72,6 @@ with st.container(key="container"):
     load_teeth(manualteeth)
 
     bottom_row = list(reversed(range(31, 39))) + list(range(41, 49)) 
-
     cols2 = st.columns(16)
     for i, tooth_num in enumerate(bottom_row):
         if tooth_num in differences:
