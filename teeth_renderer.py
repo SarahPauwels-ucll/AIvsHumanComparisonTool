@@ -21,6 +21,7 @@ def render_teeth(page: str):
     if st.session_state.get(f"teeth_dict_{page}"):
         teeth = st.session_state[f"teeth_dict_{page}"]
     else:
+        print("page"+page)
         if page=="ai":
             teeth = get_teeth_data(teethAI)
         else:

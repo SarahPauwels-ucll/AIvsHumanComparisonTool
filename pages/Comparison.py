@@ -69,10 +69,12 @@ with st.container(key="container"):
             with cols[i]:
                 st.image(get_tooth_image(tooth_num, differences[tooth_num]))
     
-    st.markdown("Your input")          
+    st.markdown("Your input") 
+
+    manual_teeth =st.session_state.manual_teeth      
     load_teeth(manualteeth)
 
-    st.markdown("Differences bottom Teeth")
+    st.subheader("Differences bottom Teeth")
     bottom_row = list(reversed(range(31, 39))) + list(range(41, 49)) 
     cols2 = st.columns(16)
     for i, tooth_num in enumerate(bottom_row):
