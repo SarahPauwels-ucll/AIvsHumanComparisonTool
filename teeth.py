@@ -61,7 +61,7 @@ def load_teeth(teeth):
             with cols[i]:
                 st.image(get_tooth_image(tooth_num, teeth[tooth_num]))
 
-        cols = st.columns(16)
+        cols2 = st.columns(16)
         for i, tooth_num in enumerate(bottom_row):
-            with cols[i]:
+            with cols2[i]:
                 st.image(get_tooth_image(tooth_num, teeth[tooth_num]))

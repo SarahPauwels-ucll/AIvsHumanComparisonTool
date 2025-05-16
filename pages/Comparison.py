@@ -49,15 +49,32 @@ if os.path.exists(ai_image_path) and os.path.exists(image_path) :
             st.image(ai_image_path,  use_container_width=True)
 else:
     st.warning("No image has been uploaded yet.")
-    st.markdown("""
-    <style>
-    .st-key-tooth-container {
-        max-width: 900px;
-        margin: 0 auto;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    with st.container(key="tooth-container"):
-        top_row = list(reversed(range(11, 19))) + list(range(21, 29)) 
-        bottom_row = list(reversed(range(31, 39))) + list(range(41, 49)) 
-        load_teeth(manualteeth)
+
+differences=compair(manualteeth, AIteeth)
+
+st.markdown("""
+<style>
+.st-key-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+</style>
+""", unsafe_allow_html=True)
+with st.container(key="container"):
+    top_row = list(reversed(range(11, 19))) + list(range(21, 29)) 
+
+    cols = st.columns(16)
+    for i, tooth_num in enumerate(top_row):
+        if tooth_num in differences:
+            with cols[i]:
+                st.image(get_tooth_image(tooth_num, differences[tooth_num]))
+                
+    load_teeth(manualteeth)
+
+    bottom_row = list(reversed(range(31, 39))) + list(range(41, 49)) 
+
+    cols2 = st.columns(16)
+    for i, tooth_num in enumerate(bottom_row):
+        if tooth_num in differences:
+            with cols2[i]:
+                st.image(get_tooth_image(tooth_num, differences[tooth_num]))
