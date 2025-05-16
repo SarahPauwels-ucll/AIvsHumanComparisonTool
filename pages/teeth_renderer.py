@@ -4,8 +4,9 @@ import streamlit as st
 
 from teeth import load_teeth
 
-def render_teeth():
-
+def render_teeth(page: str):
+    if not page:
+        raise Exception("page can't be empty")
     @st.cache_data()
     def get_teeth_data() -> dict[int, str | None]:
         teeth_dict = {
@@ -22,11 +23,11 @@ def render_teeth():
     def check_checkbox_enabled(false_when_enabled: list[str], tooth_number: int) -> bool:
         return len([x for x in false_when_enabled if x in str(teeth[tooth_number])]) > 0
 
-    if st.session_state.get("teeth_dict"):
-        teeth = st.session_state.teeth_dict
+    if st.session_state.get(f"teeth_dict_{page}"):
+        teeth = st.session_state[f"teeth_dict_{page}"]
     else:
         teeth = get_teeth_data()
-        st.session_state.teeth_dict = teeth
+        st.session_state[f"teeth_dict_{page}"] = teeth
     if "show_tooth_config_dialog" not in st.session_state:
         st.session_state.show_tooth_config_dialog = False
 
@@ -159,3 +160,4 @@ def render_teeth():
 
         if st.session_state.show_tooth_config_dialog:
             show_options()
+    return teeth

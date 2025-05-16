@@ -30,4 +30,8 @@ if os.path.exists(image_path):
 else:
     st.warning("No image has been uploaded yet.")
 
-render_teeth()
+ai_teeth = render_teeth("ai")
+st.session_state.ai_teeth = ai_teeth
+
+print(st.session_state.manual_teeth)
+print(st.session_state.ai_teeth)
