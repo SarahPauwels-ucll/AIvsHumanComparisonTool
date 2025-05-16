@@ -1,6 +1,7 @@
 import streamlit as st
 from st_pages import Page, add_page_title
 
+from pages.pdf import pdf_button
 from pages.teeth_renderer import render_teeth
 from sidebar import load_sidebar
 from teeth import load_teeth
@@ -35,3 +36,4 @@ st.session_state.ai_teeth = ai_teeth
 
 print(st.session_state.manual_teeth)
 print(st.session_state.ai_teeth)
+pdf_button()
