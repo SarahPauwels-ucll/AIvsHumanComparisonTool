@@ -45,7 +45,7 @@ def load_sidebar():
         st.sidebar.error("First name can only contain letters, apostrophes ('), and hyphens (-).")
 
     # -- Gender --
-    stored_gender = controller.get("Gender") or "Male"
+    stored_gender = controller.get("Gender") 
     if "gender" not in st.session_state:
         st.session_state.gender = stored_gender
 
