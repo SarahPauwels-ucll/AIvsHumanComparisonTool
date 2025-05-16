@@ -60,4 +60,4 @@ else:
     with st.container(key="tooth-container"):
         top_row = list(reversed(range(11, 19))) + list(range(21, 29)) 
         bottom_row = list(reversed(range(31, 39))) + list(range(41, 49)) 
-        load_teeth(teeth)
+        load_teeth(manualteeth)
