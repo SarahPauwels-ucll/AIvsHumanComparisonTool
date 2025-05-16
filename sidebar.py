@@ -71,7 +71,7 @@ def load_sidebar():
     if "birthdate" not in st.session_state or not st.session_state.birthdate:
         st.session_state.birthdate = stored_birthdate
 
-    birthdate = st.sidebar.date_input("Select birthdate", value=st.session_state.birthdate, key="birthdate")
+    birthdate = st.sidebar.date_input("Select birthdate", value=st.session_state.birthdate, key="birthdate",min_value=date(1950, 1, 1), max_value='today')
     if birthdate != stored_birthdate:
         if birthdate:
             controller.set("birthdate", birthdate.isoformat())
@@ -82,7 +82,7 @@ def load_sidebar():
     if "consultation date" not in st.session_state  or not st.session_state.consultation_date:
         st.session_state.consultation_date = stored_consultation_date
 
-    consultation_date = st.sidebar.date_input("Select consultation date", value=st.session_state.consultation_date, key="consultation date")
+    consultation_date = st.sidebar.date_input("Select consultation date", value=st.session_state.consultation_date, key="consultation date",min_value=None, max_value='today')
     if consultation_date != stored_consultation_date:
         if consultation_date:
             controller.set("consultation date", consultation_date.isoformat()) 
