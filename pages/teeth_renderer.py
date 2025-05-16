@@ -56,7 +56,7 @@ def render_teeth():
     def show_options():
         tooth_number = st.session_state.selected_tooth
         missing_properties = ["Implant", "Implant bridge", "Implant crown", "Bridge"]
-        present_properties = ["Dental filling", "Root canal filling", "Crown", "Bridge", "Impacted"]
+        present_properties = ["Dental filling", "Impacted", "Crown", "Bridge", "Root canal filling"]
 
         st.title(f"Tooth {tooth_number}")
         col1, col2 = st.columns(2)
@@ -75,11 +75,11 @@ def render_teeth():
 
         with col1:
             if present_checkbox:
+                impacted_checkbox = st.checkbox("Impacted", disabled=check_checkbox_enabled(["bridge","crown","rcf","df"], tooth_number), on_change=toggle_tooth_presence, args=("impacted",tooth_number), value=check_checkbox_status("impacted", tooth_number))
                 dental_filling_checkbox = st.checkbox("Dental filling", disabled=check_checkbox_enabled(["crown","bridge","impacted"],tooth_number), on_change=toggle_tooth_presence, args=("df",tooth_number), value=check_checkbox_status("df", tooth_number))
                 bridge_checkbox = st.checkbox("Bridge", disabled=check_checkbox_enabled(["df","crown","impacted"],tooth_number), on_change=toggle_tooth_presence, args=("bridge",tooth_number), value=check_checkbox_status("bridge", tooth_number))
                 crown_checkbox = st.checkbox("Crown", disabled=check_checkbox_enabled(["df","bridge","impacted"],tooth_number), on_change=toggle_tooth_presence, args=("crown",tooth_number), value=check_checkbox_status("crown", tooth_number))
-                root_canal_filling_checkbox = st.checkbox("Root canal filling", disabled=check_checkbox_enabled(["impacted"],tooth_number), on_change=toggle_tooth_presence, args=("rcf",tooth_number), value=check_checkbox_status("rcf", tooth_number))
-                impacted_checkbox = st.checkbox("Impacted", disabled=check_checkbox_enabled(["bridge","crown","rcf","df"], tooth_number), on_change=toggle_tooth_presence, args=("impacted",tooth_number), value=check_checkbox_status("impacted", tooth_number))
+                root_canal_filling_checkbox = st.checkbox("Root canal filling", disabled= not check_checkbox_enabled(["crown","bridge","df"],tooth_number), on_change=toggle_tooth_presence, args=("rcf",tooth_number), value=check_checkbox_status("rcf", tooth_number))
 
             if missing_checkbox:
                 implant_checkbox = st.checkbox("Implant", disabled=check_checkbox_enabled(["crown"],tooth_number), on_change=toggle_tooth_presence, args=("implant",tooth_number), value=check_checkbox_status("implant", tooth_number))
