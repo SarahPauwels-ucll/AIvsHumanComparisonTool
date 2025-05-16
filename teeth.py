@@ -12,30 +12,36 @@ teeth = {
 def get_tooth_image(tooth_number, status,height=80):
     if status is None or status=="normal":
         img= Image.open(f"icons/Icon_normal_teeth/{tooth_number}.png")
-    elif status == "implant":
-        img= Image.open(f"icons/Icon_implant/{tooth_number}.png")
+
     elif status == "missing":
         img= Image.open(f"icons/Icon_missing_teeth/{tooth_number}.png")
-    elif status == "impacted":
+    elif "impacted" in status:
         img= Image.open(f"icons/Icon_impacted/{tooth_number}.png")
-    elif status=="df":
+    elif status == "missing,implant":
+        img = Image.open(f"icons/Icon_implant/{tooth_number}.png")
+
+    elif "df" in status and "rcf" in status:
+        img = Image.open(f"icons/Icon_df_rcf/{tooth_number}.png")
+    elif "df" in status:
         img= Image.open(f"icons/Icon_df/{tooth_number}.png")
-    elif status=="df,rcf":
-        img= Image.open(f"icons/Icon_df_rcf/{tooth_number}.png")
-    elif status=="crown":
-        img= Image.open(f"icons/Icon_crown/{tooth_number}.png")
-    elif status=="crown,rcf":
+
+    elif "rcf" in status and "crown" in status:
         img= Image.open(f"icons/Icon_crown_rcf/{tooth_number}.png")
-    elif status=="crown,implant":
+    elif "implant" in status and "crown" in status:
         img= Image.open(f"icons/Icon_crown_implant/{tooth_number}.png")
-    elif status=="bridge":
-        img= Image.open(f"icons/Icon_bridge_tooth/{tooth_number}.png")
-    elif status=="bridgde,rcf":
+    elif "crown" in status:
+        img= Image.open(f"icons/Icon_crown/{tooth_number}.png")
+
+    elif "rcf" in status and "bridge" in status:
         img= Image.open(f"icons/Icon_bridge_tooth_rcf/{tooth_number}.png")
-    elif status=="brigde,implant":
+    elif "bridge" in status and "implant" in status:
         img= Image.open(f"icons/Icon_bridge_implant/{tooth_number}.png")
-    elif status=="brigde,pontic":
-        img= Image.open(f"icons/Icon_bridge_pontic/{tooth_number}.png")   
+    elif status=="missing,bridge":
+        img= Image.open(f"icons/Icon_bridge_pontic/{tooth_number}.png")
+    elif "bridge" in status and "normal" in status:
+        img= Image.open(f"icons/Icon_bridge_tooth/{tooth_number}.png")
+    # elif "rcf" in status:
+    #     img=Image.open(f"icons/Icon_rcf")
     else:
         img= Image.open(f"icons/Icon_normal_teeth/{tooth_number}.png")
         print(tooth_number)

@@ -33,9 +33,11 @@ def get_teeth_data() -> dict[int, str | None]:
     return teeth_dict
 
 if has_image_been_uploaded:
-    def check_checkbox_status(checkbox_name: str, tooth_number: int):
+    def check_checkbox_status(checkbox_name: str, tooth_number: int) -> bool:
         return True if checkbox_name in str(teeth[tooth_number]) else False
 
+    def check_checkbox_enabled(false_when_enabled: list[str], tooth_number: int) -> bool:
+        return len([x for x in false_when_enabled if x in str(teeth[tooth_number])]) > 0
 
     if st.session_state.get("teeth_dict"):
         teeth = st.session_state.teeth_dict
@@ -72,8 +74,6 @@ if has_image_been_uploaded:
         tooth_number = st.session_state.selected_tooth
         missing_properties = ["Implant", "Implant bridge", "Implant crown", "Bridge"]
         present_properties = ["Dental filling", "Root canal filling", "Crown", "Bridge", "Impacted"]
-        # order: missing/present, implant, bridge/crown, dental filling, root canal filling
-        # crown(+root canal fill), bridge(+root canal fill), dental fill, dental fill+root canal fill, impacted
 
         st.title(f"Tooth {tooth_number}")
         col1, col2 = st.columns(2)
@@ -92,47 +92,36 @@ if has_image_been_uploaded:
 
         with col1:
             if present_checkbox:
-                dental_filling_checkbox = st.checkbox("Dental filling", on_change=toggle_tooth_presence, args=("df",tooth_number), value=check_checkbox_status("df", tooth_number))
-                if dental_filling_checkbox:
-                    bridge_checkbox = st.checkbox("Bridge", disabled=True)
-                    crown_checkbox = st.checkbox("Crown", disabled=True)
-                else:
-                    bridge_checkbox = st.checkbox("Bridge", on_change=toggle_tooth_presence, args=("bridge",tooth_number), value=check_checkbox_status("bridge", tooth_number))
-                    crown_checkbox = st.checkbox("Crown", on_change=toggle_tooth_presence, args=("crown",tooth_number), value=check_checkbox_status("crown", tooth_number))
-                root_canal_filling_checkbox = st.checkbox("Root canal filling", on_change=toggle_tooth_presence, args=("rcf",tooth_number), value=check_checkbox_status("rcf", tooth_number))
-                impacted_checkbox = st.checkbox("Impacted", on_change=toggle_tooth_presence, args=("impacted",tooth_number), value=check_checkbox_status("impacted", tooth_number))
+                dental_filling_checkbox = st.checkbox("Dental filling", disabled=check_checkbox_enabled(["crown","bridge","impacted"],tooth_number), on_change=toggle_tooth_presence, args=("df",tooth_number), value=check_checkbox_status("df", tooth_number))
+                bridge_checkbox = st.checkbox("Bridge", disabled=check_checkbox_enabled(["df","crown","impacted"],tooth_number), on_change=toggle_tooth_presence, args=("bridge",tooth_number), value=check_checkbox_status("bridge", tooth_number))
+                crown_checkbox = st.checkbox("Crown", disabled=check_checkbox_enabled(["df","bridge","impacted"],tooth_number), on_change=toggle_tooth_presence, args=("crown",tooth_number), value=check_checkbox_status("crown", tooth_number))
+                root_canal_filling_checkbox = st.checkbox("Root canal filling", disabled=check_checkbox_enabled(["impacted"],tooth_number), on_change=toggle_tooth_presence, args=("rcf",tooth_number), value=check_checkbox_status("rcf", tooth_number))
+                impacted_checkbox = st.checkbox("Impacted", disabled=check_checkbox_enabled(["bridge","crown","rcf","df"], tooth_number), on_change=toggle_tooth_presence, args=("impacted",tooth_number), value=check_checkbox_status("impacted", tooth_number))
 
             if missing_checkbox:
-                if "crown" in str(teeth[tooth_number]):
-                    implant_checkbox = st.checkbox("Implant", disabled=True, value=check_checkbox_status("implant", tooth_number))
-                else:
-                    implant_checkbox = st.checkbox("Implant", on_change=toggle_tooth_presence, args=("implant",tooth_number), value=check_checkbox_status("implant", tooth_number))
+                implant_checkbox = st.checkbox("Implant", disabled=check_checkbox_enabled(["crown"],tooth_number), on_change=toggle_tooth_presence, args=("implant",tooth_number), value=check_checkbox_status("implant", tooth_number))
                 if implant_checkbox and not "bridge" in str(teeth[tooth_number]):
                     crown_checkbox = st.checkbox("Crown", on_change=toggle_tooth_presence, args=("crown",tooth_number), value=check_checkbox_status("crown", tooth_number))
                 else:
                     crown_checkbox = st.checkbox("Crown", disabled=True, value=check_checkbox_status("crown", tooth_number))
                 if not "crown" in str(teeth[tooth_number]):
                     bridge_checkbox = st.checkbox("Bridge", on_change=toggle_tooth_presence, args=("bridge",tooth_number), value=check_checkbox_status("bridge", tooth_number))
+                elif "implant" not in str(teeth[tooth_number]):
+                    bridge_checkbox = st.checkbox("Bridge", disabled=True, value=check_checkbox_status("bridge,pontic", tooth_number))
                 else:
-                    crown_checkbox = st.checkbox("Bridge", disabled=True, value=check_checkbox_status("bridge", tooth_number))
+                    bridge_checkbox = st.checkbox("Bridge", disabled=True, value=check_checkbox_status("bridge", tooth_number))
 
 
         col1, col2 = st.columns(2)
         with col1:
             if st.button("Clear all"):
                 teeth[tooth_number] = None
-                #st.session_state.show_tooth_config_dialog = False
                 st.rerun()
 
         with col2:
             if st.button("Submit"):
-                    missing_or_present = None
-                    if missing_checkbox:
-                        missing_or_present = "Missing"
-                    if present_checkbox:
-                        missing_or_present = "Present"
-                    st.session_state.show_tooth_config_dialog = False
-                    st.rerun()
+                st.session_state.show_tooth_config_dialog = False
+                st.rerun()
         print(teeth)
 
     top_left_nums = [18,17,16,15,14,13,12,11]
@@ -146,39 +135,35 @@ if has_image_been_uploaded:
         st.session_state.selected_tooth = tooth_number
         st.session_state.show_tooth_config_dialog = True
 
+    def render_button_row(columns, numbers):
+        for column, n in zip(columns, numbers):
+            with column:
+                button_key = f"btn_{n}_b"
+                button_color = None
+                if teeth[n] is not None:
+                    button_color = "background-color: rgb(255, 51, 0)"
+                custom_css = f"""
+                <style>
+                    .st-key-{button_key} button {{
+                        white-space: nowrap !important;
+                        color: white !important;
+                        {button_color if button_color else ""}
+                    }}
+                </style>
+                """
+                st.markdown(custom_css, unsafe_allow_html=True)
+                if st.button(str(n), key=button_key):
+                    show_tooth_modal(n)
+
     top_cols = st.columns(len(top_left_nums + top_right_nums))
     top_nums = top_left_nums + top_right_nums
-    for column, n in zip(top_cols, top_nums):
-        with column:
-            button_key = f"btn_{n}_b"
-            custom_css = f"""
-            <style>
-                .st-key-{button_key} button {{
-                    white-space: nowrap !important;
-                }}
-            </style>
-            """
-            st.markdown(custom_css, unsafe_allow_html=True)
-            if st.button(str(n), key=button_key):
-                show_tooth_modal(n)
+    render_button_row(top_cols,top_nums)
 
     load_teeth(teeth)
 
     bottom_cols = st.columns(len(bottom_left_nums + bottom_right_nums))
     bottom_nums = bottom_left_nums + bottom_right_nums
-    for column, n in zip(bottom_cols, bottom_nums):
-        with column:
-            button_key = f"btn_{n}_b"
-            custom_css = f"""
-            <style>
-                .st-key-{button_key} button {{
-                    white-space: nowrap !important;
-                }}
-            </style>
-            """
-            st.markdown(custom_css, unsafe_allow_html=True)
-            if st.button(str(n), key=button_key):
-                show_tooth_modal(n)
+    render_button_row(bottom_cols,bottom_nums)
 
     if st.session_state.show_tooth_config_dialog:
         show_options()
