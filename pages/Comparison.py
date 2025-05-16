@@ -1,13 +1,31 @@
-from st_pages import Page, add_page_title
 import streamlit as st
 from sidebar import load_sidebar
 from teeth import load_teeth
-from input.teethSet import teeth
+from input.teethSet import teeth as manualteeth
+from AIOutput.teethSet import teeth as AIteeth
 import os
+from teeth import get_tooth_image
    
 st.set_page_config(page_title="comparison",
                    layout="wide")
 
+def normalize(value):
+    if value is None:
+        return None
+    return set(map(str.strip, value.split(",")))
+
+def compair(manualteeth, AIteeth):
+    differences = {}
+    for tooth in AIteeth:
+        user_val = manualteeth[tooth]
+        ai_val = AIteeth[tooth]
+
+        norm_user = normalize(user_val)
+        norm_ai = normalize(ai_val)
+
+        if norm_user != norm_ai:
+           differences[tooth]=ai_val
+    return(differences)
 
 load_sidebar()
 
@@ -32,4 +50,5 @@ if os.path.exists(ai_image_path) and os.path.exists(image_path) :
 else:
     st.warning("No image has been uploaded yet.")
 
-load_teeth(teeth)
+load_teeth(manualteeth)
+print(compair(manualteeth, AIteeth))
