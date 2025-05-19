@@ -142,6 +142,9 @@ def render_teeth(page: str):
         max-width: 900px;
         margin: 0 auto;
     }
+    .st-key-tooth-container div[data-testid="stElementToolbarButtonContainer"] {
+        display: none;
+    }
     </style>
     """, unsafe_allow_html=True)
     with st.container(key="tooth-container"):
