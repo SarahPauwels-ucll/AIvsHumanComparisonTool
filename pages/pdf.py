@@ -1,5 +1,6 @@
 import io
 import math
+from datetime import date
 
 import streamlit as st
 from reportlab.lib.pagesizes import letter
@@ -88,13 +89,30 @@ def create_pdf(
     story.append(Paragraph("Radiology Report", styles["Title"]))
     story.append(Spacer(1, 12))
 
+    patient_id_color = "black"
+    scan_date_color = "black"
+    age_color = "black"
+    gender_color = "black"
+
+    if patient_id == "Unknown":
+        patient_id_color = "red"
+
+    if scan_date == "Unknown":
+        scan_date_color = "red"
+
+    if age == "Unknown":
+        age_color = "red"
+
+    if gender == "Unknown":
+        gender_color = "red"
+
+
     # --- patient details ---
     story.append(Paragraph(
-        f"<b>Patient ID:</b>"
-        f"{patient_id}<br/>"
-        f"<b>Scan date:</b> {scan_date}<br/>"
-        f"<b>Age:</b> {age}<br/>"
-        f"<b>Gender:</b> {gender}",
+        f'<b> Patient ID: </b><font color="{patient_id_color}"> {patient_id} </font><br/>'
+        f'<b> Scan date: </b><font color="{scan_date_color}"> {scan_date} </font><br/>'
+        f'<b> Age: </b><font color="{age_color}"> {age} </font><br/>'
+        f'<b> Gender: </b><font color="{gender_color}"> {gender} </font><br/>',
         styles["Normal"],
     ))
     story.append(Spacer(1, 6))
@@ -227,13 +245,44 @@ def pdf_button():
     top_row    = list(reversed(range(11,19))) + list(range(21,29))
     bottom_row = list(reversed(range(41,49))) + list(range(31,39))
 
+    # ID
+    stored_id = st.session_state.get("profile_number")
+    patient_id = stored_id if stored_id else "Unknown"
+
+    # Consultation date
+    stored_scandate = st.session_state.get("consultation_date")
+    if stored_scandate:
+        scandate = date.fromisoformat(stored_scandate)
+        scandate_str = scandate.strftime("%Y-%m-%d") if scandate else ""
+    else:
+        scandate_str = "Unknown"
+
+    # Age
+    stored_birthdate = st.session_state.get("birthdate")
+    if stored_birthdate:
+        birthdate = date.fromisoformat(stored_birthdate)
+    else:
+        birthdate = None
+
+    if stored_birthdate and stored_scandate:
+        age = scandate.year - birthdate.year
+        if (scandate.month, scandate.day) < (birthdate.month, birthdate.day):
+            age -= 1
+        age = str(age)
+    else:
+        age = "Unknown"
+
+    # Gender
+    stored_gender = st.session_state.get("gender")
+    gender = stored_gender if stored_gender else "Unknown"
+
     pdf_bytes = create_pdf(
-        patient_id="12345",
-        scan_date="2025-05-16",
-        age="45",
-        gender="F",
+        patient_id=patient_id,
+        scan_date=scandate_str,
+        age=age,
+        gender=gender,
         pano1_path="image/image.jpeg",
-        pano2_path="image/image_ai.jpeg",
+        pano2_path="AIOutput/image.jpg",
         manual_teeth=manual_teeth,
         ai_teeth=ai_teeth,
         top_row=top_row,

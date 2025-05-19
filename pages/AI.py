@@ -40,7 +40,6 @@ if "go_to_next_page" not in st.session_state:
 
 print(st.session_state.manual_teeth)
 print(st.session_state.ai_teeth)
-pdf_button()
 # Define the callback
 def go_to_next():
     st.session_state.go_to_next_page = True
