@@ -1,7 +1,6 @@
 import streamlit as st
 from st_pages import Page, add_page_title
-
-from pages.teeth_renderer import render_teeth
+from teeth_renderer import render_teeth
 from sidebar import load_sidebar
 from teeth import load_teeth
 from AIOutput.teethSet import teeth
@@ -30,4 +29,8 @@ if os.path.exists(image_path):
 else:
     st.warning("No image has been uploaded yet.")
 
-render_teeth()
+ai_teeth = render_teeth("ai")
+st.session_state.ai_teeth = ai_teeth
+
+print(st.session_state.manual_teeth)
+print(st.session_state.ai_teeth)

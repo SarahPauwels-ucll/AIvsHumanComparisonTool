@@ -1,19 +1,15 @@
 import os
-
 import streamlit as st
-
 from teeth import load_teeth
+from input.teethSet import teeth as teethInput
+from AIOutput.teethSet import teeth as teethAI
 
-def render_teeth():
-
+def render_teeth(page: str):
+    if not page:
+        raise Exception("page can't be empty")
     @st.cache_data()
-    def get_teeth_data() -> dict[int, str | None]:
-        teeth_dict = {
-            11: None, 12: None, 13: None, 14: None, 15: None, 16: None, 17: None, 18: None,
-            21: None, 22: None, 23: None, 24: None, 25: None, 26: None, 27: None, 28: None,
-            31: None, 32: None, 33: None, 34: None, 35: None, 36: None, 37: None, 38: None,
-            41: None, 42: None, 43: None, 44: None, 45: None, 46: None, 47: None, 48: None
-        }
+    def get_teeth_data(teeth) -> dict[int, str | None]:
+        teeth_dict = teeth
         return teeth_dict
 
     def check_checkbox_status(checkbox_name: str, tooth_number: int) -> bool:
@@ -22,11 +18,15 @@ def render_teeth():
     def check_checkbox_enabled(false_when_enabled: list[str], tooth_number: int) -> bool:
         return len([x for x in false_when_enabled if x in str(teeth[tooth_number])]) > 0
 
-    if st.session_state.get("teeth_dict"):
-        teeth = st.session_state.teeth_dict
+    if st.session_state.get(f"teeth_dict_{page}"):
+        teeth = st.session_state[f"teeth_dict_{page}"]
     else:
-        teeth = get_teeth_data()
-        st.session_state.teeth_dict = teeth
+        print("page"+page)
+        if page=="ai":
+            teeth = get_teeth_data(teethAI)
+        else:
+            teeth = get_teeth_data(teethInput)
+        st.session_state[f"teeth_dict_{page}"] = teeth
     if "show_tooth_config_dialog" not in st.session_state:
         st.session_state.show_tooth_config_dialog = False
 
@@ -75,6 +75,10 @@ def render_teeth():
 
         with col1:
             if present_checkbox:
+                dental_filling_checkbox = st.checkbox("Dental filling", disabled=check_checkbox_enabled(["crown","bridge","impacted"],tooth_number), on_change=toggle_tooth_presence, args=("df",tooth_number), value=check_checkbox_status("df", tooth_number))
+                bridge_checkbox = st.checkbox("Bridge", disabled=check_checkbox_enabled(["df","crown","impacted"],tooth_number), on_change=toggle_tooth_presence, args=("bridge",tooth_number), value=check_checkbox_status("bridge", tooth_number))
+                crown_checkbox = st.checkbox("Crown", disabled=check_checkbox_enabled(["df","bridge","impacted"],tooth_number), on_change=toggle_tooth_presence, args=("crown",tooth_number), value=check_checkbox_status("crown", tooth_number))
+                root_canal_filling_checkbox = st.checkbox("Root canal filling", disabled=check_checkbox_enabled(["impacted"],tooth_number), on_change=toggle_tooth_presence, args=("rcf",tooth_number), value=check_checkbox_status("rcf", tooth_number))
                 impacted_checkbox = st.checkbox("Impacted", disabled=check_checkbox_enabled(["bridge","crown","rcf","df"], tooth_number), on_change=toggle_tooth_presence, args=("impacted",tooth_number), value=check_checkbox_status("impacted", tooth_number))
                 dental_filling_checkbox = st.checkbox("Dental filling", disabled=check_checkbox_enabled(["crown","bridge","rcf","impacted"],tooth_number), on_change=toggle_tooth_presence, args=("df",tooth_number), value=check_checkbox_status("df", tooth_number))
                 bridge_checkbox = st.checkbox("Bridge", disabled=check_checkbox_enabled(["df","crown","rcf","impacted"],tooth_number), on_change=toggle_tooth_presence, args=("bridge",tooth_number), value=check_checkbox_status("bridge", tooth_number))
@@ -159,3 +163,4 @@ def render_teeth():
 
         if st.session_state.show_tooth_config_dialog:
             show_options()
+    return teeth

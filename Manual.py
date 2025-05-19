@@ -1,7 +1,7 @@
 import streamlit as st
 from st_pages import Page, add_page_title
 
-from pages.teeth_renderer import render_teeth
+from teeth_renderer import render_teeth
 from sidebar import load_sidebar
 from teeth import load_teeth
 import os
@@ -20,7 +20,8 @@ image_path = os.path.join("image", "image.jpeg")
 # Check if the image exists
 if os.path.exists(image_path):
     st.image(image_path, caption="Uploaded Dental Image",  use_container_width=True)
-    render_teeth()
+    manual_teeth = render_teeth("manual")
+    st.session_state.manual_teeth = manual_teeth
 else:
     st.warning("No image has been uploaded yet.")
 
