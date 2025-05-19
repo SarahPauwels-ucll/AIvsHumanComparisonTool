@@ -41,8 +41,20 @@ if "go_to_next_page" not in st.session_state:
 def go_to_next():
     st.session_state.go_to_next_page = True
 
-# Show the button
-st.button("Next Page", on_click=go_to_next)
+
+st.markdown("""
+    <style>
+    .st-key-next-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+with st.container(key="next-container"):
+    col1, col2 = st.columns([8, 1])
+    with col2:
+    # Show the button
+        st.button("Next Page", on_click=go_to_next)
 
 # Perform the page switch "outside" the callback
 if st.session_state.go_to_next_page:
