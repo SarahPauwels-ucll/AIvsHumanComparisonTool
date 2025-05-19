@@ -31,3 +31,20 @@ if os.path.exists(image_path):
     st.session_state.manual_teeth = manual_teeth
 else:
     st.warning("No image has been uploaded yet.")
+
+#switch page
+# Define a session flag to trigger the page switch
+if "go_to_next_page" not in st.session_state:
+    st.session_state.go_to_next_page = False
+
+# Define the callback
+def go_to_next():
+    st.session_state.go_to_next_page = True
+
+# Show the button
+st.button("Next Page", on_click=go_to_next)
+
+# Perform the page switch "outside" the callback
+if st.session_state.go_to_next_page:
+    st.session_state.go_to_next_page = False
+    st.switch_page("pages/AI.py")
