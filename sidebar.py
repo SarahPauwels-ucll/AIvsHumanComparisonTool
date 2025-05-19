@@ -2,11 +2,12 @@ import streamlit as st
 import re
 from streamlit_cookies_controller import CookieController
 from datetime import date
+import regex
 
 def load_sidebar():
     controller = CookieController()
     st.sidebar.title("Dental Chart")
-    name_pattern = re.compile(r"^[a-zA-Z'-]*$")
+    name_pattern = regex.compile(r"^[\p{L}'-]*$", regex.UNICODE)
 
     # --- Profile Number ---
     stored_profile_number = controller.get("ProfileNumber")
