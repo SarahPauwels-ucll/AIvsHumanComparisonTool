@@ -1,3 +1,5 @@
+import os.path
+
 import streamlit as st
 from PIL import Image
 
@@ -9,42 +11,51 @@ teeth = {
     41: None, 42: None, 43: "crown", 44: None, 45: "missing,brigde", 46: "missing,brigde,implant", 47: "df", 48: None
 }
 
-def get_tooth_image(tooth_number, status,height=80):
-    if status is None or status=="normal":
-        img= Image.open(f"icons/Icon_normal_teeth/{tooth_number}.png")
-
-    elif status == "missing":
-        img= Image.open(f"icons/Icon_missing_teeth/{tooth_number}.png")
-    elif "impacted" in status:
-        img= Image.open(f"icons/Icon_impacted/{tooth_number}.png")
-    elif status == "missing,implant":
-        img = Image.open(f"icons/Icon_implant/{tooth_number}.png")
-
-    elif "df" in status and "rcf" in status:
-        img = Image.open(f"icons/Icon_df_rcf/{tooth_number}.png")
-    elif "df" in status:
-        img= Image.open(f"icons/Icon_df/{tooth_number}.png")
-
-    elif "rcf" in status and "crown" in status:
-        img= Image.open(f"icons/Icon_crown_rcf/{tooth_number}.png")
-    elif "implant" in status and "crown" in status:
-        img= Image.open(f"icons/Icon_crown_implant/{tooth_number}.png")
-    elif "crown" in status:
-        img= Image.open(f"icons/Icon_crown/{tooth_number}.png")
-
-    elif "rcf" in status and "bridge" in status:
-        img= Image.open(f"icons/Icon_bridge_tooth_rcf/{tooth_number}.png")
-    elif "bridge" in status and "implant" in status:
-        img= Image.open(f"icons/Icon_bridge_implant/{tooth_number}.png")
-    elif status=="missing,bridge":
-        img= Image.open(f"icons/Icon_bridge_pontic/{tooth_number}.png")
-    elif "bridge" in status and "normal" in status:
-        img= Image.open(f"icons/Icon_bridge_tooth/{tooth_number}.png")
-    # elif "rcf" in status:
-    #     img=Image.open(f"icons/Icon_rcf")
+def get_tooth_image(tooth_number, status,height=80, icon_variant = "black"):
+    if icon_variant == "black":
+       path_prefix = "icons"
+    elif icon_variant == "white":
+       path_prefix = "icons_white"
     else:
-        img= Image.open(f"icons/Icon_normal_teeth/{tooth_number}.png")
+       raise ValueError("icon variant should be black or white")
+    
+    if status is None or status=="normal":
+        icon_path= f"Icon_normal_teeth/{tooth_number}.png"
+    
+    elif status == "missing":
+        icon_path= f"Icon_missing_teeth/{tooth_number}.png"
+    elif "impacted" in status:
+        icon_path= f"Icon_impacted/{tooth_number}.png"
+    elif status == "missing,implant":
+        icon_path = f"Icon_implant/{tooth_number}.png"
+    
+    elif "df" in status and "rcf" in status:
+        icon_path = f"Icon_df_rcf/{tooth_number}.png"
+    elif "df" in status:
+        icon_path= f"Icon_df/{tooth_number}.png"
+    
+    elif "rcf" in status and "crown" in status:
+        icon_path= f"Icon_crown_rcf/{tooth_number}.png"
+    elif "implant" in status and "crown" in status:
+        icon_path= f"Icon_crown_implant/{tooth_number}.png"
+    elif "crown" in status:
+        icon_path= f"Icon_crown/{tooth_number}.png"
+    
+    elif "rcf" in status and "bridge" in status:
+        icon_path= f"Icon_bridge_tooth_rcf/{tooth_number}.png"
+    elif "bridge" in status and "implant" in status:
+        icon_path= f"Icon_bridge_implant/{tooth_number}.png"
+    elif status=="missing,bridge":
+        icon_path= f"Icon_bridge_pontic/{tooth_number}.png"
+    elif "bridge" in status and "normal" in status:
+        icon_path= f"Icon_bridge_tooth/{tooth_number}.png"
+    else:
+        icon_path= f"Icon_normal_teeth/{tooth_number}.png"
         print("tooth number: "+tooth_number+ " has an invalid tooth condition")
+    
+    full_path = os.path.join(path_prefix, icon_path)
+    img = Image.open(full_path)
+    
     w, h = img.size
     new_w = int(w * (height / h))
     return img.resize((new_w, height))

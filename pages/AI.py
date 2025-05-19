@@ -1,6 +1,8 @@
 import streamlit as st
 from st_pages import Page, add_page_title
 from teeth_renderer import render_teeth
+
+from pages.pdf import pdf_button
 from sidebar import load_sidebar
 from teeth import load_teeth
 from AIOutput.teethSet import teeth
@@ -36,10 +38,12 @@ else:
 if "go_to_next_page" not in st.session_state:
     st.session_state.go_to_next_page = False
 
+print(st.session_state.manual_teeth)
+print(st.session_state.ai_teeth)
 # Define the callback
 def go_to_next():
     st.session_state.go_to_next_page = True
- 
+
 st.markdown("""
     <style>
     .st-key-next-container {
