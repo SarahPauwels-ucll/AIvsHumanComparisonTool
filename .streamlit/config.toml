@@ -27,4 +27,4 @@ showErrorDetails = "full"
 
 
 #removes navigation
-showSidebarNavigation = false
+#showSidebarNavigation = false
