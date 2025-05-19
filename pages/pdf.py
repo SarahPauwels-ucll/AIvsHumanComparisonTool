@@ -81,6 +81,7 @@ def create_pdf(
 
     styles = getSampleStyleSheet()
     center8 = ParagraphStyle("center8", parent=styles["Normal"], fontSize=8, alignment=1)
+    header_style = ParagraphStyle("header_style", parent=center8, fontSize=9, fontName='Helvetica-Bold')
 
     story: list = []
 
@@ -162,24 +163,52 @@ def create_pdf(
     norm = lambda x: (x or "normal").lower()
     diffs = [n for n in (*top_row, *bottom_row) if norm(manual_teeth.get(n)) != norm(ai_teeth.get(n))]
 
+    norm = lambda x: (x or "normal").lower()
+    diffs = [n for n in (*top_row, *bottom_row) if norm(manual_teeth.get(n)) != norm(ai_teeth.get(n))]
+
     if diffs:
         story.append(Paragraph("Differences", styles["Heading2"]))
-        diff_rows: list[list] = []
+        story.append(Spacer(1, 6))  # Spacer after the "Differences" title
+
+        diff_table_data = []
+
+        # Header row
+        diff_table_data.append([
+            Paragraph("Tooth", header_style),
+            Paragraph("Manual", header_style),
+            Paragraph("AI", header_style)
+        ])
+
+        # Data row
         for n in diffs:
-            mn = manual_teeth.get(n, "normal")
-            ai = ai_teeth.get(n, "normal")
-            diff_rows.append([
+            mn_status = manual_teeth.get(n, "normal")
+            ai_status = ai_teeth.get(n, "normal")
+
+            diff_table_data.append([
                 Paragraph(str(n), center8),
-                tooth_image(n, mn, height_pt=TOOTH_H_PT),
-                tooth_image(n, ai, height_pt=TOOTH_H_PT),
+                tooth_image(n, mn_status, height_pt=TOOTH_H_PT),
+                tooth_image(n, ai_status, height_pt=TOOTH_H_PT)
             ])
 
-        diff_table = Table(diff_rows, colWidths=[0.4 * inch, DIFF_IMG_W, DIFF_IMG_W], hAlign="LEFT")
+        id_col_width = 0.7 * inch
+        img_col_width = DIFF_IMG_W + 0.2 * inch  # Add tiny amount to not wrap "manual"
+        diff_col_widths = [id_col_width, img_col_width, img_col_width]
+
+        diff_table = Table(diff_table_data,
+                           colWidths=diff_col_widths,
+                           hAlign="LEFT")
+
         diff_table.setStyle(TableStyle([
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('LEFTPADDING', (0, 0), (-1, -1), 1),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 1),
+
+            ('LINEBELOW', (0, 0), (-1, 0), 1, colors.black),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+
+            ('LEFTPADDING', (0, 0), (-1, -1), 3),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 3),
+            ('TOPPADDING', (0, 0), (-1, -1), 3),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 3),
         ]))
         story.append(diff_table)
         story.append(Spacer(1, 12))
