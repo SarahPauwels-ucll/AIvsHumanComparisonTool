@@ -1,170 +1,213 @@
 import io
+import math
+
 import streamlit as st
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
+from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer,
-    Table, HRFlowable, Image
+    Table, HRFlowable, Image, TableStyle
 )
 from teeth import get_tooth_image
 
-def pdf_button():
+# Constants
+PAGE_W, PAGE_H = letter
+SIDE_MARGIN    = 0.1 * inch
+TOP_MARGIN     = 0.75 * inch
+BOT_MARGIN     = 0.75 * inch
+USABLE_WIDTH        = PAGE_W - SIDE_MARGIN * 2
+HALF_W         = USABLE_WIDTH / 2
 
-    def create_pdf(
-        patient_id, scan_date, age, gender,
-        pano1_path, pano2_path,
+MAX_PANO_H = 2.5 * inch
+TOOTH_H_PT = math.floor(0.4 * inch)
+RASTER_SCALE = 3 # factor to scale PIL images to make them less blurry
+DIFF_IMG_W  = 0.45 * inch
+
+# --- helpers ---
+
+def make_scaled_image(source, *, max_w: float, max_h: float) -> Image:
+    img = Image(source)
+    iw, ih = float(img.imageWidth), float(img.imageHeight)
+    scale = min(max_w/iw, max_h/ih, 1.0)
+    img.drawWidth  = iw * scale
+    img.drawHeight = ih * scale
+    return img
+
+
+def tooth_image(number: int, status: str, *, height_pt: float = TOOTH_H_PT) -> Image:
+    # Generate a PIL image with higher pixel height for crispness
+    height_px = int(height_pt * RASTER_SCALE)
+    pil = get_tooth_image(number, status, height=height_px)
+
+    buf = io.BytesIO()
+    pil.save(buf, format="PNG")
+    buf.seek(0)
+
+    img = Image(buf)
+    # Keep aspect ratio but display at correct height
+    iw_px, ih_px = float(img.imageWidth), float(img.imageHeight)
+    aspect = iw_px / ih_px or 1.0
+    img.drawHeight = height_pt
+    img.drawWidth  = height_pt * aspect
+    return img
+
+
+# --- main function ---
+
+def create_pdf(
+        patient_id: str,
+        scan_date: str,
+        age: str,
+        gender: str,
+        pano1_path: str,
+        pano2_path: str,
         manual_teeth: dict,
         ai_teeth: dict,
-        top_row: list,
-        bottom_row: list,
-        score: int,
-        tooth_img_height: int = 80
-    ) -> bytes:
-        buffer = io.BytesIO()
-        doc = SimpleDocTemplate(
-            buffer,
-            pagesize=letter,
-            leftMargin=0.5*inch, rightMargin=0.5*inch,
-            topMargin=0.75*inch, bottomMargin=0.75*inch,
-        )
-        styles = getSampleStyleSheet()
-        center_small = ParagraphStyle(
-            "center_small", parent=styles["Normal"],
-            fontSize=8, alignment=1
-        )
-        story = []
+        *,
+        top_row: list[int],
+        bottom_row: list[int],
+) -> bytes:
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=letter,
+        leftMargin=SIDE_MARGIN,
+        rightMargin=SIDE_MARGIN,
+        topMargin=TOP_MARGIN,
+        bottomMargin=BOT_MARGIN,
+    )
 
-        # --- Header ---
-        story.append(Paragraph("Radiology Report", styles["Title"]))
+    styles = getSampleStyleSheet()
+    center8 = ParagraphStyle("center8", parent=styles["Normal"], fontSize=8, alignment=1)
+
+    story: list = []
+
+    story.append(Paragraph("Radiology Report", styles["Title"]))
+    story.append(Spacer(1, 12))
+
+    # --- patient details ---
+    story.append(Paragraph(
+        f"<b>Patient ID:</b>"
+        f"{patient_id}<br/>"
+        f"<b>Scan date:</b> {scan_date}<br/>"
+        f"<b>Age:</b> {age}<br/>"
+        f"<b>Gender:</b> {gender}",
+        styles["Normal"],
+    ))
+    story.append(Spacer(1, 6))
+    story.append(HRFlowable(width="100%", thickness=1))
+    story.append(Spacer(1, 12))
+
+
+    # --- panoramic images ---
+    pano1 = make_scaled_image(pano1_path, max_w=HALF_W, max_h=MAX_PANO_H)
+    pano2 = make_scaled_image(pano2_path, max_w=HALF_W, max_h=MAX_PANO_H)
+
+    panostable_data = [[pano1, pano2]]
+    panostable = Table(panostable_data,
+                       colWidths=[HALF_W, HALF_W],
+                       hAlign='CENTER')
+
+    panostable.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+    ]))
+    story.append(panostable)
+    story.append(Spacer(1, 12))
+
+    # --- full mouth teeth lineup ---
+    def full_lineup(teeth_map: dict[int, str]):
+        rows: list[list] = []
+        rows.append([Paragraph(str(n), center8) for n in top_row])
+        rows.append([tooth_image(n, teeth_map.get(n, "normal")) for n in top_row])
+        rows.append([tooth_image(n, teeth_map.get(n, "normal")) for n in bottom_row])
+        rows.append([Paragraph(str(n), center8) for n in bottom_row])
+
+        tbl = Table(rows)
+        tbl.setStyle(TableStyle([
+            ('LEFTPADDING', (0, 0), (-1, -1), 0),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+            ('TOPPADDING', (0, 0), (-1, -1), 1),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('BACKGROUND', (0, 1), (-1, 2), colors.black),
+        ]))
+        return tbl
+
+    manual_tbl = full_lineup(manual_teeth)
+    ai_tbl = full_lineup(ai_teeth)
+
+    lineups = Table([[manual_tbl, ai_tbl]],
+                    colWidths=[HALF_W, HALF_W],
+                    hAlign="CENTER")
+    lineups.setStyle(TableStyle([
+        ('LINEBEFORE', (1, 0), (1, 0), 0.5, colors.grey),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+    ]))
+    story.append(lineups)
+
+    story.append(Spacer(1, 12))
+    story.append(HRFlowable(width="100%", thickness=1))
+    story.append(Spacer(1, 6))
+
+    # --- differences ---
+    norm = lambda x: (x or "normal").lower()
+    diffs = [n for n in (*top_row, *bottom_row) if norm(manual_teeth.get(n)) != norm(ai_teeth.get(n))]
+
+    if diffs:
+        story.append(Paragraph("Differences", styles["Heading2"]))
+        diff_rows: list[list] = []
+        for n in diffs:
+            mn = manual_teeth.get(n, "normal")
+            ai = ai_teeth.get(n, "normal")
+            diff_rows.append([
+                Paragraph(str(n), center8),
+                tooth_image(n, mn, height_pt=TOOTH_H_PT),
+                tooth_image(n, ai, height_pt=TOOTH_H_PT),
+            ])
+
+        diff_table = Table(diff_rows, colWidths=[0.4 * inch, DIFF_IMG_W, DIFF_IMG_W], hAlign="LEFT")
+        diff_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('LEFTPADDING', (0, 0), (-1, -1), 1),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 1),
+        ]))
+        story.append(diff_table)
         story.append(Spacer(1, 12))
-        info = (
-            f"<b>Patient ID:</b> {patient_id}<br/>"
-            f"<b>Scan date:</b> {scan_date}<br/>"
-            f"<b>Age:</b> {age}<br/>"
-            f"<b>Gender:</b> {gender}"
-        )
-        story.append(Paragraph(info, styles["Normal"]))
-        story.append(Spacer(1, 6))
-        story.append(HRFlowable(width="100%", thickness=1))
-        story.append(Spacer(1, 12))
 
-        # --- Panoramic images side by side ---
-        pano1 = Image(pano1_path, width=3.2*inch, height=2.0*inch)
-        pano2 = Image(pano2_path, width=3.2*inch, height=2.0*inch)
-        story.append(Table(
-            [[pano1, pano2]],
-            colWidths=[3.75*inch, 3.75*inch],
-            hAlign="CENTER"
-        ))
-        story.append(Spacer(1, 12))
+    doc.build(story)
+    pdf_bytes = buffer.getvalue()
+    buffer.close()
+    return pdf_bytes
 
-        # --- Full-mouth lineups (manual vs AI) ---
-        def full_lineup_table(teeth_dict):
-            rows = []
-            # top labels
-            rows.append([Paragraph(str(n), center_small) for n in top_row])
-            # top images
-            img_cells = []
-            for n in top_row:
-                props = teeth_dict.get(n) or "normal"
-                pil = get_tooth_image(n, props, height=tooth_img_height)
-                buf = io.BytesIO()
-                pil.save(buf, format="PNG")
-                buf.seek(0)
-                img_cells.append(Image(buf, width=0.2*inch, height=0.2*inch))
-            rows.append(img_cells)
-            # bottom labels
-            rows.append([Paragraph(str(n), center_small) for n in bottom_row])
-            # bottom images
-            img_cells = []
-            for n in bottom_row:
-                props = teeth_dict.get(n) or "normal"
-                pil = get_tooth_image(n, props, height=tooth_img_height)
-                buf = io.BytesIO()
-                pil.save(buf, format="PNG")
-                buf.seek(0)
-                img_cells.append(Image(buf, width=0.2*inch, height=0.2*inch))
-            rows.append(img_cells)
-            return Table(rows, colWidths=[0.2*inch]*len(top_row), hAlign="CENTER")
-
-        manual_table = full_lineup_table(manual_teeth)
-        ai_table     = full_lineup_table(ai_teeth)
-
-        story.append(Table(
-            [[manual_table, ai_table]],
-            colWidths=[3.75*inch, 3.75*inch],
-            hAlign="CENTER"
-        ))
-        story.append(Spacer(1, 12))
-        story.append(HRFlowable(width="100%", thickness=1))
-        story.append(Spacer(1, 6))
-
-        # --- Differences (if any) ---
-        def norm(x): return (x or "normal").lower()
-        diffs = [
-            n for n in (top_row + bottom_row)
-            if norm(manual_teeth.get(n)) != norm(ai_teeth.get(n))
-        ]
-
-        if diffs:
-            story.append(Paragraph("Differences", styles["Heading2"]))
-            diff_rows = []
-            for n in diffs:
-                mn_p = manual_teeth.get(n) or "normal"
-                ai_p = ai_teeth.get(n)     or "normal"
-                pil_mn = get_tooth_image(n, mn_p, height=tooth_img_height)
-                buf_mn = io.BytesIO()
-                pil_mn.save(buf_mn, format="PNG")
-                buf_mn.seek(0)
-                pil_ai = get_tooth_image(n, ai_p, height=tooth_img_height)
-                buf_ai = io.BytesIO()
-                pil_ai.save(buf_ai, format="PNG")
-                buf_ai.seek(0)
-                diff_rows.append([
-                    Paragraph(str(n), center_small),
-                    Image(buf_mn, width=0.2*inch, height=0.2*inch),
-                    Image(buf_ai, width=0.2*inch, height=0.2*inch),
-                ])
-            story.append(Table(
-                diff_rows,
-                colWidths=[0.3*inch, 0.5*inch, 0.5*inch],
-                hAlign="LEFT"
-            ))
-            story.append(Spacer(1, 12))
-
-        # --- Score ---
-        story.append(Paragraph(f"Score: {score}%", styles["Heading2"]))
-
-        # build PDF
-        doc.build(story)
-        buf = buffer.getvalue()
-        buffer.close()
-        return buf
-
-
-    # ─── Streamlit app ───
-
-    patient_id   = "12345"
-    scan_date    = "2025-05-16"
-    age          = "45"
-    gender       = "F"
-    pano1_path   = "image/image.jpeg"
-    pano2_path   = "image/image_ai.jpeg"
-
-    manual_teeth = st.session_state.manual_teeth
-    ai_teeth     = st.session_state.ai_teeth
+# external function
+def pdf_button():
+    manual_teeth = getattr(st.session_state, 'manual_teeth', {})
+    ai_teeth     = getattr(st.session_state, 'ai_teeth', {})
 
     top_row    = list(reversed(range(11,19))) + list(range(21,29))
-    bottom_row = list(reversed(range(31,39))) + list(range(41,49))
-    score      = 97
+    bottom_row = list(reversed(range(41,49))) + list(range(31,39))
 
     pdf_bytes = create_pdf(
-        patient_id, scan_date, age, gender,
-        pano1_path, pano2_path,
-        manual_teeth, ai_teeth,
-        top_row, bottom_row,
-        score
+        patient_id="12345",
+        scan_date="2025-05-16",
+        age="45",
+        gender="F",
+        pano1_path="image/image.jpeg",
+        pano2_path="image/image_ai.jpeg",
+        manual_teeth=manual_teeth,
+        ai_teeth=ai_teeth,
+        top_row=top_row,
+        bottom_row=bottom_row,
     )
 
     st.download_button(
