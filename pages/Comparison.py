@@ -85,7 +85,7 @@ with st.container(key="container"):
     load_teeth(manual_teeth)
 
     st.markdown("Differences bottom Teeth")
-    bottom_row = list(reversed(range(31, 39))) + list(range(41, 49)) 
+    bottom_row = list(reversed(range(41, 49))) + list(range(31,39))
     cols2 = st.columns(16)
     for i, tooth_num in enumerate(bottom_row):
         if tooth_num in differences:
