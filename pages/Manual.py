@@ -1,12 +1,9 @@
 import streamlit as st
 from st_pages import Page, add_page_title
-from teeth_renderer import render_teeth
 
-from pages.pdf import pdf_button
-from pages.teeth_renderer import render_teeth
+from teeth_renderer import render_teeth
 from sidebar import load_sidebar
 from teeth import load_teeth
-from AIOutput.teethSet import teeth
 import os
 
 st.set_page_config(page_title="AI vs. Human analysis: A smart comparison tool",
@@ -14,10 +11,10 @@ st.set_page_config(page_title="AI vs. Human analysis: A smart comparison tool",
 
 load_sidebar()
 
-st.title("Welcome to the AI page!")
+st.title("Welcome to the manual page!")
 
-image_path = os.path.join("AIOutput", "image.jpg")
-# Check if the image exists
+image_path = os.path.join("image", "image.jpeg")
+
 if os.path.exists(image_path):
     st.markdown("""
     <style>
@@ -29,8 +26,9 @@ if os.path.exists(image_path):
     """, unsafe_allow_html=True)
     with st.container(key="photo-container"):
         st.image(image_path,  use_container_width=True)
-    ai_teeth = render_teeth("ai")
-    st.session_state.ai_teeth = ai_teeth
+    
+    manual_teeth = render_teeth("manual")
+    st.session_state.manual_teeth = manual_teeth
 else:
     st.warning("No image has been uploaded yet.")
 
@@ -39,12 +37,10 @@ else:
 if "go_to_next_page" not in st.session_state:
     st.session_state.go_to_next_page = False
 
-print(st.session_state.manual_teeth)
-print(st.session_state.ai_teeth)
-pdf_button()
 # Define the callback
 def go_to_next():
     st.session_state.go_to_next_page = True
+
 
 st.markdown("""
     <style>
@@ -56,7 +52,6 @@ st.markdown("""
     """, unsafe_allow_html=True)
 with st.container(key="next-container"):
     col1, col2 = st.columns([8, 1])
-
     with col2:
     # Show the button
         st.button("Next Page", on_click=go_to_next)
@@ -64,4 +59,4 @@ with st.container(key="next-container"):
 # Perform the page switch "outside" the callback
 if st.session_state.go_to_next_page:
     st.session_state.go_to_next_page = False
-    st.switch_page("pages/Comparison.py")
+    st.switch_page("pages/AI.py")

@@ -1,11 +1,13 @@
 import streamlit as st
 import re
 from streamlit_cookies_controller import CookieController
+from datetime import date
+import regex
 
 def load_sidebar():
     controller = CookieController()
     st.sidebar.title("Dental Chart")
-    name_pattern = re.compile(r"^[a-zA-Z'-]*$")
+    name_pattern = regex.compile(r"^[\p{L}'-]*$", regex.UNICODE)
 
     # --- Profile Number ---
     stored_profile_number = controller.get("ProfileNumber")
@@ -64,20 +66,28 @@ def load_sidebar():
     if gender != stored_gender:
         controller.set("Gender", gender)
 
-    # --- Age ---
-    stored_age = controller.get("Age")
-    try:
-        stored_age = int(stored_age)
-        if stored_age < 0:
-            stored_age = 0
-    except (ValueError, TypeError):
-        stored_age = 30
+    # -- birthdate --
+    stored_birthdate_str = controller.get("birthdate")
+    stored_birthdate = date.fromisoformat(stored_birthdate_str) if stored_birthdate_str else None
+    if "birthdate" not in st.session_state or not st.session_state.birthdate:
+        st.session_state.birthdate = stored_birthdate
+    birthdate = st.sidebar.date_input("Select birthdate", value=st.session_state.birthdate, key="birthdate",
+                                      min_value=date(1900, 1, 1), max_value='today')
+    if birthdate != stored_birthdate:
+        if birthdate:
+            controller.set("birthdate", birthdate.isoformat())
 
-    if "age" not in st.session_state or not isinstance(st.session_state.age, int):
-        st.session_state.age = stored_age
+    # -- Consultation date --
+    stored_consultation_date_str = controller.get("consultation date")
+    stored_consultation_date = date.fromisoformat(stored_consultation_date_str) if stored_consultation_date_str else None
+    if "consultation date" not in st.session_state  or not st.session_state.consultation_date:
+        st.session_state.consultation_date = stored_consultation_date
 
-    age = st.sidebar.number_input("Select age", step=1, min_value=0,
-                                  value=st.session_state.age, key="age")
+    consultation_date = st.sidebar.date_input("Select consultation date", value=st.session_state.consultation_date, key="consultation date",min_value=None, max_value='today')
+    if consultation_date != stored_consultation_date:
+        if consultation_date:
+            controller.set("consultation date", consultation_date.isoformat()) 
 
-    if age != stored_age:
-        controller.set("Age", age)
+    if consultation_date!=None and birthdate!=None:
+        years = consultation_date.year - birthdate.year - ((consultation_date.month, consultation_date.day) < (birthdate.month, birthdate.day))
+        st.sidebar.markdown(f"Age: {years}")
