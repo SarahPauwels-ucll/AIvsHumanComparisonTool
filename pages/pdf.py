@@ -252,21 +252,20 @@ def pdf_button():
     # Consultation date
     stored_scandate = st.session_state.get("consultation_date")
     if stored_scandate:
-        scandate = date.fromisoformat(stored_scandate)
-        scandate_str = scandate.strftime("%Y-%m-%d") if scandate else ""
+        scandate_str = stored_scandate.strftime("%Y-%m-%d") if stored_scandate else ""
     else:
         scandate_str = "Unknown"
 
     # Age
     stored_birthdate = st.session_state.get("birthdate")
     if stored_birthdate:
-        birthdate = date.fromisoformat(stored_birthdate)
+        birthdate = stored_birthdate
     else:
         birthdate = None
 
     if stored_birthdate and stored_scandate:
-        age = scandate.year - birthdate.year
-        if (scandate.month, scandate.day) < (birthdate.month, birthdate.day):
+        age = stored_scandate.year - birthdate.year
+        if (stored_scandate.month, stored_scandate.day) < (birthdate.month, birthdate.day):
             age -= 1
         age = str(age)
     else:
