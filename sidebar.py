@@ -70,9 +70,11 @@ def load_sidebar():
     stored_birthdate = date.fromisoformat(stored_birthdate_str) if stored_birthdate_str else None
     if "birthdate" not in st.session_state or not st.session_state.birthdate:
         st.session_state.birthdate = stored_birthdate
-
-    if "age" not in st.session_state or not isinstance(st.session_state.age, int):
-        st.session_state.age = stored_age
+    birthdate = st.sidebar.date_input("Select birthdate", value=st.session_state.birthdate, key="birthdate",
+                                      min_value=date(1900, 1, 1), max_value='today')
+    if birthdate != stored_birthdate:
+        if birthdate:
+            controller.set("birthdate", birthdate.isoformat())
 
     # -- Consultation date --
     stored_consultation_date_str = controller.get("consultation date")
