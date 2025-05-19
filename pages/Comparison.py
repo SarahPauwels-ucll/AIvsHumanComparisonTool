@@ -69,6 +69,9 @@ st.markdown("""
     max-width: 900px;
     margin: 0 auto;
 }
+.st-key-container div[data-testid="stElementToolbarButtonContainer"] {
+        display: none;
+}
 </style>
 """, unsafe_allow_html=True)
 with st.container(key="container"):
