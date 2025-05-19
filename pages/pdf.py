@@ -39,7 +39,7 @@ def make_scaled_image(source, *, max_w: float, max_h: float) -> Image:
 def tooth_image(number: int, status: str, *, height_pt: float = TOOTH_H_PT) -> Image:
     # Generate a PIL image with higher pixel height for crispness
     height_px = int(height_pt * RASTER_SCALE)
-    pil = get_tooth_image(number, status, height=height_px)
+    pil = get_tooth_image(number, status, height=height_px, icon_variant="white")
 
     buf = io.BytesIO()
     pil.save(buf, format="PNG")
@@ -138,7 +138,8 @@ def create_pdf(
             ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('BACKGROUND', (0, 1), (-1, 2), colors.black),
+            # keep in case teeth should have black background
+            #('BACKGROUND', (0, 1), (-1, 2), colors.black),
         ]))
         return tbl
 
