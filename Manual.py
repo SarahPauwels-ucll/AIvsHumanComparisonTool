@@ -12,16 +12,22 @@ st.set_page_config(page_title="AI vs. Human analysis: A smart comparison tool",
 load_sidebar()
 
 st.title("Welcome to the manual page!")
-st.write("Here we can manualy alter the chart.")
-
 
 image_path = os.path.join("image", "image.jpeg")
 
-# Check if the image exists
 if os.path.exists(image_path):
-    st.image(image_path, caption="Uploaded Dental Image",  use_container_width=True)
+    st.markdown("""
+    <style>
+    .st-key-photo-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    with st.container(key="photo-container"):
+        st.image(image_path,  use_container_width=True)
+    
     manual_teeth = render_teeth("manual")
     st.session_state.manual_teeth = manual_teeth
 else:
     st.warning("No image has been uploaded yet.")
-

@@ -6,13 +6,14 @@ from AIOutput.teethSet import teeth as AIteeth
 import os
 from teeth import get_tooth_image
    
-st.set_page_config(page_title="comparison",
-                   layout="wide")
+st.set_page_config(page_title="comparison", layout="wide")
+
 try:
     manual_teeth =st.session_state.manual_teeth
 except:
     manual_teeth=manualteeth
     print("no manual teeth found")
+
 try:
     AI_teeth =st.session_state.ai_teeth
 except:
@@ -83,8 +84,8 @@ with st.container(key="container"):
 
     load_teeth(manual_teeth)
 
-    st.subheader("Differences bottom Teeth")
-    bottom_row = list(reversed(range(31, 39))) + list(range(41, 49)) 
+    st.markdown("Differences bottom Teeth")
+    bottom_row = list(reversed(range(41, 49))) + list(range(31,39))
     cols2 = st.columns(16)
     for i, tooth_num in enumerate(bottom_row):
         if tooth_num in differences:

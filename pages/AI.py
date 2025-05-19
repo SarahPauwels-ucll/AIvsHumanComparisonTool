@@ -26,11 +26,7 @@ if os.path.exists(image_path):
     """, unsafe_allow_html=True)
     with st.container(key="photo-container"):
         st.image(image_path,  use_container_width=True)
+    ai_teeth = render_teeth("ai")
+    st.session_state.ai_teeth = ai_teeth
 else:
     st.warning("No image has been uploaded yet.")
-
-ai_teeth = render_teeth("ai")
-st.session_state.ai_teeth = ai_teeth
-
-print(st.session_state.manual_teeth)
-print(st.session_state.ai_teeth)
