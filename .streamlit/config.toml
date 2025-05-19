@@ -24,3 +24,7 @@ showWarningOnDirectExecution = true
 [client]
 # "none"
 showErrorDetails = "full"
+
+
+#removes navigation
+showSidebarNavigation = false
