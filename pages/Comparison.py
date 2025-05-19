@@ -8,6 +8,16 @@ from teeth import get_tooth_image
    
 st.set_page_config(page_title="comparison",
                    layout="wide")
+try:
+    manual_teeth =st.session_state.manual_teeth
+except:
+    manual_teeth=manualteeth
+    print("no manual teeth found")
+try:
+    AI_teeth =st.session_state.ai_teeth
+except:
+    AI_teeth=AIteeth
+    print("no ai teeth found")
 
 def normalize(value):
     if value is None:
@@ -50,7 +60,7 @@ if os.path.exists(ai_image_path) and os.path.exists(image_path) :
 else:
     st.warning("No image has been uploaded yet.")
 
-differences=compair(manualteeth, AIteeth)
+differences=compair(manual_teeth, AI_teeth)
 
 st.markdown("""
 <style>
@@ -71,8 +81,7 @@ with st.container(key="container"):
     
     st.markdown("Your input") 
 
-    manual_teeth =st.session_state.manual_teeth      
-    load_teeth(manualteeth)
+    load_teeth(manual_teeth)
 
     st.subheader("Differences bottom Teeth")
     bottom_row = list(reversed(range(31, 39))) + list(range(41, 49)) 
