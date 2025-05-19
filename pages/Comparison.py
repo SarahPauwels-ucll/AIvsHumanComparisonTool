@@ -1,6 +1,6 @@
 import streamlit as st
 
-from pages.pdf import pdf_button
+from pdf import pdf_button
 from sidebar import load_sidebar
 from teeth import load_teeth
 from input.teethSet import teeth as manualteeth

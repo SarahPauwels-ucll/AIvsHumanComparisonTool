@@ -1,11 +1,7 @@
 import streamlit as st
-from st_pages import Page, add_page_title
 from teeth_renderer import render_teeth
 
-from pages.pdf import pdf_button
 from sidebar import load_sidebar
-from teeth import load_teeth
-from AIOutput.teethSet import teeth
 import os
 
 st.set_page_config(page_title="AI vs. Human analysis: A smart comparison tool",
