@@ -34,17 +34,26 @@ def upload_files():
 load_sidebar()
 
 st.header("Upload Dental image")
-st.error("Please ensure the image is an 'jpeg'")
-with st.container(border=True):
-    files = st.file_uploader("Image uploader", accept_multiple_files=True, key="uploaded_files")
+st.markdown("""
+    <style>
+    .st-key-uploader-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+with st.container(key="uploader-container"):
+    st.error("Please ensure the image is an 'jpeg'")
+    with st.container(border=True):
+        files = st.file_uploader("Image uploader", accept_multiple_files=True, key="uploaded_files")
 
-    st.button("Upload image", on_click=upload_files)
+        st.button("Upload image", on_click=upload_files)
 
-for message in st.session_state.get("upload_errors", []):
-    if "successfully" in message:
-        st.success(message)
-    else:
-        st.error(message)
+    for message in st.session_state.get("upload_errors", []):
+        if "successfully" in message:
+            st.success(message)
+        else:
+            st.error(message)
 
 
 
@@ -57,8 +66,20 @@ if "go_to_next_page" not in st.session_state:
 def go_to_next():
     st.session_state.go_to_next_page = True
 
-# Show the button
-st.button("Next Page", on_click=go_to_next)
+st.markdown("""
+    <style>
+    .st-key-next-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+with st.container(key="next-container"):
+    col1, col2 = st.columns([8, 1])
+
+    with col2:
+    # Show the button
+        st.button("Next Page", on_click=go_to_next)
 
 # Perform the page switch "outside" the callback
 if st.session_state.go_to_next_page:
