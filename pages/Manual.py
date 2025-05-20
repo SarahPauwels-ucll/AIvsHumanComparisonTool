@@ -1,6 +1,7 @@
 import streamlit as st
 from st_pages import Page, add_page_title
 
+from pdf_profesionnal import pdf_button_professional
 from teeth_renderer import render_teeth
 from sidebar import load_sidebar
 from teeth import load_teeth
@@ -60,3 +61,5 @@ with st.container(key="next-container"):
 if st.session_state.go_to_next_page:
     st.session_state.go_to_next_page = False
     st.switch_page("pages/AI.py")
+
+pdf_button_professional()
