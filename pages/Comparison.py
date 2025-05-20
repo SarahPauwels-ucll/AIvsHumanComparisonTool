@@ -1,4 +1,6 @@
 import streamlit as st
+
+from pdf import pdf_button
 from sidebar import load_sidebar
 from teeth import load_teeth
 from input.teethSet import teeth as manualteeth
@@ -69,6 +71,9 @@ st.markdown("""
     max-width: 900px;
     margin: 0 auto;
 }
+.st-key-container div[data-testid="stElementToolbarButtonContainer"] {
+        display: none;
+}
 </style>
 """, unsafe_allow_html=True)
 with st.container(key="container"):
@@ -91,3 +96,16 @@ with st.container(key="container"):
         if tooth_num in differences:
             with cols2[i]:
                 st.image(get_tooth_image(tooth_num, differences[tooth_num]))
+st.markdown("""
+    <style>
+    .st-key-pdf-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+with st.container(key="pdf-container"):
+    col1, col2 = st.columns([16, 5])
+
+    with col2:
+        pdf_button()

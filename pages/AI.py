@@ -1,13 +1,18 @@
 import streamlit as st
-from st_pages import Page, add_page_title
 from teeth_renderer import render_teeth
+from input.teethSet import teeth as manualteeth
+
 from sidebar import load_sidebar
-from teeth import load_teeth
-from AIOutput.teethSet import teeth
 import os
 
 st.set_page_config(page_title="AI vs. Human analysis: A smart comparison tool",
                    layout="wide")
+
+try:
+    manual_teeth =st.session_state.manual_teeth
+except:
+    st.session_state.manual_teeth=manualteeth
+    print("no manual teeth found")
 
 load_sidebar()
 
@@ -39,7 +44,7 @@ if "go_to_next_page" not in st.session_state:
 # Define the callback
 def go_to_next():
     st.session_state.go_to_next_page = True
- 
+
 st.markdown("""
     <style>
     .st-key-next-container {
