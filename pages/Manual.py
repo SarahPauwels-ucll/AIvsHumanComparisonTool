@@ -1,6 +1,7 @@
 import streamlit as st
 from st_pages import Page, add_page_title
 
+from pdf_profesionnal import pdf_button_professional
 from teeth_renderer import render_teeth
 from sidebar import load_sidebar
 from teeth import load_teeth
@@ -63,3 +64,4 @@ with st.container(key="next-container"):
     # Show the button
         st.button("Next Page", on_click=go_to_next)
 
+pdf_button_professional()
