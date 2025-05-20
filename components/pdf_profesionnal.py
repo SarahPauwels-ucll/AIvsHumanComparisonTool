@@ -321,7 +321,7 @@ def pdf_button_professional():
     if stored_birthdate:
         birthdate = stored_birthdate
     else:
-        birthdate = None
+        birthdate = "Unknown"
 
     if stored_birthdate and stored_scandate:
         age = stored_scandate.year - birthdate.year
