@@ -215,12 +215,12 @@ def create_pdf_professional(
     top_row_present_teeth_left = [
         str(key)
         for key, value in manual_teeth.items()
-        if top_left_row_start <= key <= top_left_row_end and value is None or "normal" in str(value)
+        if top_left_row_start <= key <= top_left_row_end and (value is None or "normal" in str(value))
     ]
     top_row_present_teeth_right = [
         str(key)
         for key, value in manual_teeth.items()
-        if top_right_row_start <= key <= top_right_row_end and value is None or "normal" in str(value)
+        if top_right_row_start <= key <= top_right_row_end and (value is None or "normal" in str(value))
     ]
 
     top_row_present_teeth_left.reverse()
@@ -241,12 +241,12 @@ def create_pdf_professional(
     bottom_row_present_teeth_right = [
         str(key)
         for key, value in manual_teeth.items()
-        if bottom_right_row_start <= key <= bottom_right_row_end and value is None or "normal" in str(value)
+        if bottom_right_row_start <= key <= bottom_right_row_end and (value is None or "normal" in str(value))
     ]
     bottom_row_present_teeth_left = [
         str(key)
         for key, value in manual_teeth.items()
-        if bottom_left_row_start <= key <= bottom_left_row_end and value is None or "normal" in str(value)
+        if bottom_left_row_start <= key <= bottom_left_row_end and (value is None or "normal" in str(value))
     ]
 
     bottom_row_present_teeth_left.reverse()
@@ -259,6 +259,7 @@ def create_pdf_professional(
     ]
 
     present_teeth_count = len(top_row_present_teeth) + len(bottom_row_present_teeth)
+    print(present_teeth_count)
     dental_filling_teeth = [str(key) for key, value in manual_teeth.items() if "df" in str(value)]
     root_canal_filling_teeth = [str(key) for key, value in manual_teeth.items() if "rcf" in str(value)]
     crown_teeth = [str(key) for key, value in manual_teeth.items() if "crown" in str(value)]
