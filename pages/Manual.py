@@ -1,13 +1,26 @@
 import streamlit as st
 from st_pages import Page, add_page_title
 
+from pdf_profesionnal import pdf_button_professional
 from teeth_renderer import render_teeth
 from sidebar import load_sidebar
 from teeth import load_teeth
 import os
 
+#switch page
+# Define a session flag to trigger the page switch
+if "go_to_next_page" not in st.session_state:
+    st.session_state.go_to_next_page = False
+
+# Perform the page switch "outside" the callback
+if st.session_state.go_to_next_page:
+    st.session_state.go_to_next_page = False
+    st.switch_page("pages/AI.py")
+
 st.set_page_config(page_title="AI vs. Human analysis: A smart comparison tool",
                    layout="wide")
+
+
 
 load_sidebar()
 
@@ -32,11 +45,6 @@ if os.path.exists(image_path):
 else:
     st.warning("No image has been uploaded yet.")
 
-#switch page
-# Define a session flag to trigger the page switch
-if "go_to_next_page" not in st.session_state:
-    st.session_state.go_to_next_page = False
-
 # Define the callback
 def go_to_next():
     st.session_state.go_to_next_page = True
@@ -56,7 +64,4 @@ with st.container(key="next-container"):
     # Show the button
         st.button("Next Page", on_click=go_to_next)
 
-# Perform the page switch "outside" the callback
-if st.session_state.go_to_next_page:
-    st.session_state.go_to_next_page = False
-    st.switch_page("pages/AI.py")
+pdf_button_professional()

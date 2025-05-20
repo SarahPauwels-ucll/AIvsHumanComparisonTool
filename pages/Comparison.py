@@ -1,5 +1,5 @@
 import streamlit as st
-
+from streamlit_cookies_controller import CookieController
 from pdf import pdf_button
 from sidebar import load_sidebar
 from teeth import load_teeth
@@ -7,8 +7,19 @@ from input.teethSet import teeth as manualteeth
 from AIOutput.teethSet import teeth as AIteeth
 import os
 from teeth import get_tooth_image
-   
+
+if "go_to_next_page" not in st.session_state:
+    st.session_state.go_to_next_page = False
+
+# Perform the page switch "outside" the callback
+if st.session_state.go_to_next_page:
+    st.session_state.go_to_next_page = False
+    st.switch_page("app.py")
+
 st.set_page_config(page_title="comparison", layout="wide")
+
+# Define a session flag to trigger the page switch
+
 
 try:
     manual_teeth =st.session_state.manual_teeth
@@ -109,3 +120,40 @@ with st.container(key="pdf-container"):
 
     with col2:
         pdf_button()
+
+#switch page
+# Define the callback
+def restart():
+    controller = CookieController()
+    keys_to_clear = [
+        "ProfileNumber",
+        "LastName",
+        "FirstName",
+        "birthdate",
+        "consultation date",
+        "Gender"
+    ]
+    for key in st.session_state.keys():
+        print(key)
+        del st.session_state[key]
+    for key in keys_to_clear:  
+        controller.set(key, None)
+    st.cache_data.clear()
+    st.session_state.go_to_next_page = True
+
+st.markdown("""
+    <style>
+    .st-key-next-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+with st.container(key="next-container"):
+    col1, col2 = st.columns([8, 1])
+
+    with col2:
+    # Show the button
+        st.button("Restart", on_click=restart)
+
+

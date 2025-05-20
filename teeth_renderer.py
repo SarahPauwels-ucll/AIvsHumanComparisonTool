@@ -3,13 +3,14 @@ import streamlit as st
 from teeth import load_teeth
 from input.teethSet import teeth as teethInput
 from AIOutput.teethSet import teeth as teethAI
+import copy
 
 def render_teeth(page: str):
     if not page:
         raise Exception("page can't be empty")
     @st.cache_data()
     def get_teeth_data(teeth) -> dict[int, str | None]:
-        teeth_dict = teeth
+        teeth_dict = copy.deepcopy(teeth)
         return teeth_dict
 
     def check_checkbox_status(checkbox_name: str, tooth_number: int) -> bool:
