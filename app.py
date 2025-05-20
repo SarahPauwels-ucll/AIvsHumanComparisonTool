@@ -2,7 +2,12 @@ from st_pages import Page, add_page_title
 import streamlit as st
 from sidebar import load_sidebar
 import os
-   
+
+# Perform the page switch "outside" the callback
+if st.session_state.go_to_next_page:
+    st.session_state.go_to_next_page = False
+    st.switch_page("pages/Manual.py")
+    
 st.set_page_config(page_title="Upload image",
                    layout="wide")
 
@@ -81,8 +86,5 @@ with st.container(key="next-container"):
     # Show the button
         st.button("Next Page", on_click=go_to_next)
 
-# Perform the page switch "outside" the callback
-if st.session_state.go_to_next_page:
-    st.session_state.go_to_next_page = False
-    st.switch_page("pages/Manual.py")
+
    
