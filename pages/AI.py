@@ -8,6 +8,15 @@ import os
 st.set_page_config(page_title="AI vs. Human analysis: A smart comparison tool",
                    layout="wide")
 
+# Define a session flag to trigger the page switch
+if "go_to_next_page" not in st.session_state:
+    st.session_state.go_to_next_page = False
+
+# Perform the page switch "outside" the callback
+if st.session_state.go_to_next_page:
+    st.session_state.go_to_next_page = False
+    st.switch_page("pages/Comparison.py")
+
 try:
     manual_teeth =st.session_state.manual_teeth
 except:
@@ -37,10 +46,6 @@ else:
     st.warning("No image has been uploaded yet.")
 
 #switch page
-# Define a session flag to trigger the page switch
-if "go_to_next_page" not in st.session_state:
-    st.session_state.go_to_next_page = False
-
 # Define the callback
 def go_to_next():
     st.session_state.go_to_next_page = True
@@ -60,7 +65,3 @@ with st.container(key="next-container"):
     # Show the button
         st.button("Next Page", on_click=go_to_next)
 
-# Perform the page switch "outside" the callback
-if st.session_state.go_to_next_page:
-    st.session_state.go_to_next_page = False
-    st.switch_page("pages/Comparison.py")
