@@ -1,5 +1,5 @@
 import streamlit as st
-
+from streamlit_cookies_controller import CookieController
 from pdf import pdf_button
 from sidebar import load_sidebar
 from teeth import load_teeth
@@ -117,6 +117,22 @@ if "go_to_next_page" not in st.session_state:
 
 # Define the callback
 def restart():
+    controller = CookieController()
+    keys_to_clear = [
+        "ProfileNumber",
+        "LastName",
+        "FirstName",
+        "birthdate",
+        "consultation date",
+        "Gender"
+        "teeth_dict_ai",
+        "teeth_dict_manual"
+    ]
+    for key in st.session_state.keys():
+        del st.session_state[key]
+    for key in keys_to_clear:  
+        controller.set(key, None)
+    st.cache_data.clear()
     st.session_state.go_to_next_page = True
 
 st.markdown("""
