@@ -7,10 +7,7 @@ from input.teethSet import teeth as manualteeth
 from AIOutput.teethSet import teeth as AIteeth
 import os
 from teeth import get_tooth_image
-   
-st.set_page_config(page_title="comparison", layout="wide")
 
-# Define a session flag to trigger the page switch
 if "go_to_next_page" not in st.session_state:
     st.session_state.go_to_next_page = False
 
@@ -18,6 +15,11 @@ if "go_to_next_page" not in st.session_state:
 if st.session_state.go_to_next_page:
     st.session_state.go_to_next_page = False
     st.switch_page("app.py")
+
+st.set_page_config(page_title="comparison", layout="wide")
+
+# Define a session flag to trigger the page switch
+
 
 try:
     manual_teeth =st.session_state.manual_teeth

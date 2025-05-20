@@ -5,9 +5,6 @@ from input.teethSet import teeth as manualteeth
 from sidebar import load_sidebar
 import os
 
-st.set_page_config(page_title="AI vs. Human analysis: A smart comparison tool",
-                   layout="wide")
-
 # Define a session flag to trigger the page switch
 if "go_to_next_page" not in st.session_state:
     st.session_state.go_to_next_page = False
@@ -16,6 +13,11 @@ if "go_to_next_page" not in st.session_state:
 if st.session_state.go_to_next_page:
     st.session_state.go_to_next_page = False
     st.switch_page("pages/Comparison.py")
+
+st.set_page_config(page_title="AI vs. Human analysis: A smart comparison tool",
+                   layout="wide")
+
+
 
 try:
     manual_teeth =st.session_state.manual_teeth
