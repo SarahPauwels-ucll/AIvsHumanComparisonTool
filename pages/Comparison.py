@@ -116,7 +116,7 @@ if "go_to_next_page" not in st.session_state:
     st.session_state.go_to_next_page = False
 
 # Define the callback
-def go_to_next():
+def restart():
     st.session_state.go_to_next_page = True
 
 st.markdown("""
@@ -132,7 +132,7 @@ with st.container(key="next-container"):
 
     with col2:
     # Show the button
-        st.button("restart", on_click=go_to_next)
+        st.button("restart", on_click=restart)
 
 # Perform the page switch "outside" the callback
 if st.session_state.go_to_next_page:

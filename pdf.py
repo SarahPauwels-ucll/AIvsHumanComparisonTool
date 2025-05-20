@@ -250,7 +250,7 @@ def pdf_button():
     patient_id = stored_id if stored_id else "Unknown"
 
     # Consultation date
-    stored_scandate = st.session_state.get("consultation_date")
+    stored_scandate = st.session_state.get("consultation date")
     if stored_scandate:
         scandate_str = stored_scandate.strftime("%Y-%m-%d") if stored_scandate else ""
     else:
