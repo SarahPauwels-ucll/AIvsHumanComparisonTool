@@ -1,10 +1,10 @@
 import streamlit as st
 from st_pages import Page, add_page_title
 
-from pdf_profesionnal import pdf_button_professional
-from teeth_renderer import render_teeth
-from sidebar import load_sidebar
-from teeth import load_teeth
+from components.pdf_profesionnal import pdf_button_professional
+from components.teeth_renderer import render_teeth
+from components.sidebar import load_sidebar
+from components.teeth import load_teeth
 import os
 
 #switch page

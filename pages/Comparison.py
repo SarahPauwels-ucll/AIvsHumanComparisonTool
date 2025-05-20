@@ -1,12 +1,12 @@
 import streamlit as st
 from streamlit_cookies_controller import CookieController
-from pdf import pdf_button
-from sidebar import load_sidebar
-from teeth import load_teeth
+from components.pdf import pdf_button
+from components.sidebar import load_sidebar
+from components.teeth import load_teeth
 from input.teethSet import teeth as manualteeth
 from AIOutput.teethSet import teeth as AIteeth
 import os
-from teeth import get_tooth_image
+from components.teeth import get_tooth_image
 
 if "go_to_next_page" not in st.session_state:
     st.session_state.go_to_next_page = False

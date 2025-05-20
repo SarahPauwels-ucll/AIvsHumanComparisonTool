@@ -1,6 +1,6 @@
 import os
 import streamlit as st
-from teeth import load_teeth
+from components.teeth import load_teeth
 from input.teethSet import teeth as teethInput
 from AIOutput.teethSet import teeth as teethAI
 import copy

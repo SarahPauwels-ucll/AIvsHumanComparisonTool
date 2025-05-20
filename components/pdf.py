@@ -11,7 +11,7 @@ from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer,
     Table, HRFlowable, Image, TableStyle
 )
-from teeth import get_tooth_image
+from components.teeth import get_tooth_image
 
 # Constants
 PAGE_W, PAGE_H = letter

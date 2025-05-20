@@ -1,8 +1,8 @@
 import streamlit as st
-from teeth_renderer import render_teeth
+from components.teeth_renderer import render_teeth
 from input.teethSet import teeth as manualteeth
 
-from sidebar import load_sidebar
+from components.sidebar import load_sidebar
 import os
 
 # Define a session flag to trigger the page switch

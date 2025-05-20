@@ -1,6 +1,6 @@
 from st_pages import Page, add_page_title
 import streamlit as st
-from sidebar import load_sidebar
+from components.sidebar import load_sidebar
 import os
 
 # Define a session flag to trigger the page switch
