@@ -3,6 +3,9 @@ import streamlit as st
 from sidebar import load_sidebar
 import os
 
+# Define a session flag to trigger the page switch
+if "go_to_next_page" not in st.session_state:
+    st.session_state.go_to_next_page = False
 # Perform the page switch "outside" the callback
 if st.session_state.go_to_next_page:
     st.session_state.go_to_next_page = False
@@ -63,10 +66,6 @@ with st.container(key="uploader-container"):
 
 
 #switch page
-# Define a session flag to trigger the page switch
-if "go_to_next_page" not in st.session_state:
-    st.session_state.go_to_next_page = False
-
 # Define the callback
 def go_to_next():
     st.session_state.go_to_next_page = True
