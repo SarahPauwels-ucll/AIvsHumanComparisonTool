@@ -10,6 +10,15 @@ from teeth import get_tooth_image
    
 st.set_page_config(page_title="comparison", layout="wide")
 
+# Define a session flag to trigger the page switch
+if "go_to_next_page" not in st.session_state:
+    st.session_state.go_to_next_page = False
+
+# Perform the page switch "outside" the callback
+if st.session_state.go_to_next_page:
+    st.session_state.go_to_next_page = False
+    st.switch_page("app.py")
+
 try:
     manual_teeth =st.session_state.manual_teeth
 except:
@@ -111,10 +120,6 @@ with st.container(key="pdf-container"):
         pdf_button()
 
 #switch page
-# Define a session flag to trigger the page switch
-if "go_to_next_page" not in st.session_state:
-    st.session_state.go_to_next_page = False
-
 # Define the callback
 def restart():
     controller = CookieController()
@@ -150,7 +155,4 @@ with st.container(key="next-container"):
     # Show the button
         st.button("restart", on_click=restart)
 
-# Perform the page switch "outside" the callback
-if st.session_state.go_to_next_page:
-    st.session_state.go_to_next_page = False
-    st.switch_page("app.py")
+

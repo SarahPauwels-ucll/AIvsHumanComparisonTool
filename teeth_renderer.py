@@ -19,6 +19,7 @@ def render_teeth(page: str):
         return len([x for x in false_when_enabled if x in str(teeth[tooth_number])]) > 0
 
     if st.session_state.get(f"teeth_dict_{page}"):
+        print(f"teeth_dict_{page}")
         teeth = st.session_state[f"teeth_dict_{page}"]
     else:
         if page=="ai":
