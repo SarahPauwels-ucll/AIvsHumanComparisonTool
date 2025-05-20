@@ -130,10 +130,9 @@ def restart():
         "birthdate",
         "consultation date",
         "Gender"
-        "teeth_dict_ai",
-        "teeth_dict_manual"
     ]
     for key in st.session_state.keys():
+        print(key)
         del st.session_state[key]
     for key in keys_to_clear:  
         controller.set(key, None)
