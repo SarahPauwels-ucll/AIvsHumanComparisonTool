@@ -1,14 +1,5 @@
 import streamlit as st
 
-# Define a session flag to trigger the page switch
-if "go_to_next_page" not in st.session_state:
-    st.session_state.go_to_next_page = False
-
-# Perform the page switch "outside" the callback
-if st.session_state.go_to_next_page:
-    st.session_state.go_to_next_page = False
-    st.switch_page("pages/Upload_img.py")
-
 USER_CREDENTIALS = {
     "admin": "1234",
     "sarah": "password"
@@ -35,14 +26,14 @@ with st.container(key="login-container"):
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
         login_button = st.form_submit_button("Login")
+        student_button =st.form_submit_button("Login as Student")
 
     if login_button:
         if login(username, password):
             st.session_state["Proffesional"]=True
-            st.session_state.go_to_next_page = True
             st.switch_page("pages/Upload_img.py")
         else:
             st.error("Invalid username or password.")
-
-if st.session_state.get('logged_in'):
-    st.info(f"You are logged in as {st.session_state['username']}.")
+    if student_button:
+        st.session_state["Proffesional"]=False
+        st.switch_page("pages/Upload_img.py")
