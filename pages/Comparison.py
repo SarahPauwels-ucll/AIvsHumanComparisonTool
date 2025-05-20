@@ -154,6 +154,6 @@ with st.container(key="next-container"):
 
     with col2:
     # Show the button
-        st.button("restart", on_click=restart)
+        st.button("Restart", on_click=restart)
 
 
