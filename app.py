@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_cookies_controller import CookieController
 
 USER_CREDENTIALS = {
     "admin": "1234",
@@ -31,6 +32,8 @@ with st.container(key="login-container"):
     if login_button:
         if login(username, password):
             st.session_state["Proffesional"]=True
+            controller = CookieController()
+            controller.set("Proffesional", True)
             st.switch_page("pages/Upload_img.py")
         else:
             st.error("Invalid username or password.")
