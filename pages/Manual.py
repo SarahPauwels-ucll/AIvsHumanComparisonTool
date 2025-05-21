@@ -26,9 +26,8 @@ load_sidebar()
 
 st.title("Welcome to the manual page!")
 
-image_path = os.path.join("image", "image.jpeg")
 
-if os.path.exists(image_path):
+if "manual_image_bytes" in st.session_state:
     st.markdown("""
     <style>
     .st-key-photo-container {
@@ -38,7 +37,7 @@ if os.path.exists(image_path):
     </style>
     """, unsafe_allow_html=True)
     with st.container(key="photo-container"):
-        st.image(image_path,  use_container_width=True)
+        st.image(st.session_state["manual_image_bytes"],  use_container_width=True)
     
     manual_teeth = render_teeth("manual")
     st.session_state.manual_teeth = manual_teeth

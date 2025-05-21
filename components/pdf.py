@@ -28,7 +28,8 @@ DIFF_IMG_W  = 0.45 * inch
 
 # --- helpers ---
 
-def make_scaled_image(source, *, max_w: float, max_h: float) -> Image:
+def make_scaled_image(source_bytes, *, max_w: float, max_h: float) -> Image:
+    source = io.BytesIO(source_bytes)
     img = Image(source)
     iw, ih = float(img.imageWidth), float(img.imageHeight)
     scale = min(max_w/iw, max_h/ih, 1.0)
@@ -62,8 +63,8 @@ def create_pdf(
         scan_date: str,
         age: str,
         gender: str,
-        pano1_path: str,
-        pano2_path: str,
+        pano1_bytes: bytes,
+        pano2_bytes: bytes,
         manual_teeth: dict,
         ai_teeth: dict,
         *,
@@ -121,8 +122,8 @@ def create_pdf(
 
 
     # --- panoramic images ---
-    pano1 = make_scaled_image(pano1_path, max_w=HALF_W, max_h=MAX_PANO_H)
-    pano2 = make_scaled_image(pano2_path, max_w=HALF_W, max_h=MAX_PANO_H)
+    pano1 = make_scaled_image(pano1_bytes, max_w=HALF_W, max_h=MAX_PANO_H)
+    pano2 = make_scaled_image(pano2_bytes, max_w=HALF_W, max_h=MAX_PANO_H)
 
     panostable_data = [[pano1, pano2]]
     panostable = Table(panostable_data,
@@ -280,8 +281,8 @@ def pdf_button():
         scan_date=scandate_str,
         age=age,
         gender=gender,
-        pano1_path="image/image.jpeg",
-        pano2_path="AIOutput/image.jpg",
+        pano1_bytes=st.session_state["manual_image_bytes"],
+        pano2_bytes=st.session_state["AI_image_bytes"],
         manual_teeth=manual_teeth,
         ai_teeth=ai_teeth,
         top_row=top_row,

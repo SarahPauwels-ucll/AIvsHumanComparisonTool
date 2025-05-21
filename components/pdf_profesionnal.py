@@ -11,6 +11,8 @@ from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer,
     Table, HRFlowable, Image, TableStyle
 )
+
+from components.pdf import make_scaled_image, tooth_image
 from components.teeth import get_tooth_image
 
 # Constants
@@ -26,34 +28,6 @@ TOOTH_H_PT = math.floor(0.8 * inch)
 RASTER_SCALE = 3 # factor to scale PIL images to make them less blurry
 DIFF_IMG_W  = 0.45 * inch
 
-# --- helpers ---
-
-def make_scaled_image(source, *, max_w: float, max_h: float) -> Image:
-    img = Image(source)
-    iw, ih = float(img.imageWidth), float(img.imageHeight)
-    scale = min(max_w/iw, max_h/ih, 1.0)
-    img.drawWidth  = iw * scale
-    img.drawHeight = ih * scale
-    return img
-
-
-def tooth_image(number: int, status: str, *, height_pt: float = TOOTH_H_PT) -> Image:
-    # Generate a PIL image with higher pixel height for crispness
-    height_px = int(height_pt * RASTER_SCALE)
-    pil = get_tooth_image(number, status, height=height_px, icon_variant="white")
-
-    buf = io.BytesIO()
-    pil.save(buf, format="PNG")
-    buf.seek(0)
-
-    img = Image(buf)
-    # Keep aspect ratio but display at correct height
-    iw_px, ih_px = float(img.imageWidth), float(img.imageHeight)
-    aspect = iw_px / ih_px or 1.0
-    img.drawHeight = height_pt
-    img.drawWidth  = height_pt * aspect
-    return img
-
 
 # --- main function ---
 
@@ -64,7 +38,7 @@ def create_pdf_professional(
         birth_date: str,
         age: str,
         gender: str,
-        pano_path: str,
+        pano_bytes: bytes,
         manual_teeth: dict,
         *,
         top_row: list[int],
@@ -152,7 +126,7 @@ def create_pdf_professional(
 
 
     # --- panoramic image ---
-    pano1 = make_scaled_image(pano_path, max_w=USABLE_WIDTH, max_h=MAX_PANO_H)
+    pano1 = make_scaled_image(pano_bytes, max_w=USABLE_WIDTH, max_h=MAX_PANO_H)
 
     panostable_data = [[pano1]]
 
@@ -335,6 +309,8 @@ def pdf_button_professional():
     stored_gender = st.session_state.get("gender")
     gender = stored_gender if stored_gender else "Unknown"
 
+    manual_image_bytes = st.session_state["manual_image_bytes"]
+
     pdf_bytes = create_pdf_professional(
         patient_id=patient_id,
         patient_name=patient_name,
@@ -342,7 +318,7 @@ def pdf_button_professional():
         birth_date=birthdate,
         age=age,
         gender=gender,
-        pano_path="image/image.jpeg",
+        pano_bytes=manual_image_bytes,
         manual_teeth=manual_teeth,
         top_row=top_row,
         bottom_row=bottom_row,
