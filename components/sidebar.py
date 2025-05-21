@@ -108,7 +108,8 @@ def load_sidebar():
             "FirstName",
             "birthdate",
             "consultation date",
-            "Gender"
+            "Gender",
+            "Proffesional"
         ]
         for key in st.session_state.keys():
             del st.session_state[key]
@@ -122,4 +123,6 @@ def load_sidebar():
         st.session_state.Proffesional = stored_proffesional
     if st.session_state.Proffesional:
         st.sidebar.button("Log out",on_click=logout)
+    else:
+        st.sidebar.button("Log In",on_click=logout)
 
