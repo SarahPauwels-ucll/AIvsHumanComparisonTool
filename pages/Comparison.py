@@ -108,22 +108,23 @@ with st.container(key="container"):
         if tooth_num in differences:
             with cols2[i]:
                 st.image(get_tooth_image(tooth_num, differences[tooth_num]))
-st.markdown("""
-    <style>
-    .st-key-pdf-container {
-        max-width: 900px;
-        margin: 0 auto;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-with st.container(key="pdf-container"):
-    col1, col2 = st.columns([16, 5])
+if "manual_image_bytes" in st.session_state:
+    st.markdown("""
+        <style>
+        .st-key-pdf-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+    with st.container(key="pdf-container"):
+        col1, col2 = st.columns([16, 5])
 
-    with col2:
-        if st.session_state.Professional:
-            pdf_button_professional()
-        else:
-            pdf_button()
+        with col2:
+            if st.session_state.Professional:
+                pdf_button_professional()
+            else:
+                pdf_button()
 
 #switch page
 # Define the callback
