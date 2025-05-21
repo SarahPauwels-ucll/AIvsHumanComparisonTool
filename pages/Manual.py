@@ -22,7 +22,7 @@ if "go_to_upload_page" not in st.session_state:
 
 if st.session_state.go_to_upload_page:
     st.session_state.go_to_upload_page = False
-    st.switch_page("Upload_img.py")
+    st.switch_page("pages/Upload_img.py")
 
 st.set_page_config(page_title="AI vs. Human analysis: A smart comparison tool",
                    layout="wide")
