@@ -1,10 +1,10 @@
 import streamlit as st
 from st_pages import Page, add_page_title
 
-from pdf_profesionnal import pdf_button_professional
-from teeth_renderer import render_teeth
-from sidebar import load_sidebar
-from teeth import load_teeth
+from components.pdf_profesionnal import pdf_button_professional
+from components.teeth_renderer import render_teeth
+from components.sidebar import load_sidebar
+from components.teeth import load_teeth
 import os
 
 #switch page
@@ -17,6 +17,13 @@ if st.session_state.go_to_next_page:
     st.session_state.go_to_next_page = False
     st.switch_page("pages/AI.py")
 
+if "go_to_upload_page" not in st.session_state:
+    st.session_state.go_to_upload_page = False
+
+if st.session_state.go_to_upload_page:
+    st.session_state.go_to_upload_page = False
+    st.switch_page("pages/Upload_img.py")
+
 st.set_page_config(page_title="AI vs. Human analysis: A smart comparison tool",
                    layout="wide")
 
@@ -26,9 +33,8 @@ load_sidebar()
 
 st.title("Welcome to the manual page!")
 
-image_path = os.path.join("image", "image.jpeg")
 
-if os.path.exists(image_path):
+if "manual_image_bytes" in st.session_state:
     st.markdown("""
     <style>
     .st-key-photo-container {
@@ -38,9 +44,18 @@ if os.path.exists(image_path):
     </style>
     """, unsafe_allow_html=True)
     with st.container(key="photo-container"):
-        st.image(image_path,  use_container_width=True)
-    
-    manual_teeth = render_teeth("manual")
+        st.image(st.session_state["manual_image_bytes"],  use_container_width=True)
+
+    if "submitted_manual_teeth" not in st.session_state:
+        st.session_state.submitted_manual_teeth = False
+
+    if st.session_state.submitted_manual_teeth and not st.session_state.Professional:
+        st.warning("You already submitted your findings!")
+        disable_teeth_buttons = True
+    else:
+        disable_teeth_buttons = False
+
+    manual_teeth = render_teeth("manual", disable_teeth_buttons)
     st.session_state.manual_teeth = manual_teeth
 else:
     st.warning("No image has been uploaded yet.")
@@ -49,19 +64,23 @@ else:
 def go_to_next():
     st.session_state.go_to_next_page = True
 
+def go_to_upload_page():
+    st.session_state.go_to_upload_page = True
 
-st.markdown("""
-    <style>
-    .st-key-next-container {
-        max-width: 900px;
-        margin: 0 auto;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-with st.container(key="next-container"):
-    col1, col2 = st.columns([8, 1])
-    with col2:
-    # Show the button
-        st.button("Next Page", on_click=go_to_next)
+if "manual_image_bytes" in st.session_state:
+    st.markdown("""
+        <style>
+        .st-key-next-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+    with st.container(key="next-container"):
+        col1, col2 = st.columns([8, 1])
+        with col2:
+        # Show the button
+            st.button("Next Page", on_click=go_to_next)
 
-pdf_button_professional()
+else:
+    st.button("Upload image", on_click=go_to_upload_page)

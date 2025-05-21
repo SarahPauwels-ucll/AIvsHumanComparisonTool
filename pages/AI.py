@@ -1,10 +1,12 @@
 import streamlit as st
-from teeth_renderer import render_teeth
+from components.teeth_renderer import render_teeth
 from input.teethSet import teeth as manualteeth
 
-from sidebar import load_sidebar
+from components.sidebar import load_sidebar
 import os
 
+
+st.session_state.submitted_manual_teeth = True
 # Define a session flag to trigger the page switch
 if "go_to_next_page" not in st.session_state:
     st.session_state.go_to_next_page = False
@@ -44,6 +46,10 @@ if os.path.exists(image_path):
         st.image(image_path,  use_container_width=True)
     ai_teeth = render_teeth("ai")
     st.session_state.ai_teeth = ai_teeth
+
+    with open(image_path, "rb") as img_file:
+        st.session_state.AI_image_bytes = img_file.read()
+
 else:
     st.warning("No image has been uploaded yet.")
 
