@@ -14,7 +14,7 @@ if "go_to_next_page" not in st.session_state:
 # Perform the page switch "outside" the callback
 if st.session_state.go_to_next_page:
     st.session_state.go_to_next_page = False
-    st.switch_page("app.py")
+    st.switch_page("Upload_img.py")
 
 st.set_page_config(page_title="comparison", layout="wide")
 
@@ -131,7 +131,7 @@ def restart():
         "FirstName",
         "birthdate",
         "consultation date",
-        "Gender"
+        "Gender",
     ]
     for key in st.session_state.keys():
         print(key)
