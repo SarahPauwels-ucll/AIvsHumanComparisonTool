@@ -124,5 +124,5 @@ def load_sidebar():
     if st.session_state.Proffesional:
         st.sidebar.button("Log out",on_click=logout)
     else:
-        st.sidebar.button("Log In",on_click=logout)
+        st.sidebar.button("Log in as proffesional",on_click=logout)
 
