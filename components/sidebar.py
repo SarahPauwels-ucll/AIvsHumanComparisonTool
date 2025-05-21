@@ -35,10 +35,10 @@ def load_sidebar():
 """, unsafe_allow_html=True)            
     if st.session_state.Professional:
         with st.sidebar.form("menu", border=False):
-            st.markdown("Menu:")
+            st.title("Menu")
             Upload = st.form_submit_button("Upload",use_container_width=True,type="tertiary" )
-            Manual = st.form_submit_button("Manual",use_container_width=True,type="tertiary")
-            AI = st.form_submit_button("AI",use_container_width=True,type="tertiary")
+            Manual = st.form_submit_button("Manual input",use_container_width=True,type="tertiary")
+            AI = st.form_submit_button("AI result",use_container_width=True,type="tertiary")
             Compair = st.form_submit_button("Compair",use_container_width=True,type="tertiary")
 
         if Upload:
