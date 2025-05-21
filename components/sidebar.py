@@ -13,16 +13,33 @@ def load_sidebar():
         st.session_state.go_to_login = False
         st.switch_page("app.py")
     controller = CookieController()
-
-    st.sidebar.title("Dental Chart")
-    name_pattern = regex.compile(r"^[\p{L}'-]*$", regex.UNICODE)
-
+    
     try:
         stored_professional = controller.get("Professional") if controller.get("Professional") is not None else False
         if "Professional" not in st.session_state  or not st.session_state.Professional:
             st.session_state.Professional = stored_professional
     except:
         st.session_state.Professional =False
+    if st.session_state.Professional:
+        with st.sidebar.form("menu"):
+            st.markdown("Menu:")
+            Upload = st.form_submit_button("Upload",use_container_width=True)
+            Manual = st.form_submit_button("Manual",use_container_width=True)
+            AI = st.form_submit_button("AI",use_container_width=True)
+            Compair = st.form_submit_button("Compair",use_container_width=True)
+
+        if Upload:
+            st.switch_page("pages/Upload_img.py")
+        elif Manual:
+            st.switch_page("pages/Manual.py")
+        elif AI:
+            st.switch_page("pages/AI.py")
+        elif Compair:
+            st.switch_page("pages/Comparison.py")
+
+
+    st.sidebar.title("Dental Chart")
+    name_pattern = regex.compile(r"^[\p{L}'-]*$", regex.UNICODE)
 
     # --- Profile Number ---
     stored_profile_number = controller.get("ProfileNumber")
