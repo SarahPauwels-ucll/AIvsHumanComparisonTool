@@ -49,7 +49,7 @@ if "manual_image_bytes" in st.session_state:
     if "submitted_manual_teeth" not in st.session_state:
         st.session_state.submitted_manual_teeth = False
 
-    if st.session_state.submitted_manual_teeth:
+    if st.session_state.submitted_manual_teeth and not st.session_state.Professional:
         st.warning("You already submitted your findings!")
         disable_teeth_buttons = True
     else:
