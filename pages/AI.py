@@ -34,7 +34,7 @@ except:
     st.session_state.manual_teeth=manualteeth
     print("no manual teeth found")
 
-load_sidebar()
+load_sidebar("AI")
 
 st.title("Welcome to the AI page!")
 

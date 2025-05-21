@@ -41,7 +41,7 @@ def upload_files():
 
 
 # layout
-load_sidebar()
+load_sidebar("Upload")
 
 st.header("Upload Dental image")
 st.markdown("""
