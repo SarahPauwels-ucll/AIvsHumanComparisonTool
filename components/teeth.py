@@ -59,13 +59,13 @@ def get_tooth_image(tooth_number, status, height=80, icon_variant="white", as_ba
     w, h = img.size
     new_w = int(w * (height / h))
     img_resized = img.resize((new_w, height))
-
+    resized_width, resized_height = img_resized.size
     if as_base64:
         # Convert to base64 string
         buffer = BytesIO()
         img_resized.save(buffer, format="PNG")
         img_str = base64.b64encode(buffer.getvalue()).decode()
-        return f"data:image/png;base64,{img_str}"
+        return f"data:image/png;base64,{img_str}", (resized_width, resized_height)
     else:
         # Return PIL image for st.image
         return img_resized
@@ -117,20 +117,22 @@ def load_teeth(teeth):
 
     st.markdown('<div class="teeth-container">', unsafe_allow_html=True)
 
-    radius = 100
+    radius = 200
+    center_x, center_y = 200, 200
 
-    # --- TOP TEETH ---
-    top_row = list(reversed(range(11, 19))) + list(range(21, 29))
-    top_angle_step = 180 / (len(top_row) - 1)
+    top_row = list(range(21, 29))
+    top_angle_step = 90 / (len(top_row) - 1)
 
     for i, tooth_num in enumerate(top_row):
-        angle = -90 + i * top_angle_step
-        x = radius * math.cos(math.radians(angle))
-        y = radius * math.sin(math.radians(angle))
-        rotation = angle - 90  # rotate to align tangent to arc
+        img_src, (img_w, img_h) = get_tooth_image(tooth_num, teeth[tooth_num], as_base64=True)
+        angle = 90 - i * top_angle_step
+        x = center_x + radius * math.cos(math.radians(angle)) - img_w / 2
+        y = center_y + radius * math.sin(math.radians(angle)) - img_h / 2
+        rotation = angle - 90
+
         st.markdown(f'''
-            <img class="tooth top" src="{get_tooth_image(tooth_num, teeth[tooth_num], as_base64=True)}"
-                 style="left: {250 + x}px; top: {150 + y}px; transform: rotate({rotation}deg);"/>
+            <img class="tooth top" src="{img_src}"
+                 style="left: {x}px; top: {y}px; transform: rotate({rotation}deg); position: absolute;"/>
         ''', unsafe_allow_html=True)
 
     # # --- BOTTOM TEETH ---
