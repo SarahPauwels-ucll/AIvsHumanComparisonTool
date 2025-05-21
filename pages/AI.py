@@ -16,6 +16,13 @@ if st.session_state.go_to_next_page:
     st.session_state.go_to_next_page = False
     st.switch_page("pages/Comparison.py")
 
+if "go_to_upload_page" not in st.session_state:
+    st.session_state.go_to_upload_page = False
+
+if st.session_state.go_to_upload_page:
+    st.session_state.go_to_upload_page = False
+    st.switch_page("pages/Upload_img.py")
+
 st.set_page_config(page_title="AI vs. Human analysis: A smart comparison tool",
                    layout="wide")
 
@@ -33,7 +40,7 @@ st.title("Welcome to the AI page!")
 
 image_path = os.path.join("AIOutput", "image.jpg")
 # Check if the image exists
-if os.path.exists(image_path):
+if os.path.exists(image_path) and "manual_image_bytes" in st.session_state:
     st.markdown("""
     <style>
     .st-key-photo-container {
@@ -58,18 +65,23 @@ else:
 def go_to_next():
     st.session_state.go_to_next_page = True
 
-st.markdown("""
-    <style>
-    .st-key-next-container {
-        max-width: 900px;
-        margin: 0 auto;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-with st.container(key="next-container"):
-    col1, col2 = st.columns([8, 1])
+def go_to_upload_page():
+    st.session_state.go_to_upload_page = True
 
-    with col2:
-    # Show the button
-        st.button("Next Page", on_click=go_to_next)
+if "manual_image_bytes" in st.session_state:
+    st.markdown("""
+        <style>
+        .st-key-next-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+    with st.container(key="next-container"):
+        col1, col2 = st.columns([8, 1])
 
+        with col2:
+        # Show the button
+            st.button("Next Page", on_click=go_to_next)
+else:
+    st.button("Upload image", on_click=go_to_upload_page)

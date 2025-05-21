@@ -17,6 +17,13 @@ if st.session_state.go_to_next_page:
     st.session_state.go_to_next_page = False
     st.switch_page("pages/Upload_img.py")
 
+if "go_to_upload_page" not in st.session_state:
+    st.session_state.go_to_upload_page = False
+
+if st.session_state.go_to_upload_page:
+    st.session_state.go_to_upload_page = False
+    st.switch_page("pages/Upload_img.py")
+
 st.set_page_config(page_title="comparison", layout="wide")
 
 # Define a session flag to trigger the page switch
@@ -72,42 +79,43 @@ if ai_image_bytes and manual_image_bytes :
             st.image(manual_image_bytes,  use_container_width=True)
         with cols[1]:
             st.image(ai_image_bytes,  use_container_width=True)
+    differences = compair(manual_teeth, AI_teeth)
+
+    st.markdown("""
+    <style>
+    .st-key-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    .st-key-container div[data-testid="stElementToolbarButtonContainer"] {
+            display: none;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    with st.container(key="container"):
+        st.markdown("Differences Top Teeth")
+        top_row = list(reversed(range(11, 19))) + list(range(21, 29))
+        cols = st.columns(16)
+        for i, tooth_num in enumerate(top_row):
+            if tooth_num in differences:
+                with cols[i]:
+                    st.image(get_tooth_image(tooth_num, differences[tooth_num]))
+
+        st.markdown("Your input")
+
+        load_teeth(manual_teeth)
+
+        st.markdown("Differences bottom Teeth")
+        bottom_row = list(reversed(range(41, 49))) + list(range(31, 39))
+        cols2 = st.columns(16)
+        for i, tooth_num in enumerate(bottom_row):
+            if tooth_num in differences:
+                with cols2[i]:
+                    st.image(get_tooth_image(tooth_num, differences[tooth_num]))
 else:
     st.warning("No image has been uploaded yet.")
 
-differences=compair(manual_teeth, AI_teeth)
 
-st.markdown("""
-<style>
-.st-key-container {
-    max-width: 900px;
-    margin: 0 auto;
-}
-.st-key-container div[data-testid="stElementToolbarButtonContainer"] {
-        display: none;
-}
-</style>
-""", unsafe_allow_html=True)
-with st.container(key="container"):
-    st.markdown("Differences Top Teeth")
-    top_row = list(reversed(range(11, 19))) + list(range(21, 29)) 
-    cols = st.columns(16)
-    for i, tooth_num in enumerate(top_row):
-        if tooth_num in differences:
-            with cols[i]:
-                st.image(get_tooth_image(tooth_num, differences[tooth_num]))
-    
-    st.markdown("Your input") 
-
-    load_teeth(manual_teeth)
-
-    st.markdown("Differences bottom Teeth")
-    bottom_row = list(reversed(range(41, 49))) + list(range(31,39))
-    cols2 = st.columns(16)
-    for i, tooth_num in enumerate(bottom_row):
-        if tooth_num in differences:
-            with cols2[i]:
-                st.image(get_tooth_image(tooth_num, differences[tooth_num]))
 if "manual_image_bytes" in st.session_state:
     st.markdown("""
         <style>
@@ -146,19 +154,23 @@ def restart():
     st.cache_data.clear()
     st.session_state.go_to_next_page = True
 
-st.markdown("""
-    <style>
-    .st-key-next-container {
-        max-width: 900px;
-        margin: 0 auto;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-with st.container(key="next-container"):
-    col1, col2 = st.columns([8, 1])
+def go_to_upload_page():
+    st.session_state.go_to_upload_page = True
 
-    with col2:
-    # Show the button
-        st.button("Restart", on_click=restart)
+if "manual_image_bytes" in st.session_state:
+    st.markdown("""
+        <style>
+        .st-key-next-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+    with st.container(key="next-container"):
+        col1, col2 = st.columns([8, 1])
 
-
+        with col2:
+        # Show the button
+            st.button("Restart", on_click=restart)
+else:
+    st.button("Upload image", on_click=go_to_upload_page)
