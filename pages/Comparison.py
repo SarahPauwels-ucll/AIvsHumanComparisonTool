@@ -7,6 +7,7 @@ from input.teethSet import teeth as manualteeth
 from AIOutput.teethSet import teeth as AIteeth
 import os
 from components.teeth import get_tooth_image
+from components.pdf_profesionnal import pdf_button_professional
 
 if "go_to_next_page" not in st.session_state:
     st.session_state.go_to_next_page = False
@@ -119,7 +120,10 @@ with st.container(key="pdf-container"):
     col1, col2 = st.columns([16, 5])
 
     with col2:
-        pdf_button()
+        if st.session_state.Professional:
+            pdf_button_professional()
+        else:
+            pdf_button()
 
 #switch page
 # Define the callback
