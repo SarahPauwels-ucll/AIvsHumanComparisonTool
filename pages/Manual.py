@@ -29,7 +29,7 @@ st.set_page_config(page_title="AI vs. Human analysis: A smart comparison tool",
 
 
 
-load_sidebar()
+load_sidebar("Manual")
 
 st.title("Welcome to the manual page!")
 
