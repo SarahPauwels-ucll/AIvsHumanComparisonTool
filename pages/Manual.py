@@ -22,7 +22,7 @@ if "go_to_upload_page" not in st.session_state:
 
 if st.session_state.go_to_upload_page:
     st.session_state.go_to_upload_page = False
-    st.switch_page("app.py")
+    st.switch_page("Upload_img.py")
 
 st.set_page_config(page_title="AI vs. Human analysis: A smart comparison tool",
                    layout="wide")
@@ -49,13 +49,13 @@ if "manual_image_bytes" in st.session_state:
     if "submitted_manual_teeth" not in st.session_state:
         st.session_state.submitted_manual_teeth = False
 
-    if st.session_state.submitted_manual_teeth:
+    if st.session_state.submitted_manual_teeth and not st.session_state.Professional:
         st.warning("You already submitted your findings!")
         disable_teeth_buttons = True
     else:
         disable_teeth_buttons = False
-    
-    manual_teeth = render_teeth("manual", disable_buttons=disable_teeth_buttons)
+
+    manual_teeth = render_teeth("manual", disable_teeth_buttons)
     st.session_state.manual_teeth = manual_teeth
 else:
     st.warning("No image has been uploaded yet.")
@@ -82,6 +82,5 @@ if "manual_image_bytes" in st.session_state:
         # Show the button
             st.button("Next Page", on_click=go_to_next)
 
-    pdf_button_professional()
 else:
     st.button("Upload image", on_click=go_to_upload_page)
