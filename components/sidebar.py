@@ -109,7 +109,7 @@ def load_sidebar():
             "birthdate",
             "consultation date",
             "Gender",
-            "Proffesional"
+            "Professional"
         ]
         for key in st.session_state.keys():
             del st.session_state[key]
@@ -118,11 +118,11 @@ def load_sidebar():
         st.cache_data.clear()
         st.session_state.go_to_login = True
 
-    stored_proffesional = controller.get("Proffesional") if controller.get("Proffesional") is not None else False
-    if "Proffesional" not in st.session_state  or not st.session_state.Proffesional:
-        st.session_state.Proffesional = stored_proffesional
-    if st.session_state.Proffesional:
+    stored_professional = controller.get("Professional") if controller.get("Professional") is not None else False
+    if "Professional" not in st.session_state  or not st.session_state.Professional:
+        st.session_state.Professional = stored_professional
+    if st.session_state.Professional:
         st.sidebar.button("Log out",on_click=logout)
     else:
-        st.sidebar.button("Log in as proffesional",on_click=logout)
+        st.sidebar.button("Log in as professional",on_click=logout)
 

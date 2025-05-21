@@ -31,12 +31,14 @@ with st.container(key="login-container"):
 
     if login_button:
         if login(username, password):
-            st.session_state["Proffesional"]=True
+            st.session_state["Professional"]=True
             controller = CookieController()
-            controller.set("Proffesional", True)
+            controller.set("Professional", True)
             st.switch_page("pages/Upload_img.py")
         else:
             st.error("Invalid username or password.")
     if student_button:
-        st.session_state["Proffesional"]=False
+        st.session_state["Professional"]=False
+        controller = CookieController()
+        controller.set("Professional", False)
         st.switch_page("pages/Upload_img.py")
