@@ -20,13 +20,26 @@ def load_sidebar():
             st.session_state.Professional = stored_professional
     except:
         st.session_state.Professional =False
+
+    st.markdown("""
+    <style>
+        [data-testid="stForm"] button {
+                justify-content:left;
+                margin-left: 1rem;
+                } 
+        
+        [data-testid="stForm"] [data-testid="stVerticalBlock"]{ 
+                gap:0rem;
+                }
+    </style>
+""", unsafe_allow_html=True)            
     if st.session_state.Professional:
-        with st.sidebar.form("menu"):
+        with st.sidebar.form("menu", border=False):
             st.markdown("Menu:")
-            Upload = st.form_submit_button("Upload",use_container_width=True)
-            Manual = st.form_submit_button("Manual",use_container_width=True)
-            AI = st.form_submit_button("AI",use_container_width=True)
-            Compair = st.form_submit_button("Compair",use_container_width=True)
+            Upload = st.form_submit_button("Upload",use_container_width=True,type="tertiary" )
+            Manual = st.form_submit_button("Manual",use_container_width=True,type="tertiary")
+            AI = st.form_submit_button("AI",use_container_width=True,type="tertiary")
+            Compair = st.form_submit_button("Compair",use_container_width=True,type="tertiary")
 
         if Upload:
             st.switch_page("pages/Upload_img.py")
@@ -36,7 +49,6 @@ def load_sidebar():
             st.switch_page("pages/AI.py")
         elif Compair:
             st.switch_page("pages/Comparison.py")
-
 
     st.sidebar.title("Dental Chart")
     name_pattern = regex.compile(r"^[\p{L}'-]*$", regex.UNICODE)
