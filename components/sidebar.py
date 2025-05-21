@@ -13,8 +13,16 @@ def load_sidebar():
         st.session_state.go_to_login = False
         st.switch_page("app.py")
     controller = CookieController()
+
     st.sidebar.title("Dental Chart")
     name_pattern = regex.compile(r"^[\p{L}'-]*$", regex.UNICODE)
+
+    try:
+        stored_professional = controller.get("Professional") if controller.get("Professional") is not None else False
+        if "Professional" not in st.session_state  or not st.session_state.Professional:
+            st.session_state.Professional = stored_professional
+    except:
+        st.session_state.Professional =False
 
     # --- Profile Number ---
     stored_profile_number = controller.get("ProfileNumber")
@@ -118,9 +126,6 @@ def load_sidebar():
         st.cache_data.clear()
         st.session_state.go_to_login = True
 
-    stored_professional = controller.get("Professional") if controller.get("Professional") is not None else False
-    if "Professional" not in st.session_state  or not st.session_state.Professional:
-        st.session_state.Professional = stored_professional
     if st.session_state.Professional:
         st.sidebar.button("Log out",on_click=logout)
     else:

@@ -1,7 +1,5 @@
 import streamlit as st
 from st_pages import Page, add_page_title
-
-
 from components.teeth_renderer import render_teeth
 from components.sidebar import load_sidebar
 from components.teeth import load_teeth
@@ -19,8 +17,6 @@ if st.session_state.go_to_next_page:
 
 st.set_page_config(page_title="AI vs. Human analysis: A smart comparison tool",
                    layout="wide")
-
-
 
 load_sidebar()
 
@@ -48,7 +44,6 @@ else:
 # Define the callback
 def go_to_next():
     st.session_state.go_to_next_page = True
-
 
 st.markdown("""
     <style>
