@@ -10,19 +10,18 @@ if "go_to_next_page" not in st.session_state:
 if st.session_state.go_to_next_page:
     st.session_state.go_to_next_page = False
     st.switch_page("pages/Manual.py")
-
+    
 st.set_page_config(page_title="Upload image",
                    layout="wide")
 
 if "upload_errors" not in st.session_state:
     st.session_state["upload_errors"] = []
 
-
 def upload_files():
     st.session_state["upload_errors"] = []
     files = st.session_state["uploaded_files"]
 
-    if files == [] or files == None:
+    if files==[]or files==None:
         st.session_state["upload_errors"].append("No files uploaded")
     for file in files:
         print("processing file: ", file)
@@ -31,14 +30,12 @@ def upload_files():
         ext = ext.replace('.', '')
 
         if ext == 'jpeg':
-            os.makedirs("image", exist_ok=True)
-            with open(os.path.join("image", "image.jpeg"), "wb") as f:
-                f.write(file.getbuffer())
+            img_bytes = file.read()
+            st.session_state["manual_image_bytes"] = img_bytes
             st.session_state["upload_errors"].append(f"File '{name}' is uploaded successfully")
 
         else:
-            st.session_state["upload_errors"].append(f"Cannot use files with extension '{ext}' use 'jpeg' instead")
-
+             st.session_state["upload_errors"].append(f"Cannot use files with extension '{ext}' use 'jpeg' instead")
 
 # layout
 load_sidebar()
@@ -55,7 +52,7 @@ st.markdown("""
 with st.container(key="uploader-container"):
     st.error("Please ensure the image is an 'jpeg'")
     with st.container(border=True):
-        files = st.file_uploader("Image uploader", accept_multiple_files=True, key="uploaded_files")
+        files = st.file_uploader("Image uploader", accept_multiple_files=True, key="uploaded_files", type=["jpeg"])
 
         st.button("Upload image", on_click=upload_files)
 
@@ -66,11 +63,11 @@ with st.container(key="uploader-container"):
             st.error(message)
 
 
-# switch page
+
+#switch page
 # Define the callback
 def go_to_next():
     st.session_state.go_to_next_page = True
-
 
 st.markdown("""
     <style>
@@ -84,7 +81,8 @@ with st.container(key="next-container"):
     col1, col2 = st.columns([8, 1])
 
     with col2:
-        # Show the button
+    # Show the button
         st.button("Next Page", on_click=go_to_next)
 
 
+   

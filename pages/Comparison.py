@@ -55,10 +55,10 @@ def compair(manualteeth, AIteeth):
 load_sidebar()
 
 st.title("Comparison page!")
-ai_image_path = os.path.join("AIOutput", "image.jpg")
-image_path=os.path.join("image", "image.jpeg")
+ai_image_bytes = st.session_state.get("AI_image_bytes")
+manual_image_bytes = st.session_state.get("manual_image_bytes")
 # Check if the image exists
-if os.path.exists(ai_image_path) and os.path.exists(image_path) :
+if ai_image_bytes and manual_image_bytes :
     st.markdown("""
     <style>
     .st-key-photo-container {
@@ -69,9 +69,9 @@ if os.path.exists(ai_image_path) and os.path.exists(image_path) :
     with st.container(key="photo-container"):
         cols = st.columns(2)
         with cols[0]:
-            st.image(image_path,  use_container_width=True)
+            st.image(manual_image_bytes,  use_container_width=True)
         with cols[1]:
-            st.image(ai_image_path,  use_container_width=True)
+            st.image(ai_image_bytes,  use_container_width=True)
 else:
     st.warning("No image has been uploaded yet.")
 

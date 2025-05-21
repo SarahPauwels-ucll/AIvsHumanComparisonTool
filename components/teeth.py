@@ -15,7 +15,7 @@ def get_tooth_image(tooth_number, status,height=80, icon_variant = "black"):
     if icon_variant == "black":
        path_prefix = "icons"
     elif icon_variant == "white":
-       path_prefix = "icons_white"
+       path_prefix = "icons_white_scaled"
     else:
        raise ValueError("icon variant should be black or white")
     
