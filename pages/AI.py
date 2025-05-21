@@ -5,6 +5,8 @@ from input.teethSet import teeth as manualteeth
 from components.sidebar import load_sidebar
 import os
 
+
+st.session_state.submitted_manual_teeth = True
 # Define a session flag to trigger the page switch
 if "go_to_next_page" not in st.session_state:
     st.session_state.go_to_next_page = False

@@ -33,6 +33,7 @@ def upload_files():
             img_bytes = file.read()
             st.session_state["manual_image_bytes"] = img_bytes
             st.session_state["upload_errors"].append(f"File '{name}' is uploaded successfully")
+            st.session_state.submitted_manual_teeth = False
 
         else:
              st.session_state["upload_errors"].append(f"Cannot use files with extension '{ext}' use 'jpeg' instead")

@@ -17,6 +17,13 @@ if st.session_state.go_to_next_page:
     st.session_state.go_to_next_page = False
     st.switch_page("pages/AI.py")
 
+if "go_to_upload_page" not in st.session_state:
+    st.session_state.go_to_upload_page = False
+
+if st.session_state.go_to_upload_page:
+    st.session_state.go_to_upload_page = False
+    st.switch_page("app.py")
+
 st.set_page_config(page_title="AI vs. Human analysis: A smart comparison tool",
                    layout="wide")
 
@@ -38,8 +45,17 @@ if "manual_image_bytes" in st.session_state:
     """, unsafe_allow_html=True)
     with st.container(key="photo-container"):
         st.image(st.session_state["manual_image_bytes"],  use_container_width=True)
+
+    if "submitted_manual_teeth" not in st.session_state:
+        st.session_state.submitted_manual_teeth = False
+
+    if st.session_state.submitted_manual_teeth:
+        st.warning("You already submitted your findings!")
+        disable_teeth_buttons = True
+    else:
+        disable_teeth_buttons = False
     
-    manual_teeth = render_teeth("manual")
+    manual_teeth = render_teeth("manual", disable_buttons=disable_teeth_buttons)
     st.session_state.manual_teeth = manual_teeth
 else:
     st.warning("No image has been uploaded yet.")
@@ -48,19 +64,24 @@ else:
 def go_to_next():
     st.session_state.go_to_next_page = True
 
+def go_to_upload_page():
+    st.session_state.go_to_upload_page = True
 
-st.markdown("""
-    <style>
-    .st-key-next-container {
-        max-width: 900px;
-        margin: 0 auto;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-with st.container(key="next-container"):
-    col1, col2 = st.columns([8, 1])
-    with col2:
-    # Show the button
-        st.button("Next Page", on_click=go_to_next)
+if "manual_image_bytes" in st.session_state:
+    st.markdown("""
+        <style>
+        .st-key-next-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+    with st.container(key="next-container"):
+        col1, col2 = st.columns([8, 1])
+        with col2:
+        # Show the button
+            st.button("Next Page", on_click=go_to_next)
 
-pdf_button_professional()
+    pdf_button_professional()
+else:
+    st.button("Upload image", on_click=go_to_upload_page)
