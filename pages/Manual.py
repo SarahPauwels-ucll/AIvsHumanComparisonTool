@@ -84,4 +84,4 @@ if "manual_image_bytes" in st.session_state:
 
     pdf_button_professional()
 else:
-    st.button("Upload image",)
+    st.button("Upload image", on_click=go_to_upload_page)
