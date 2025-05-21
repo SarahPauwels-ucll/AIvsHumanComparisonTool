@@ -30,10 +30,9 @@ def upload_files():
         ext = ext.replace('.', '')
 
         if ext == 'jpeg':
-                os.makedirs("image", exist_ok=True)
-                with open(os.path.join("image","image.jpeg"),"wb") as f:
-                    f.write(file.getbuffer())
-                st.session_state["upload_errors"].append(f"File '{name}' is uploaded successfully")
+            img_bytes = file.read()
+            st.session_state["manual_image_bytes"] = img_bytes
+            st.session_state["upload_errors"].append(f"File '{name}' is uploaded successfully")
 
         else:
              st.session_state["upload_errors"].append(f"Cannot use files with extension '{ext}' use 'jpeg' instead")
@@ -53,7 +52,7 @@ st.markdown("""
 with st.container(key="uploader-container"):
     st.error("Please ensure the image is an 'jpeg'")
     with st.container(border=True):
-        files = st.file_uploader("Image uploader", accept_multiple_files=True, key="uploaded_files")
+        files = st.file_uploader("Image uploader", accept_multiple_files=True, key="uploaded_files", type=["jpeg"])
 
         st.button("Upload image", on_click=upload_files)
 

@@ -44,6 +44,10 @@ if os.path.exists(image_path):
         st.image(image_path,  use_container_width=True)
     ai_teeth = render_teeth("ai")
     st.session_state.ai_teeth = ai_teeth
+
+    with open(image_path, "rb") as img_file:
+        st.session_state.AI_image_bytes = img_file.read()
+
 else:
     st.warning("No image has been uploaded yet.")
 
