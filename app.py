@@ -1,89 +1,44 @@
-from st_pages import Page, add_page_title
 import streamlit as st
-from components.sidebar import load_sidebar
-import os
+from streamlit_cookies_controller import CookieController
 
-# Define a session flag to trigger the page switch
-if "go_to_next_page" not in st.session_state:
-    st.session_state.go_to_next_page = False
-# Perform the page switch "outside" the callback
-if st.session_state.go_to_next_page:
-    st.session_state.go_to_next_page = False
-    st.switch_page("pages/Manual.py")
-    
-st.set_page_config(page_title="Upload image",
-                   layout="wide")
+USER_CREDENTIALS = {
+    "admin": "1234",
+    "sarah": "password"
+}
 
-if "upload_errors" not in st.session_state:
-    st.session_state["upload_errors"] = []
+def login(username, password):
+    if username in USER_CREDENTIALS:
+        return USER_CREDENTIALS[username] == password
+    return False
 
-def upload_files():
-    st.session_state["upload_errors"] = []
-    files = st.session_state["uploaded_files"]
 
-    if files==[]or files==None:
-        st.session_state["upload_errors"].append("No files uploaded")
-    for file in files:
-        print("processing file: ", file)
-        filename = file.name
-        name, ext = os.path.splitext(filename)
-        ext = ext.replace('.', '')
+st.title("Login Page")
 
-        if ext == 'jpeg':
-                os.makedirs("image", exist_ok=True)
-                with open(os.path.join("image","image.jpeg"),"wb") as f:
-                    f.write(file.getbuffer())
-                st.session_state["upload_errors"].append(f"File '{name}' is uploaded successfully")
-
-        else:
-             st.session_state["upload_errors"].append(f"Cannot use files with extension '{ext}' use 'jpeg' instead")
-
-# layout
-load_sidebar()
-
-st.header("Upload Dental image")
 st.markdown("""
     <style>
-    .st-key-uploader-container {
+    .st-key-login-container {
         max-width: 900px;
         margin: 0 auto;
     }
     </style>
     """, unsafe_allow_html=True)
-with st.container(key="uploader-container"):
-    st.error("Please ensure the image is an 'jpeg'")
-    with st.container(border=True):
-        files = st.file_uploader("Image uploader", accept_multiple_files=True, key="uploaded_files")
+with st.container(key="login-container"):
+    with st.form("login_form"):
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+        login_button = st.form_submit_button("Login")
+        student_button =st.form_submit_button("Login as Student")
 
-        st.button("Upload image", on_click=upload_files)
-
-    for message in st.session_state.get("upload_errors", []):
-        if "successfully" in message:
-            st.success(message)
+    if login_button:
+        if login(username, password):
+            st.session_state["Professional"]=True
+            controller = CookieController()
+            controller.set("Professional", True)
+            st.switch_page("pages/Upload_img.py")
         else:
-            st.error(message)
-
-
-
-#switch page
-# Define the callback
-def go_to_next():
-    st.session_state.go_to_next_page = True
-
-st.markdown("""
-    <style>
-    .st-key-next-container {
-        max-width: 900px;
-        margin: 0 auto;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-with st.container(key="next-container"):
-    col1, col2 = st.columns([8, 1])
-
-    with col2:
-    # Show the button
-        st.button("Next Page", on_click=go_to_next)
-
-
-   
+            st.error("Invalid username or password.")
+    if student_button:
+        st.session_state["Professional"]=False
+        controller = CookieController()
+        controller.set("Professional", False)
+        st.switch_page("pages/Upload_img.py")

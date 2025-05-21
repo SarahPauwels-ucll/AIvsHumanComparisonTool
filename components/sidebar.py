@@ -5,9 +5,24 @@ from datetime import date
 import regex
 
 def load_sidebar():
+    if "go_to_login" not in st.session_state:
+        st.session_state.go_to_login = False
+
+    # Perform the page switch "outside" the callback
+    if st.session_state.go_to_login:
+        st.session_state.go_to_login = False
+        st.switch_page("app.py")
     controller = CookieController()
+
     st.sidebar.title("Dental Chart")
     name_pattern = regex.compile(r"^[\p{L}'-]*$", regex.UNICODE)
+
+    try:
+        stored_professional = controller.get("Professional") if controller.get("Professional") is not None else False
+        if "Professional" not in st.session_state  or not st.session_state.Professional:
+            st.session_state.Professional = stored_professional
+    except:
+        st.session_state.Professional =False
 
     # --- Profile Number ---
     stored_profile_number = controller.get("ProfileNumber")
@@ -92,3 +107,27 @@ def load_sidebar():
     if consultation_date!=None and birthdate!=None:
         years = consultation_date.year - birthdate.year - ((consultation_date.month, consultation_date.day) < (birthdate.month, birthdate.day))
         st.sidebar.markdown(f"Age: {years}")
+
+    def logout():
+        controller = CookieController()
+        keys_to_clear = [
+            "ProfileNumber",
+            "LastName",
+            "FirstName",
+            "birthdate",
+            "consultation date",
+            "Gender",
+            "Professional"
+        ]
+        for key in st.session_state.keys():
+            del st.session_state[key]
+        for key in keys_to_clear:  
+            controller.set(key, None)
+        st.cache_data.clear()
+        st.session_state.go_to_login = True
+
+    if st.session_state.Professional:
+        st.sidebar.button("Log out",on_click=logout)
+    else:
+        st.sidebar.button("Log in as professional",on_click=logout)
+

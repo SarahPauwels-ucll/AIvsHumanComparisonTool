@@ -7,6 +7,7 @@ from input.teethSet import teeth as manualteeth
 from AIOutput.teethSet import teeth as AIteeth
 import os
 from components.teeth import get_tooth_image
+from components.pdf_profesionnal import pdf_button_professional
 
 if "go_to_next_page" not in st.session_state:
     st.session_state.go_to_next_page = False
@@ -14,7 +15,14 @@ if "go_to_next_page" not in st.session_state:
 # Perform the page switch "outside" the callback
 if st.session_state.go_to_next_page:
     st.session_state.go_to_next_page = False
-    st.switch_page("app.py")
+    st.switch_page("pages/Upload_img.py")
+
+if "go_to_upload_page" not in st.session_state:
+    st.session_state.go_to_upload_page = False
+
+if st.session_state.go_to_upload_page:
+    st.session_state.go_to_upload_page = False
+    st.switch_page("pages/Upload_img.py")
 
 st.set_page_config(page_title="comparison", layout="wide")
 
@@ -54,10 +62,10 @@ def compair(manualteeth, AIteeth):
 load_sidebar()
 
 st.title("Comparison page!")
-ai_image_path = os.path.join("AIOutput", "image.jpg")
-image_path=os.path.join("image", "image.jpeg")
+ai_image_bytes = st.session_state.get("AI_image_bytes")
+manual_image_bytes = st.session_state.get("manual_image_bytes")
 # Check if the image exists
-if os.path.exists(ai_image_path) and os.path.exists(image_path) :
+if ai_image_bytes and manual_image_bytes :
     st.markdown("""
     <style>
     .st-key-photo-container {
@@ -68,58 +76,63 @@ if os.path.exists(ai_image_path) and os.path.exists(image_path) :
     with st.container(key="photo-container"):
         cols = st.columns(2)
         with cols[0]:
-            st.image(image_path,  use_container_width=True)
+            st.image(manual_image_bytes,  use_container_width=True)
         with cols[1]:
-            st.image(ai_image_path,  use_container_width=True)
-else:
-    st.warning("No image has been uploaded yet.")
+            st.image(ai_image_bytes,  use_container_width=True)
+    differences = compair(manual_teeth, AI_teeth)
 
-differences=compair(manual_teeth, AI_teeth)
-
-st.markdown("""
-<style>
-.st-key-container {
-    max-width: 900px;
-    margin: 0 auto;
-}
-.st-key-container div[data-testid="stElementToolbarButtonContainer"] {
-        display: none;
-}
-</style>
-""", unsafe_allow_html=True)
-with st.container(key="container"):
-    st.markdown("Differences Top Teeth")
-    top_row = list(reversed(range(11, 19))) + list(range(21, 29)) 
-    cols = st.columns(16)
-    for i, tooth_num in enumerate(top_row):
-        if tooth_num in differences:
-            with cols[i]:
-                st.image(get_tooth_image(tooth_num, differences[tooth_num]))
-    
-    st.markdown("Your input") 
-
-    load_teeth(manual_teeth)
-
-    st.markdown("Differences bottom Teeth")
-    bottom_row = list(reversed(range(41, 49))) + list(range(31,39))
-    cols2 = st.columns(16)
-    for i, tooth_num in enumerate(bottom_row):
-        if tooth_num in differences:
-            with cols2[i]:
-                st.image(get_tooth_image(tooth_num, differences[tooth_num]))
-st.markdown("""
+    st.markdown("""
     <style>
-    .st-key-pdf-container {
+    .st-key-container {
         max-width: 900px;
         margin: 0 auto;
     }
+    .st-key-container div[data-testid="stElementToolbarButtonContainer"] {
+            display: none;
+    }
     </style>
     """, unsafe_allow_html=True)
-with st.container(key="pdf-container"):
-    col1, col2 = st.columns([16, 5])
+    with st.container(key="container"):
+        st.markdown("Differences Top Teeth")
+        top_row = list(reversed(range(11, 19))) + list(range(21, 29))
+        cols = st.columns(16)
+        for i, tooth_num in enumerate(top_row):
+            if tooth_num in differences:
+                with cols[i]:
+                    st.image(get_tooth_image(tooth_num, differences[tooth_num]))
 
-    with col2:
-        pdf_button()
+        st.markdown("Your input")
+
+        load_teeth(manual_teeth)
+
+        st.markdown("Differences bottom Teeth")
+        bottom_row = list(reversed(range(41, 49))) + list(range(31, 39))
+        cols2 = st.columns(16)
+        for i, tooth_num in enumerate(bottom_row):
+            if tooth_num in differences:
+                with cols2[i]:
+                    st.image(get_tooth_image(tooth_num, differences[tooth_num]))
+else:
+    st.warning("No image has been uploaded yet.")
+
+
+if "manual_image_bytes" in st.session_state:
+    st.markdown("""
+        <style>
+        .st-key-pdf-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+    with st.container(key="pdf-container"):
+        col1, col2 = st.columns([16, 5])
+
+        with col2:
+            if st.session_state.Professional:
+                pdf_button_professional()
+            else:
+                pdf_button()
 
 #switch page
 # Define the callback
@@ -131,7 +144,7 @@ def restart():
         "FirstName",
         "birthdate",
         "consultation date",
-        "Gender"
+        "Gender",
     ]
     for key in st.session_state.keys():
         print(key)
@@ -141,19 +154,23 @@ def restart():
     st.cache_data.clear()
     st.session_state.go_to_next_page = True
 
-st.markdown("""
-    <style>
-    .st-key-next-container {
-        max-width: 900px;
-        margin: 0 auto;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-with st.container(key="next-container"):
-    col1, col2 = st.columns([8, 1])
+def go_to_upload_page():
+    st.session_state.go_to_upload_page = True
 
-    with col2:
-    # Show the button
-        st.button("Restart", on_click=restart)
+if "manual_image_bytes" in st.session_state:
+    st.markdown("""
+        <style>
+        .st-key-next-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+    with st.container(key="next-container"):
+        col1, col2 = st.columns([8, 1])
 
-
+        with col2:
+        # Show the button
+            st.button("Restart", on_click=restart)
+else:
+    st.button("Upload image", on_click=go_to_upload_page)
