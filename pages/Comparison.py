@@ -52,7 +52,7 @@ def compair(manualteeth, AIteeth):
            differences[tooth]=ai_val
     return(differences)
 
-load_sidebar()
+load_sidebar("Comparison")
 
 st.title("Comparison page!")
 ai_image_bytes = st.session_state.get("AI_image_bytes")

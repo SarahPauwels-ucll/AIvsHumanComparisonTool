@@ -4,7 +4,7 @@ from streamlit_cookies_controller import CookieController
 from datetime import date
 import regex
 
-def load_sidebar():
+def load_sidebar(page="login"):
     if "go_to_login" not in st.session_state:
         st.session_state.go_to_login = False
 
@@ -32,14 +32,14 @@ def load_sidebar():
                 gap:0rem;
                 }
     </style>
-""", unsafe_allow_html=True)            
+    """, unsafe_allow_html=True)            
     if st.session_state.Professional:
         with st.sidebar.form("menu", border=False):
             st.title("Menu")
-            Upload = st.form_submit_button("Upload",use_container_width=True,type="tertiary" )
-            Manual = st.form_submit_button("Manual input",use_container_width=True,type="tertiary")
-            AI = st.form_submit_button("AI result",use_container_width=True,type="tertiary")
-            Compair = st.form_submit_button("Compair",use_container_width=True,type="tertiary")
+            Upload = st.form_submit_button("Upload",use_container_width=True,type="tertiary", disabled=(page=="Upload") )
+            Manual = st.form_submit_button("Manual input",use_container_width=True,type="tertiary", disabled=(page=="Manual"))
+            AI = st.form_submit_button("AI result",use_container_width=True,type="tertiary", disabled=(page=="AI"))
+            Compair = st.form_submit_button("Compair",use_container_width=True,type="tertiary", disabled=(page=="Comparison"))
 
         if Upload:
             st.switch_page("pages/Upload_img.py")
