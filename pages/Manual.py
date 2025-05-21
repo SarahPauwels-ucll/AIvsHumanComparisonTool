@@ -1,5 +1,7 @@
 import streamlit as st
 from st_pages import Page, add_page_title
+
+from components.pdf_profesionnal import pdf_button_professional
 from components.teeth_renderer import render_teeth
 from components.sidebar import load_sidebar
 from components.teeth import load_teeth
@@ -15,8 +17,17 @@ if st.session_state.go_to_next_page:
     st.session_state.go_to_next_page = False
     st.switch_page("pages/AI.py")
 
+if "go_to_upload_page" not in st.session_state:
+    st.session_state.go_to_upload_page = False
+
+if st.session_state.go_to_upload_page:
+    st.session_state.go_to_upload_page = False
+    st.switch_page("app.py")
+
 st.set_page_config(page_title="AI vs. Human analysis: A smart comparison tool",
                    layout="wide")
+
+
 
 load_sidebar()
 
@@ -34,7 +45,16 @@ if "manual_image_bytes" in st.session_state:
     """, unsafe_allow_html=True)
     with st.container(key="photo-container"):
         st.image(st.session_state["manual_image_bytes"],  use_container_width=True)
-    
+
+    if "submitted_manual_teeth" not in st.session_state:
+        st.session_state.submitted_manual_teeth = False
+
+    if st.session_state.submitted_manual_teeth:
+        st.warning("You already submitted your findings!")
+        disable_teeth_buttons = True
+    else:
+        disable_teeth_buttons = False
+
     manual_teeth = render_teeth("manual")
     st.session_state.manual_teeth = manual_teeth
 else:
@@ -44,16 +64,24 @@ else:
 def go_to_next():
     st.session_state.go_to_next_page = True
 
-st.markdown("""
-    <style>
-    .st-key-next-container {
-        max-width: 900px;
-        margin: 0 auto;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-with st.container(key="next-container"):
-    col1, col2 = st.columns([8, 1])
-    with col2:
-    # Show the button
-        st.button("Next Page", on_click=go_to_next)
+def go_to_upload_page():
+    st.session_state.go_to_upload_page = True
+
+if "manual_image_bytes" in st.session_state:
+    st.markdown("""
+        <style>
+        .st-key-next-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+    with st.container(key="next-container"):
+        col1, col2 = st.columns([8, 1])
+        with col2:
+        # Show the button
+            st.button("Next Page", on_click=go_to_next)
+
+    pdf_button_professional()
+else:
+    st.button("Upload image", on_click=go_to_upload_page)
