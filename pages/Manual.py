@@ -24,10 +24,6 @@ if st.session_state.go_to_upload_page:
     st.session_state.go_to_upload_page = False
     st.switch_page("pages/Upload_img.py")
 
-
-
-
-
 load_sidebar()
 
 st.title("Welcome to the manual page!")

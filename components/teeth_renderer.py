@@ -1,11 +1,11 @@
 import os
 import streamlit as st
-from components.teeth import load_teeth
+from components.teeth import load_teeth, load_teeth_circle
 from input.teethSet import teeth as teethInput
 from AIOutput.teethSet import teeth as teethAI
 import copy
 
-def render_teeth(page: str, disable_buttons: bool = False):
+def render_teeth(page: str, disable_buttons: bool = False,circle=False):
     if not page:
         raise Exception("page can't be empty")
     @st.cache_data()
@@ -154,8 +154,11 @@ def render_teeth(page: str, disable_buttons: bool = False):
         top_cols = st.columns(len(top_left_nums + top_right_nums))
         top_nums = top_left_nums + top_right_nums
         render_button_row(top_cols,top_nums)
-
-        load_teeth(teeth)
+        
+        if circle:
+            load_teeth_circle(teeth)
+        else:
+            load_teeth(teeth)
 
         bottom_cols = st.columns(len(bottom_left_nums + bottom_right_nums))
         bottom_nums = bottom_left_nums + bottom_right_nums

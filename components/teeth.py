@@ -93,8 +93,8 @@ def load_teeth_circle(teeth):
     all_teeth =bottom_row+top_row
 
     num_items = len(all_teeth)
-    container_size = 400
-    radius = (container_size-100) / 2
+    container_size = 600
+    radius = (container_size-100) / 3
     center = container_size / 2
 
     html = f"""
@@ -123,11 +123,9 @@ def load_teeth_circle(teeth):
             rotation=angle_deg-90
         angle_rad = math.radians(angle_deg)
         x = center + radius * math.cos(angle_rad)
-        y = center + 1.3*(radius * math.sin(angle_rad))
-        if y>center:
-            y+=25
-        else:
-            y-=25
+        y = center-50 + 1.3*(radius * math.sin(angle_rad))
+        if y>center-50:
+            y+=50
         html += (
             f'<img class="item" src="{img_src}" '
             f'style="left: {x}px; top: {y}px; transform: rotate({rotation}deg);" '
