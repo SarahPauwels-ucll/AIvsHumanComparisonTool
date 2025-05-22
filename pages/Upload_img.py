@@ -55,9 +55,7 @@ st.markdown("""
 with st.container(key="uploader-container"):
     st.error("Please ensure the image is an 'jpeg'")
     with st.container(border=True):
-        files = st.file_uploader("Image uploader", accept_multiple_files=True, key="uploaded_files", type=["jpeg"])
-
-        st.button("Upload image", on_click=upload_files)
+        files = st.file_uploader("Image uploader", accept_multiple_files=True, key="uploaded_files", type=["jpeg"], on_change=upload_files)
 
     for message in st.session_state.get("upload_errors", []):
         if "successfully" in message:
