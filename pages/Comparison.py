@@ -8,9 +8,38 @@ from AIOutput.teethSet import teeth as AIteeth
 import os
 from components.teeth import get_tooth_image
 from components.pdf_profesionnal import pdf_button_professional
+st.set_page_config(page_title="comparison", layout="wide")
+
+
+def restart():
+    controller = CookieController()
+    print(controller.getAll())
+
+    keys_to_clear = [
+        "ProfileNumber", "LastName", "FirstName", "birthdate", "consultation date", "Gender"
+    ]
+
+    # Clear all session_state keys
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
+
+    # Remove cookies
+    for key in keys_to_clear:
+        if key in controller.getAll():
+            controller.remove(key)
+        else:
+            print(key + " not found")
+
+    print(controller.getAll())
+    st.cache_data.clear()
+
+    # Set flag to trigger page switch on next rerun
+    st.session_state.just_restarted = True
 
 if "go_to_next_page" not in st.session_state:
     st.session_state.go_to_next_page = False
+
+
 
 # Perform the page switch "outside" the callback
 if st.session_state.go_to_next_page:
@@ -24,7 +53,7 @@ if st.session_state.go_to_upload_page:
     st.session_state.go_to_upload_page = False
     st.switch_page("pages/Upload_img.py")
 
-st.set_page_config(page_title="comparison", layout="wide")
+
 
 # Define a session flag to trigger the page switch
 
@@ -60,26 +89,7 @@ def compair(manualteeth, AIteeth):
                 differences[tooth]=ai_val
     return(differences)
 
-def restart():
-    controller = CookieController()
-    print(controller.getAll())
-    keys_to_clear = [
-        "ProfileNumber",
-        "LastName",
-        "FirstName",
-        "birthdate",
-        "consultation date",
-        "Gender"
-    ]
-    for key in st.session_state.keys():
-        del st.session_state[key]
-    for key in keys_to_clear:  
-        if key in controller.getAll():
-            controller.remove(key)
-        else: print(key+ " not found")
-    print(controller.getAll())
-    st.cache_data.clear()
-    st.session_state.go_to_next_page = True
+
 
 load_sidebar("Comparison")
 
@@ -181,3 +191,6 @@ if "manual_image_bytes" in st.session_state:
 else:
     st.button("Upload image", on_click=go_to_upload_page)
 
+if st.session_state.get("just_restarted"):
+    st.session_state.just_restarted = False
+    st.session_state.go_to_next_page = True
