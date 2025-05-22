@@ -60,6 +60,27 @@ def compair(manualteeth, AIteeth):
                 differences[tooth]=ai_val
     return(differences)
 
+def restart():
+    controller = CookieController()
+    print(controller.getAll())
+    keys_to_clear = [
+        "ProfileNumber",
+        "LastName",
+        "FirstName",
+        "birthdate",
+        "consultation date",
+        "Gender"
+    ]
+    for key in st.session_state.keys():
+        del st.session_state[key]
+    for key in keys_to_clear:  
+        if key in controller.getAll():
+            controller.remove(key)
+        else: print(key+ " not found")
+    print(controller.getAll())
+    st.cache_data.clear()
+    st.session_state.go_to_next_page = True
+
 load_sidebar("Comparison")
 
 st.title("Comparison page!")
@@ -137,23 +158,7 @@ if "manual_image_bytes" in st.session_state:
 
 #switch page
 # Define the callback
-def restart():
-    controller = CookieController()
-    keys_to_clear = [
-        "ProfileNumber",
-        "LastName",
-        "FirstName",
-        "birthdate",
-        "consultation date",
-        "Gender",
-    ]
-    for key in st.session_state.keys():
-        print(key)
-        del st.session_state[key]
-    for key in keys_to_clear:  
-        controller.set(key, None)
-    st.cache_data.clear()
-    st.session_state.go_to_next_page = True
+
 
 def go_to_upload_page():
     st.session_state.go_to_upload_page = True
@@ -175,3 +180,4 @@ if "manual_image_bytes" in st.session_state:
             st.button("Restart", on_click=restart)
 else:
     st.button("Upload image", on_click=go_to_upload_page)
+
