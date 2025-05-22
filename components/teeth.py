@@ -92,74 +92,50 @@ def load_teeth(teeth):
         <style>
         .teeth-container {
             position: relative;
-            width: 1000px;
+            width: 600px;
             height: 600px;
             margin: 0 auto;
         }
-
         .tooth {
             position: absolute;
             height: 60px;
             width: auto;
             transform-origin: center center;
         }
-
-
-        .top {
-            /* nothing specific for now */
-        }
-
-        .bottom {
-            /* nothing specific for now */
-        }
         </style>
     """, unsafe_allow_html=True)
 
     st.markdown('<div class="teeth-container">', unsafe_allow_html=True)
 
-    radius = 200
+    # All teeth numbers in order around the circle
+    all_teeth = (
+        list(reversed(range(11, 19))) + list(range(21, 29)) +
+        list(reversed(range(41, 49))) + list(range(31, 39))
+    )
 
-    left_top_row = list(reversed(range(11, 19)))  # 18 to 11
-    right_top_row = list(range(21, 29))  # 21 to 28
-    # Left half angles from -180 to -90 degrees
-    left_angle_start = -180
-    left_angle_end = -90
-    left_angle_step = (left_angle_end - left_angle_start) / (len(left_top_row) - 1)
-    for i, tooth_num in enumerate(left_top_row):
-        angle = left_angle_start + i * left_angle_step
-        x = radius * math.cos(math.radians(angle))
-        y = radius * math.sin(math.radians(angle))
-        img_src, (img_w, img_h) = get_tooth_image(tooth_num, teeth[tooth_num], as_base64=True)
-        rotation = angle - 90
+    center_x = 300
+    center_y = 300
+    radius = 240
+    angle_step = 360 / len(all_teeth)
+
+    for i, tooth_num in enumerate(all_teeth):
+        angle_deg = i * angle_step
+        angle_rad = math.radians(angle_deg)
+
+        x = center_x + radius * math.cos(angle_rad)
+        y = center_y + radius * math.sin(angle_rad)
+
+        img_src, (img_w, img_h) = get_tooth_image(tooth_num, teeth.get(tooth_num), as_base64=True)
+
+        # Optional: Uncomment below to rotate outward like clock rays
+        # rotation = angle_deg
+
+        # Keep upright:
+        rotation = 0
+
         st.markdown(f'''
-                <img class="tooth top" src="{img_src}"
-                     style="left: {250 + x - (img_w / 2)}px; top: {150 + y - (img_h / 2)}px; transform: rotate({rotation}deg);"/>
-            ''', unsafe_allow_html=True)
-    # Right half angles from -90 to 0 degrees
-    right_angle_start = -90
-    right_angle_end = 0
-    right_angle_step = (right_angle_end - right_angle_start) / (len(right_top_row) - 1)
-    for i, tooth_num in enumerate(right_top_row):
-        angle = right_angle_start + i * right_angle_step
-        x = radius * math.cos(math.radians(angle))
-        y = radius * math.sin(math.radians(angle))
-        img_src, (img_w, img_h) = get_tooth_image(tooth_num, teeth[tooth_num], as_base64=True)
-        rotation = angle - 90
-        st.markdown(f'''
-                <img class="tooth top" src="{img_src}"
-                     style="left: {300 + x - (img_w / 2)}px; top: {150 + y - (img_h / 2)}px; "/> 
-            ''', unsafe_allow_html=True) #transform: rotate({rotation}deg);"/>
-    # # --- BOTTOM TEETH ---
-    # bottom_row = list(reversed(range(41, 49))) + list(range(31, 39))
-    # bottom_angle_step = 180 / (len(bottom_row) - 1)
-    #
-    # for i, tooth_num in enumerate(bottom_row):
-    #     angle = 90 - i * bottom_angle_step
-    #     x = radius * math.cos(math.radians(angle))
-    #     y = radius * math.sin(math.radians(angle))
-    #     st.markdown(f'''
-    #         <img class="tooth top" src="{get_tooth_image(tooth_num, teeth[tooth_num], as_base64=True)}"
-    #              style="left: {250 + x}px; top: {350 + y}px; transform: rotate({angle}deg);"/>
-    #     ''', unsafe_allow_html=True)
+            <img class="tooth" src="{img_src}"
+                 style="left: {x - img_w / 2}px; top: {y - img_h / 2}px; transform: rotate({rotation}deg);"/>
+        ''', unsafe_allow_html=True)
 
     st.markdown('</div>', unsafe_allow_html=True)
