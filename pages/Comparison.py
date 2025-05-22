@@ -56,7 +56,8 @@ def compair(manualteeth, AIteeth):
         norm_ai = normalize(ai_val)
 
         if norm_user != norm_ai:
-           differences[tooth]=ai_val
+            if not (norm_user==None and norm_ai=="normal") or not (norm_user=="normal" and norm_ai==None):
+                differences[tooth]=ai_val
     return(differences)
 
 load_sidebar("Comparison")
