@@ -124,6 +124,10 @@ def load_teeth_circle(teeth):
         angle_rad = math.radians(angle_deg)
         x = center + radius * math.cos(angle_rad)
         y = center + 1.3*(radius * math.sin(angle_rad))
+        if y>center:
+            y+=25
+        else:
+            y-=25
         html += (
             f'<img class="item" src="{img_src}" '
             f'style="left: {x}px; top: {y}px; transform: rotate({rotation}deg);" '
