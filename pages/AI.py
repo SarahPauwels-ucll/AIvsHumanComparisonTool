@@ -1,4 +1,6 @@
 import streamlit as st
+
+from components.excel import excel_button
 from components.teeth_renderer import render_teeth
 from input.teethSet import teeth as manualteeth
 
@@ -34,7 +36,7 @@ except:
     st.session_state.manual_teeth=manualteeth
     print("no manual teeth found")
 
-load_sidebar()
+load_sidebar("AI")
 
 st.title("Welcome to the AI page!")
 
@@ -83,5 +85,8 @@ if "manual_image_bytes" in st.session_state:
         with col2:
         # Show the button
             st.button("Next Page", on_click=go_to_next)
+
+    excel_button()
+
 else:
     st.button("Upload image", on_click=go_to_upload_page)

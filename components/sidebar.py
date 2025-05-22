@@ -4,7 +4,7 @@ from streamlit_cookies_controller import CookieController
 from datetime import date
 import regex
 
-def load_sidebar():
+def load_sidebar(page="login"):
     if "go_to_login" not in st.session_state:
         st.session_state.go_to_login = False
 
@@ -13,16 +13,45 @@ def load_sidebar():
         st.session_state.go_to_login = False
         st.switch_page("app.py")
     controller = CookieController()
-
-    st.sidebar.title("Dental Chart")
-    name_pattern = regex.compile(r"^[\p{L}'-]*$", regex.UNICODE)
-
+    
     try:
         stored_professional = controller.get("Professional") if controller.get("Professional") is not None else False
         if "Professional" not in st.session_state  or not st.session_state.Professional:
             st.session_state.Professional = stored_professional
     except:
         st.session_state.Professional =False
+
+    st.markdown("""
+    <style>
+        [data-testid="stForm"] button {
+                justify-content:left;
+                margin-left: 1rem;
+                } 
+        
+        [data-testid="stForm"] [data-testid="stVerticalBlock"]{ 
+                gap:0rem;
+                }
+    </style>
+    """, unsafe_allow_html=True)            
+    if st.session_state.Professional:
+        with st.sidebar.form("menu", border=False):
+            st.title("Menu")
+            Upload = st.form_submit_button("Upload",use_container_width=True,type="tertiary", disabled=(page=="Upload") )
+            Manual = st.form_submit_button("Manual input",use_container_width=True,type="tertiary", disabled=(page=="Manual"))
+            AI = st.form_submit_button("AI result",use_container_width=True,type="tertiary", disabled=(page=="AI"))
+            Compair = st.form_submit_button("Compair",use_container_width=True,type="tertiary", disabled=(page=="Comparison"))
+
+        if Upload:
+            st.switch_page("pages/Upload_img.py")
+        elif Manual:
+            st.switch_page("pages/Manual.py")
+        elif AI:
+            st.switch_page("pages/AI.py")
+        elif Compair:
+            st.switch_page("pages/Comparison.py")
+
+    st.sidebar.title("Dental Chart")
+    name_pattern = regex.compile(r"^[\p{L}'-]*$", regex.UNICODE)
 
     # --- Profile Number ---
     stored_profile_number = controller.get("ProfileNumber")

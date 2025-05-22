@@ -9,8 +9,36 @@ import os
 from components.teeth import get_tooth_image
 from components.pdf_profesionnal import pdf_button_professional
 
+st.set_page_config(page_title="comparison", layout="wide")
+
+
+def restart():
+    controller = CookieController()
+    print(controller.getAll())
+
+    keys_to_clear = [
+        "ProfileNumber", "LastName", "FirstName", "birthdate", "consultation date", "Gender"
+    ]
+
+    # Clear all session_state keys
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
+
+    # Remove cookies
+    for key in keys_to_clear:
+        if key in controller.getAll():
+            controller.remove(key)
+        else:
+            print(key + " not found")
+
+    print(controller.getAll())
+    st.cache_data.clear()
+
+    # Set flag to trigger page switch on next rerun
+    st.session_state.just_restarted = True
+
 if "go_to_next_page" not in st.session_state:
-    st.session_state.go_to_next_page = False
+   st.session_state.go_to_next_page = False
 
 # Perform the page switch "outside" the callback
 if st.session_state.go_to_next_page:
@@ -24,7 +52,6 @@ if st.session_state.go_to_upload_page:
     st.session_state.go_to_upload_page = False
     st.switch_page("pages/Upload_img.py")
 
-st.set_page_config(page_title="comparison", layout="wide")
 
 # Define a session flag to trigger the page switch
 
@@ -39,6 +66,7 @@ try:
     AI_teeth =st.session_state.ai_teeth
 except:
     AI_teeth=AIteeth
+
     print("no ai teeth found")
 
 def normalize(value):
@@ -56,12 +84,14 @@ def compair(manualteeth, AIteeth):
         norm_ai = normalize(ai_val)
 
         if norm_user != norm_ai:
-           differences[tooth]=ai_val
+            if not (norm_user==None and norm_ai=="normal") or not (norm_user=="normal" and norm_ai==None):
+                differences[tooth]=ai_val
     return(differences)
 
-load_sidebar()
+load_sidebar("Comparison")
 
 st.title("Comparison page!")
+
 ai_image_bytes = st.session_state.get("AI_image_bytes")
 manual_image_bytes = st.session_state.get("manual_image_bytes")
 # Check if the image exists
@@ -136,23 +166,7 @@ if "manual_image_bytes" in st.session_state:
 
 #switch page
 # Define the callback
-def restart():
-    controller = CookieController()
-    keys_to_clear = [
-        "ProfileNumber",
-        "LastName",
-        "FirstName",
-        "birthdate",
-        "consultation date",
-        "Gender",
-    ]
-    for key in st.session_state.keys():
-        print(key)
-        del st.session_state[key]
-    for key in keys_to_clear:  
-        controller.set(key, None)
-    st.cache_data.clear()
-    st.session_state.go_to_next_page = True
+
 
 def go_to_upload_page():
     st.session_state.go_to_upload_page = True
@@ -174,3 +188,14 @@ if "manual_image_bytes" in st.session_state:
             st.button("Restart", on_click=restart)
 else:
     st.button("Upload image", on_click=go_to_upload_page)
+
+if st.session_state.get("just_restarted"):
+    st.session_state.just_restarted = False
+    st.session_state.go_to_next_page = True
+if "AI_image_bytes" not in st.session_state and not st.session_state.get("just_restarted"):
+    st.session_state.go_to_AI_page = True
+
+# Trigger the actual page switch
+# if st.session_state.get("go_to_AI_page"):
+#     st.session_state.go_to_AI_page = False
+#     st.switch_page("pages/AI.py")
