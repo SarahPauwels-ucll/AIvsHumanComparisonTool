@@ -94,11 +94,11 @@ def excel_button():
 
     # rewind so Streamlit can read the buffer from start
     buffer.seek(0)
-    st.dataframe(df)
+    #st.dataframe(df)
     st.download_button(
         label="Download Excel file",
         data=buffer,
-        file_name="dicts_summary.xlsx",
+        file_name="DentalExcel.xlsx",
         mime=(
             "application/vnd.openxmlformats-officedocument."
             "spreadsheetml.sheet"
