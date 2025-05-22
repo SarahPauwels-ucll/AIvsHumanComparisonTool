@@ -53,7 +53,8 @@ if os.path.exists(image_path) and "manual_image_bytes" in st.session_state:
     """, unsafe_allow_html=True)
     with st.container(key="photo-container"):
         st.image(image_path,  use_container_width=True)
-    ai_teeth = render_teeth("ai")
+    circleView=st.session_state.circleView if "circleView" in st.session_state and st.session_state.circleView is not None else False
+    ai_teeth = render_teeth("ai",circle=circleView)
     st.session_state.ai_teeth = ai_teeth
 
     with open(image_path, "rb") as img_file:
@@ -70,6 +71,12 @@ def go_to_next():
 def go_to_upload_page():
     st.session_state.go_to_upload_page = True
 
+def switch_view():
+    if "circleView" not in  st.session_state or st.session_state.circleView is None or st.session_state.circleView==False:
+        st.session_state.circleView = True  
+    else: 
+        st.session_state.circleView=False
+
 if "manual_image_bytes" in st.session_state:
     st.markdown("""
         <style>
@@ -81,7 +88,8 @@ if "manual_image_bytes" in st.session_state:
         """, unsafe_allow_html=True)
     with st.container(key="next-container"):
         col1, col2 = st.columns([8, 1])
-
+        with col1:
+            st.button("switch view", on_click=switch_view)
         with col2:
         # Show the button
             st.button("Next Page", on_click=go_to_next)
