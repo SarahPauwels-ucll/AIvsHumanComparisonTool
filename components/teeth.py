@@ -88,16 +88,15 @@ def load_teeth(teeth):
             st.image(get_tooth_image(tooth_num, teeth[tooth_num]))
 
 def load_teeth_circle(teeth):
-    st.title("32 Divs in een Cirkel (CSS only, werkt in Streamlit)")
+    all_teeth =list(reversed(range(41, 49))) + list(range(31, 39)) + list(reversed(range(11, 19))) + list(range(21, 29))
+    teeth = {num: {} for num in all_teeth}  # Dummy teeth data dictionary
 
-    # Parameters
-    num_items = 32
+    num_items = len(all_teeth)
     container_size = 500
-    item_size = 60
+    item_size = 60  # size for each image (width and height in px)
     radius = (container_size - item_size) / 2
     center = container_size / 2
 
-    # Begin van HTML + CSS
     html = f"""
     <style>
     .circle-container {{
@@ -105,37 +104,34 @@ def load_teeth_circle(teeth):
     width: {container_size}px;
     height: {container_size}px;
     margin: 50px auto;
-    border: 1px dashed lightgray;
-    border-radius: 50%;
     }}
     .item {{
     position: absolute;
     width: {item_size}px;
     height: {item_size}px;
-    background-color: teal;
-    color: white;
-    text-align: center;
-    line-height: {item_size}px;
-    border-radius: 50%;
-    font-size: 16px;
+    object-fit: contain;
     transform: translate(-50%, -50%);
     }}
     </style>
     <div class="circle-container">
     """
 
-    # Voeg de 32 items toe op de juiste posities
-    for i in range(num_items+1):
+    for i, tooth_num in enumerate(all_teeth):
+        img_src, (img_w, img_h) = get_tooth_image(tooth_num, teeth.get(tooth_num), as_base64=True)
         angle_deg = i * (360 / num_items)
+        rotation=angle_deg 
         angle_rad = math.radians(angle_deg)
         x = center + radius * math.cos(angle_rad)
         y = center + radius * math.sin(angle_rad)
-        html += f'<div class="item" style="left: {x}px; top: {y}px;">{i}</div>\n'
-
+        html += (
+            f'<img class="item" src="{img_src}" '
+            f'style="left: {x}px; top: {y}px; transform: rotate({rotation}deg);" '
+            f'title="Tooth {tooth_num}" alt="Tooth {tooth_num}">'
+        )
     html += "</div>"
 
-    # Inject in Streamlit
     st.markdown(html, unsafe_allow_html=True)
+
 
     # st.markdown("""
     #     <style>
