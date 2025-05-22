@@ -93,8 +93,8 @@ def load_teeth_circle(teeth):
     all_teeth =bottom_row+top_row
 
     num_items = len(all_teeth)
-    container_size = 500
-    radius = (container_size) / 2
+    container_size = 400
+    radius = (container_size-100) / 2
     center = container_size / 2
 
     html = f"""
@@ -115,15 +115,15 @@ def load_teeth_circle(teeth):
     """
 
     for i, tooth_num in enumerate(all_teeth):
-        img_src= get_tooth_image(tooth_num, teeth[tooth_num], as_base64=True)
-        angle_deg = i * (360 / num_items)
-        if i <= 16:
-            rotation=angle_deg - 90
+        img_src, (width, height)= get_tooth_image(tooth_num, teeth[tooth_num], as_base64=True)
+        angle_deg = (i * (360 / num_items))+(360 / num_items)/2
+        if i < 16:
+            rotation=angle_deg + 90
         else:
-            rotation=angle_deg+90
+            rotation=angle_deg-90
         angle_rad = math.radians(angle_deg)
         x = center + radius * math.cos(angle_rad)
-        y = center + 1.2*(radius * math.sin(angle_rad))
+        y = center + 1.3*(radius * math.sin(angle_rad))
         html += (
             f'<img class="item" src="{img_src}" '
             f'style="left: {x}px; top: {y}px; transform: rotate({rotation}deg);" '
