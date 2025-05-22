@@ -71,71 +71,126 @@ def get_tooth_image(tooth_number, status, height=80, icon_variant="white", as_ba
         return img_resized
 
 
-# def load_teeth(teeth):
-#
-#     top_row = list(reversed(range(11, 19))) + list(range(21, 29))
-#     bottom_row = list(reversed(range(41, 49))) + list(range(31, 39))
-#
-#
-#     cols = st.columns(16)
-#     for i, tooth_num in enumerate(top_row):
-#         with cols[i]:
-#             st.image(get_tooth_image(tooth_num, teeth[tooth_num]))
-#
-#     cols2 = st.columns(16)
-#     for i, tooth_num in enumerate(bottom_row):
-#         with cols2[i]:
-#             st.image(get_tooth_image(tooth_num, teeth[tooth_num]))
-
 def load_teeth(teeth):
-    st.markdown("""
-        <style>
-        .teeth-container {
-            position: relative;
-            width: 600px;
-            height: 600px;
-            margin: 0 auto;
-        }
-        .tooth {
-            position: absolute;
-            height: 60px;
-            width: auto;
-            transform-origin: center center;
-        }
-        </style>
-    """, unsafe_allow_html=True)
 
-    st.markdown('<div class="teeth-container">', unsafe_allow_html=True)
+    top_row = list(reversed(range(11, 19))) + list(range(21, 29))
+    bottom_row = list(reversed(range(41, 49))) + list(range(31, 39))
 
-    # All teeth numbers in order around the circle
-    all_teeth = (
-        list(reversed(range(11, 19))) + list(range(21, 29)) +
-        list(reversed(range(41, 49))) + list(range(31, 39))
-    )
 
-    center_x = 300
-    center_y = 300
-    radius = 240
-    angle_step = 360 / len(all_teeth)
+    cols = st.columns(16)
+    for i, tooth_num in enumerate(top_row):
+        with cols[i]:
+            st.image(get_tooth_image(tooth_num, teeth[tooth_num]))
 
-    for i, tooth_num in enumerate(all_teeth):
-        angle_deg = i * angle_step
+    cols2 = st.columns(16)
+    for i, tooth_num in enumerate(bottom_row):
+        with cols2[i]:
+            st.image(get_tooth_image(tooth_num, teeth[tooth_num]))
+
+def load_teeth_circle(teeth):
+    st.title("32 Divs in een Cirkel (CSS only, werkt in Streamlit)")
+
+    # Parameters
+    num_items = 32
+    container_size = 500
+    item_size = 60
+    radius = (container_size - item_size) / 2
+    center = container_size / 2
+
+    # Begin van HTML + CSS
+    html = f"""
+    <style>
+    .circle-container {{
+    position: relative;
+    width: {container_size}px;
+    height: {container_size}px;
+    margin: 50px auto;
+    border: 1px dashed lightgray;
+    border-radius: 50%;
+    }}
+    .item {{
+    position: absolute;
+    width: {item_size}px;
+    height: {item_size}px;
+    background-color: teal;
+    color: white;
+    text-align: center;
+    line-height: {item_size}px;
+    border-radius: 50%;
+    font-size: 16px;
+    transform: translate(-50%, -50%);
+    }}
+    </style>
+    <div class="circle-container">
+    """
+
+    # Voeg de 32 items toe op de juiste posities
+    for i in range(num_items+1):
+        angle_deg = i * (360 / num_items)
         angle_rad = math.radians(angle_deg)
+        x = center + radius * math.cos(angle_rad)
+        y = center + radius * math.sin(angle_rad)
+        html += f'<div class="item" style="left: {x}px; top: {y}px;">{i}</div>\n'
 
-        x = center_x + radius * math.cos(angle_rad)
-        y = center_y + radius * math.sin(angle_rad)
+    html += "</div>"
 
-        img_src, (img_w, img_h) = get_tooth_image(tooth_num, teeth.get(tooth_num), as_base64=True)
+    # Inject in Streamlit
+    st.markdown(html, unsafe_allow_html=True)
 
-        # Optional: Uncomment below to rotate outward like clock rays
-        # rotation = angle_deg
+    # st.markdown("""
+    #     <style>
+    #     .teeth-container {
+    #         position: relative;
+    #         width: 600px;
+    #         height: 600px;
+    #         margin: 0 auto;
+    #     }
+    #     .tooth {
+    #         position: absolute;
+    #         height: 60px;
+    #         width: auto;
+    #         transform-origin: center center;
+    #     }
+    #     </style>
+    # """, unsafe_allow_html=True)
 
-        # Keep upright:
-        rotation = 0
+    # st.markdown('<div class="teeth-container">', unsafe_allow_html=True)
 
-        st.markdown(f'''
-            <img class="tooth" src="{img_src}"
-                 style="left: {x - img_w / 2}px; top: {y - img_h / 2}px; transform: rotate({rotation}deg);"/>
-        ''', unsafe_allow_html=True)
+    # # All teeth numbers in order around the circle
+    # all_teeth = (
+    #     list(reversed(range(11, 19))) + list(range(21, 29)) +
+    #     list(reversed(range(41, 49))) + list(range(31, 39))
+    # )
 
-    st.markdown('</div>', unsafe_allow_html=True)
+    # center_x = 200
+    # center_y = 200
+    # radius = 100
+
+    # for i, tooth_num in enumerate(all_teeth):
+    #     angle_deg = 360 * i / len(all_teeth)
+    #     angle_rad = math.radians(angle_deg)
+        
+
+    #     x = center_x + radius * math.cos(angle_rad)
+    #     y = center_y + radius * math.sin(angle_rad)
+
+    #     img_src, (img_w, img_h) = get_tooth_image(tooth_num, teeth.get(tooth_num), as_base64=True)
+
+    #     rotation = angle_deg -90
+
+    #     print(str(tooth_num)+ " : "+ str(rotation)+ ' x='+str(x)," y="+str(y))
+    #     # st.markdown(f'''
+                    
+    #     #     <img class="tooth" src="{img_src} alt={tooth_num}"
+    #     #          style="left: {x - img_w / 2}px; top: {y - img_h / 2}px; transform: rotate({rotation}deg);"/>
+    #     # ''', unsafe_allow_html=True)
+    #     st.markdown(f'''
+    #     <div style="position:absolute; width:10px; height:10px; 
+    #             background:red; border-radius:50%; 
+    #             transform: rotate(${angle_deg}deg) translate(${radius}px)"></div>
+    #         ''', unsafe_allow_html=True)
+
+
+    # st.markdown('</div>', unsafe_allow_html=True)
+
+
