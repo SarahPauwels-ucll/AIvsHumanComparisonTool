@@ -33,6 +33,7 @@ load_sidebar("Manual")
 
 st.title("Welcome to the manual page!")
 
+image_path = os.path.join("image", "image.jpeg")
 
 if "manual_image_bytes" in st.session_state:
     st.markdown("""
