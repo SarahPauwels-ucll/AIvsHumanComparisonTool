@@ -11,7 +11,9 @@ from components.pdf_profesionnal import pdf_button_professional
 
 if "go_to_next_page" not in st.session_state:
     st.session_state.go_to_next_page = False
-
+if not st.session_state.get("AI_image_bytes"):
+    st.session_state.go_to_next_page = False
+    st.switch_page("pages/AI.py")
 # Perform the page switch "outside" the callback
 if st.session_state.go_to_next_page:
     st.session_state.go_to_next_page = False
