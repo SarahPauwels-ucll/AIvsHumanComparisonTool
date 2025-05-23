@@ -233,7 +233,6 @@ def create_pdf_professional(
     ]
 
     present_teeth_count = len(top_row_present_teeth) + len(bottom_row_present_teeth)
-    print(present_teeth_count)
     dental_filling_teeth = [str(key) for key, value in manual_teeth.items() if "df" in str(value)]
     root_canal_filling_teeth = [str(key) for key, value in manual_teeth.items() if "rcf" in str(value)]
     crown_teeth = [str(key) for key, value in manual_teeth.items() if "crown" in str(value)]
