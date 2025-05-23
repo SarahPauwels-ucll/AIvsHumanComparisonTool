@@ -12,7 +12,6 @@ teeth = {
     41: None, 42: None, 43: "crown", 44: None, 45: "missing,brigde", 46: "missing,brigde,implant", 47: "df", 48: None
 }
 
-
 def get_tooth_image(tooth_number, status, height=80, icon_variant="white", as_base64=False):
     if icon_variant == "black":
         path_prefix = "icons"
@@ -70,12 +69,9 @@ def get_tooth_image(tooth_number, status, height=80, icon_variant="white", as_ba
         # Return PIL image for st.image
         return img_resized
 
-
 def load_teeth(teeth):
-
     top_row = list(reversed(range(11, 19))) + list(range(21, 29))
     bottom_row = list(reversed(range(41, 49))) + list(range(31, 39))
-
 
     cols = st.columns(16)
     for i, tooth_num in enumerate(top_row):

@@ -9,10 +9,7 @@ from typing import Dict, List, Set
 
 from components.pdf_profesionnal import create_pdf_professional
 
-
 def combined_download_button():
-
-
     # --- Generate Excel ---
     excel_buffer = io.BytesIO()
     manual_teeth: Dict[int, str] = st.session_state.get("manual_teeth", {})
