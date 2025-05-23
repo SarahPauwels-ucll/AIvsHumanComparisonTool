@@ -89,12 +89,11 @@ if "manual_image_bytes" in st.session_state:
     with st.container(key="next-container"):
         col1, col2 = st.columns([8, 1])
         with col1:
-            st.button("switch view", on_click=switch_view)
+            if st.session_state.Professional:
+                st.button("switch view", on_click=switch_view)
         with col2:
         # Show the button
             st.button("Next Page", on_click=go_to_next)
-
-    excel_button()
 
 else:
     st.button("Upload image", on_click=go_to_upload_page)
