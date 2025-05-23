@@ -1,11 +1,11 @@
 import os
 import streamlit as st
-from components.teeth import load_teeth
+from components.teeth import load_teeth, load_teeth_circle
 from input.teethSet import teeth as teethInput
 from AIOutput.teethSet import teeth as teethAI
 import copy
 
-def render_teeth(page: str, disable_buttons: bool = False):
+def render_teeth(page: str, disable_buttons: bool = False,circle=False):
     if not page:
         raise Exception("page can't be empty")
     @st.cache_data()
@@ -83,17 +83,16 @@ def render_teeth(page: str, disable_buttons: bool = False):
 
             if missing_checkbox:
                 implant_checkbox = st.checkbox("Implant", disabled=check_checkbox_disabled(["crown"],tooth_number), on_change=toggle_tooth_presence, args=("implant",tooth_number), value=check_checkbox_status("implant", tooth_number))
-                if implant_checkbox and not "bridge" in str(teeth[tooth_number]):
-                    crown_checkbox = st.checkbox("Crown", on_change=toggle_tooth_presence, args=("crown",tooth_number), value=check_checkbox_status("crown", tooth_number))
-                else:
-                    crown_checkbox = st.checkbox("Crown", disabled=True, value=check_checkbox_status("crown", tooth_number))
                 if not "crown" in str(teeth[tooth_number]):
                     bridge_checkbox = st.checkbox("Bridge", on_change=toggle_tooth_presence, args=("bridge",tooth_number), value=check_checkbox_status("bridge", tooth_number))
                 elif "implant" not in str(teeth[tooth_number]):
                     bridge_checkbox = st.checkbox("Bridge", disabled=True, value=check_checkbox_status("bridge,pontic", tooth_number))
                 else:
                     bridge_checkbox = st.checkbox("Bridge", disabled=True, value=check_checkbox_status("bridge", tooth_number))
-
+                if implant_checkbox and not "bridge" in str(teeth[tooth_number]):
+                    crown_checkbox = st.checkbox("Crown", on_change=toggle_tooth_presence, args=("crown",tooth_number), value=check_checkbox_status("crown", tooth_number))
+                else:
+                    crown_checkbox = st.checkbox("Crown", disabled=True, value=check_checkbox_status("crown", tooth_number))
 
         col1, col2 = st.columns(2)
         with col1:
@@ -154,8 +153,11 @@ def render_teeth(page: str, disable_buttons: bool = False):
         top_cols = st.columns(len(top_left_nums + top_right_nums))
         top_nums = top_left_nums + top_right_nums
         render_button_row(top_cols,top_nums)
-
-        load_teeth(teeth)
+        
+        if circle:
+            load_teeth_circle(teeth)
+        else:
+            load_teeth(teeth)
 
         bottom_cols = st.columns(len(bottom_left_nums + bottom_right_nums))
         bottom_nums = bottom_left_nums + bottom_right_nums

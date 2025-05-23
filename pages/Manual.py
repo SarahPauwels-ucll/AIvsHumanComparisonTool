@@ -38,6 +38,7 @@ load_sidebar("Manual")
 
 st.title("Welcome to the manual page!")
 
+image_path = os.path.join("image", "image.jpeg")
 
 if "manual_image_bytes" in st.session_state:
     st.markdown("""
@@ -59,8 +60,8 @@ if "manual_image_bytes" in st.session_state:
         disable_teeth_buttons = True
     else:
         disable_teeth_buttons = False
-
-    manual_teeth = render_teeth("manual", disable_teeth_buttons)
+    circleView=st.session_state.circleView if "circleView" in st.session_state and st.session_state.circleView is not None else False
+    manual_teeth = render_teeth("manual", disable_teeth_buttons,circle=circleView)
     st.session_state.manual_teeth = manual_teeth
 else:
     st.warning("No image has been uploaded yet.")
@@ -81,6 +82,12 @@ def go_to_comparison():
 def go_to_upload_page():
     st.session_state.go_to_upload_page = True
 
+def switch_view():
+    if "circleView" not in  st.session_state or st.session_state.circleView is None or st.session_state.circleView==False:
+        st.session_state.circleView = True  
+    else: 
+        st.session_state.circleView=False
+
 if "manual_image_bytes" in st.session_state:
     st.markdown("""
         <style>
@@ -92,6 +99,9 @@ if "manual_image_bytes" in st.session_state:
         """, unsafe_allow_html=True)
     with st.container(key="next-container"):
         col1, col2 = st.columns([8, 1])
+        with col1:
+            if st.session_state.Professional:
+                st.button("switch view", on_click=switch_view)
         with col2:
         # Show the button
             if st.session_state.get("Professional", False):

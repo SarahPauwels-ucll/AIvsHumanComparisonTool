@@ -20,24 +20,24 @@ if "upload_errors" not in st.session_state:
 
 def upload_files():
     st.session_state["upload_errors"] = []
-    files = st.session_state["uploaded_files"]
+    file = st.session_state["uploaded_files"]
 
-    if files == [] or files == None:
-        st.session_state["upload_errors"].append("No files uploaded")
-    for file in files:
+    if file == [] or file == None:
+        st.session_state["upload_errors"]=["No files uploaded"]
+    else:   
         print("processing file: ", file)
         filename = file.name
         name, ext = os.path.splitext(filename)
         ext = ext.replace('.', '')
 
-        if ext == 'jpeg':
+        if ext == 'jpeg' or ext =='jpg':
             img_bytes = file.read()
             st.session_state["manual_image_bytes"] = img_bytes
-            st.session_state["upload_errors"].append(f"File '{name}' is uploaded successfully")
+            st.session_state["upload_errors"]=[f"File '{name}' is uploaded successfully"]
             st.session_state.submitted_manual_teeth = False
 
         else:
-            st.session_state["upload_errors"].append(f"Cannot use files with extension '{ext}' use 'jpeg' instead")
+            st.session_state["upload_errors"]=[f"Cannot use files with extension '{ext}' use 'jpeg' or 'jpg' instead"]
 
 
 # layout
@@ -53,12 +53,9 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 with st.container(key="uploader-container"):
-    st.error("Please ensure the image is an 'jpeg'")
+    st.error("Please ensure the image is an 'jpeg' or 'jpg'")
     with st.container(border=True):
-        files = st.file_uploader("Image uploader", accept_multiple_files=True, key="uploaded_files", type=["jpeg"])
-
-        st.button("Upload image", on_click=upload_files)
-
+        file = st.file_uploader("Image uploader", accept_multiple_files=False, key="uploaded_files", type=["jpeg"], on_change=upload_files)
     for message in st.session_state.get("upload_errors", []):
         if "successfully" in message:
             st.success(message)

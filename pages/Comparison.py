@@ -5,6 +5,8 @@ from pathlib import Path
 import streamlit as st
 from PIL.ImageFile import ImageFile
 from streamlit_cookies_controller import CookieController
+
+from components.excel import excel_button
 from components.pdf import pdf_button
 from components.sidebar import load_sidebar
 from components.teeth import load_teeth
@@ -191,8 +193,11 @@ if "manual_image_bytes" in st.session_state:
         with col2:
             if st.session_state.Professional:
                 pdf_button_professional()
+                excel_button()
+
             else:
                 pdf_button()
+                excel_button()
 
 #switch page
 # Define the callback
