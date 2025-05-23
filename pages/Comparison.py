@@ -3,6 +3,7 @@ from streamlit_cookies_controller import CookieController
 
 from components.excel import excel_button
 from components.pdf import pdf_button
+from components.zipDownload import combined_download_button
 from components.sidebar import load_sidebar
 from components.teeth import load_teeth
 from input.teethSet import teeth as manualteeth
@@ -162,12 +163,10 @@ if "manual_image_bytes" in st.session_state:
 
         with col2:
             if st.session_state.Professional:
-                pdf_button_professional()
-                excel_button()
-
+                combined_download_button()
             else:
                 pdf_button()
-                excel_button()
+               # excel_button()
 
 #switch page
 # Define the callback
