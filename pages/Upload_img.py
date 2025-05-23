@@ -23,7 +23,7 @@ def upload_files():
     files = st.session_state["uploaded_files"]
 
     if files == [] or files == None:
-        st.session_state["upload_errors"].append("No files uploaded")
+        st.session_state["upload_errors"]=["No files uploaded"]
     for file in files:
         print("processing file: ", file)
         filename = file.name
@@ -33,11 +33,11 @@ def upload_files():
         if ext == 'jpeg' or ext =='jpg':
             img_bytes = file.read()
             st.session_state["manual_image_bytes"] = img_bytes
-            st.session_state["upload_errors"].append(f"File '{name}' is uploaded successfully")
+            st.session_state["upload_errors"]=[f"File '{name}' is uploaded successfully"]
             st.session_state.submitted_manual_teeth = False
 
         else:
-            st.session_state["upload_errors"].append(f"Cannot use files with extension '{ext}' use 'jpeg' or 'jpg' instead")
+            st.session_state["upload_errors"]=[f"Cannot use files with extension '{ext}' use 'jpeg' or 'jpg' instead"]
 
 
 # layout
