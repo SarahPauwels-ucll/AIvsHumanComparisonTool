@@ -14,7 +14,6 @@ from components.pdf_profesionnal import pdf_button_professional
 
 st.set_page_config(page_title="comparison", layout="wide")
 
-
 def restart():
     controller = CookieController()
     print(controller.getAll())
@@ -55,10 +54,6 @@ if st.session_state.go_to_upload_page:
     st.session_state.go_to_upload_page = False
     st.switch_page("pages/Upload_img.py")
 
-
-# Define a session flag to trigger the page switch
-
-
 try:
     manual_teeth =st.session_state.manual_teeth
 except:
@@ -69,7 +64,6 @@ try:
     AI_teeth =st.session_state.ai_teeth
 except:
     AI_teeth=AIteeth
-
     print("no ai teeth found")
 
 def normalize(value):
@@ -97,6 +91,7 @@ st.title("Comparison page!")
 
 ai_image_bytes = st.session_state.get("AI_image_bytes")
 manual_image_bytes = st.session_state.get("manual_image_bytes")
+
 # Check if the image exists
 if ai_image_bytes and manual_image_bytes :
     st.markdown("""
@@ -148,7 +143,6 @@ if ai_image_bytes and manual_image_bytes :
 else:
     st.warning("No image has been uploaded yet.")
 
-
 if "manual_image_bytes" in st.session_state:
     st.markdown("""
         <style>
@@ -167,10 +161,6 @@ if "manual_image_bytes" in st.session_state:
             else:
                 pdf_button()
                # excel_button()
-
-#switch page
-# Define the callback
-
 
 def go_to_upload_page():
     st.session_state.go_to_upload_page = True
@@ -196,10 +186,11 @@ else:
 if st.session_state.get("just_restarted"):
     st.session_state.just_restarted = False
     st.session_state.go_to_next_page = True
-if "AI_image_bytes" not in st.session_state and not st.session_state.get("just_restarted"):
-    st.session_state.go_to_AI_page = True
 
-# Trigger the actual page switch
+# if "AI_image_bytes" not in st.session_state and not st.session_state.get("just_restarted"):
+#     st.session_state.go_to_AI_page = True
+
+# # Trigger the actual page switch
 # if st.session_state.get("go_to_AI_page"):
 #     st.session_state.go_to_AI_page = False
 #     st.switch_page("pages/AI.py")

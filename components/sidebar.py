@@ -166,4 +166,3 @@ def load_sidebar(page="login"):
     if st.session_state.get("just_logedin"):
         st.session_state.just_logedin = False
         st.session_state.go_to_login = True
-

@@ -17,7 +17,6 @@ st.set_page_config(page_title="Upload image",
 if "upload_errors" not in st.session_state:
     st.session_state["upload_errors"] = []
 
-
 def upload_files():
     st.session_state["upload_errors"] = []
     file = st.session_state["uploaded_files"]
@@ -38,7 +37,6 @@ def upload_files():
 
         else:
             st.session_state["upload_errors"]=[f"Cannot use files with extension '{ext}' use 'jpeg' or 'jpg' instead"]
-
 
 # layout
 load_sidebar("Upload")
@@ -62,12 +60,10 @@ with st.container(key="uploader-container"):
         else:
             st.error(message)
 
-
 # switch page
 # Define the callback
 def go_to_next():
     st.session_state.go_to_next_page = True
-
 
 st.markdown("""
     <style>
@@ -83,5 +79,3 @@ with st.container(key="next-container"):
     with col2:
         # Show the button
         st.button("Next Page", on_click=go_to_next)
-
-

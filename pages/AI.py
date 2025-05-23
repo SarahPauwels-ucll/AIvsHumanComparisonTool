@@ -1,12 +1,10 @@
 import streamlit as st
-
 from components.excel import excel_button
 from components.teeth_renderer import render_teeth
 from input.teethSet import teeth as manualteeth
 
 from components.sidebar import load_sidebar
 import os
-
 
 st.session_state.submitted_manual_teeth = True
 # Define a session flag to trigger the page switch
@@ -27,8 +25,6 @@ if st.session_state.go_to_upload_page:
 
 st.set_page_config(page_title="AI vs. Human analysis: A smart comparison tool",
                    layout="wide")
-
-
 
 try:
     manual_teeth =st.session_state.manual_teeth

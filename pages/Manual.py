@@ -27,8 +27,6 @@ if st.session_state.go_to_upload_page:
 st.set_page_config(page_title="AI vs. Human analysis: A smart comparison tool",
                    layout="wide")
 
-
-
 load_sidebar("Manual")
 
 st.title("Welcome to the manual page!")
