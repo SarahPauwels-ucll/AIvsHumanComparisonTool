@@ -5,6 +5,27 @@ from datetime import date
 import regex
 
 def load_sidebar(page="login"):
+    def logout():
+        controller = CookieController()
+        keys_to_clear = [
+            "ProfileNumber",
+            "LastName",
+            "FirstName",
+            "birthdate",
+            "consultation date",
+            "Gender",
+            "Professional"
+        ]
+        for key in st.session_state.keys():
+            del st.session_state[key]
+        for key in keys_to_clear:
+            if key in controller.getAll():
+                controller.remove(key)
+            else:
+                print(key + " not found")
+        st.cache_data.clear()
+        st.session_state.just_logedin = True
+
     if "go_to_login" not in st.session_state:
         st.session_state.go_to_login = False
 
@@ -137,26 +158,12 @@ def load_sidebar(page="login"):
         years = consultation_date.year - birthdate.year - ((consultation_date.month, consultation_date.day) < (birthdate.month, birthdate.day))
         st.sidebar.markdown(f"Age: {years}")
 
-    def logout():
-        controller = CookieController()
-        keys_to_clear = [
-            "ProfileNumber",
-            "LastName",
-            "FirstName",
-            "birthdate",
-            "consultation date",
-            "Gender",
-            "Professional"
-        ]
-        for key in st.session_state.keys():
-            del st.session_state[key]
-        for key in keys_to_clear:  
-            controller.set(key, None)
-        st.cache_data.clear()
-        st.session_state.go_to_login = True
-
     if st.session_state.Professional:
         st.sidebar.button("Log out",on_click=logout)
     else:
         st.sidebar.button("Log in as professional",on_click=logout)
+    
+    if st.session_state.get("just_logedin"):
+        st.session_state.just_logedin = False
+        st.session_state.go_to_login = True
 

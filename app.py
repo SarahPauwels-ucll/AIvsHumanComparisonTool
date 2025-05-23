@@ -27,7 +27,7 @@ with st.container(key="login-container"):
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
         login_button = st.form_submit_button("Login")
-        student_button =st.form_submit_button("Login as Student")
+        student_button =st.form_submit_button("Continue as Student")
 
     if login_button:
         if login(username, password):
