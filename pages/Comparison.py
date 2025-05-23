@@ -1,4 +1,9 @@
+import base64
+from io import BytesIO
+from pathlib import Path
+
 import streamlit as st
+from PIL.ImageFile import ImageFile
 from streamlit_cookies_controller import CookieController
 from components.pdf import pdf_button
 from components.sidebar import load_sidebar
@@ -94,6 +99,19 @@ st.title("Comparison page!")
 
 ai_image_bytes = st.session_state.get("AI_image_bytes")
 manual_image_bytes = st.session_state.get("manual_image_bytes")
+
+def pil_image_to_base64(pil_image):
+    buffered = BytesIO()
+    pil_image.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+    return img_str
+
+def img_to_html(pil_image):
+    encoded_img = pil_image_to_base64(pil_image)
+    mime_type = f"image/png"
+    img_html = f"<img src='data:{mime_type};base64,{encoded_img}' class='img-fluid' alt='Tooth Image'>"
+    return img_html
+
 # Check if the image exists
 if ai_image_bytes and manual_image_bytes :
     st.markdown("""
@@ -137,11 +155,23 @@ if ai_image_bytes and manual_image_bytes :
 
         st.markdown("Differences bottom Teeth")
         bottom_row = list(reversed(range(41, 49))) + list(range(31, 39))
+
+        bottom_teeth_images_data_urls = []
+        bottom_teeth_titles = []
+        bottom_teeth_display_order = []
+
         cols2 = st.columns(16)
         for i, tooth_num in enumerate(bottom_row):
             if tooth_num in differences:
                 with cols2[i]:
-                    st.image(get_tooth_image(tooth_num, differences[tooth_num]))
+                    tooth_image = get_tooth_image(tooth_num, differences[tooth_num])
+                    image_html = img_to_html(tooth_image)
+                    button_html = f"""
+                    <button onclick="alert('Button clicked for tooth {tooth_num}!')" style="background:none; border:none; padding:0; cursor:pointer;">
+                        {image_html}
+                    </button>
+                    """
+                    st.markdown(button_html, unsafe_allow_html=True)
 else:
     st.warning("No image has been uploaded yet.")
 

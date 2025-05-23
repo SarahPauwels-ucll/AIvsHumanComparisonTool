@@ -1,6 +1,6 @@
 import streamlit as st
 from st_pages import Page, add_page_title
-
+import AIOutput.teethSet
 from components.pdf_profesionnal import pdf_button_professional
 from components.teeth_renderer import render_teeth
 from components.sidebar import load_sidebar
@@ -23,6 +23,11 @@ if "go_to_upload_page" not in st.session_state:
 if st.session_state.go_to_upload_page:
     st.session_state.go_to_upload_page = False
     st.switch_page("pages/Upload_img.py")
+
+
+if st.session_state.get("go_to_comparison_page", False):
+    st.session_state.go_to_comparison_page = False
+    st.switch_page("pages/Comparison.py")
 
 st.set_page_config(page_title="AI vs. Human analysis: A smart comparison tool",
                    layout="wide")
@@ -64,6 +69,15 @@ else:
 def go_to_next():
     st.session_state.go_to_next_page = True
 
+def go_to_comparison():
+    image_path = os.path.join("AIOutput", "image.jpg")
+    if os.path.exists(image_path):
+        # Full import path to clearly show this comes from another file!!
+        st.session_state.ai_teeth = AIOutput.teethSet.teeth
+        with open(image_path, "rb") as img_file:
+            st.session_state.AI_image_bytes = img_file.read()
+    st.session_state.go_to_comparison_page = True
+
 def go_to_upload_page():
     st.session_state.go_to_upload_page = True
 
@@ -80,7 +94,10 @@ if "manual_image_bytes" in st.session_state:
         col1, col2 = st.columns([8, 1])
         with col2:
         # Show the button
-            st.button("Next Page", on_click=go_to_next)
+            if st.session_state.get("Professional", False):
+                st.button("Next Page", on_click=go_to_comparison)
+            else:
+                st.button("Next Page", on_click=go_to_next)
 
 else:
     st.button("Upload image", on_click=go_to_upload_page)
