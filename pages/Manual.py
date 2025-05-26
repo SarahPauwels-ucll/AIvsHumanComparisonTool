@@ -7,16 +7,6 @@ from components.sidebar import load_sidebar
 from components.teeth import load_teeth
 import os
 
-#switch page
-# Define a session flag to trigger the page switch
-if "go_to_next_page" not in st.session_state:
-    st.session_state.go_to_next_page = False
-
-# Perform the page switch "outside" the callback
-if st.session_state.go_to_next_page:
-    st.session_state.go_to_next_page = False
-    st.switch_page("pages/AI.py")
-
 if "go_to_upload_page" not in st.session_state:
     st.session_state.go_to_upload_page = False
 
@@ -61,7 +51,7 @@ else:
 
 # Define the callback
 def go_to_next():
-    st.session_state.go_to_next_page = True
+    st.session_state.go_to_ai_page = True
 
 def go_to_upload_page():
     st.session_state.go_to_upload_page = True
@@ -74,22 +64,33 @@ def switch_view():
 
 if "manual_image_bytes" in st.session_state:
     st.markdown("""
-        <style>
-        .st-key-next-container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        .button-align-right {
-            display: flex;
-            justify-content: flex-end;
-        }
-        </style>
+    <style>
+    .st-key-next-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    </style>
     """, unsafe_allow_html=True)
-
     with st.container(key="next-container"):
-        st.markdown('<div class="button-align-right">', unsafe_allow_html=True)
-        st.button("Next page", on_click=go_to_next())
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("""
+            <style>
+                [data-testid="stForm"] button {
+                        border-style: solid;
+                        border-width: 1px;
+                        justify-content:center;
+                        width: fit-content;       
+                        padding: 0.5rem;
+                        margin-right: 0;
+                        margin-left: auto;
+                        display: flex;
+                        } 
+            </style>
+            """, unsafe_allow_html=True)            
+
+        with st.form("next", border=False):
+            nextpage = st.form_submit_button("Next page",use_container_width=True,type="tertiary")
+        if nextpage:
+            st.switch_page("pages/AI.py") 
 
 else:
     st.button("Upload image", on_click=go_to_upload_page)

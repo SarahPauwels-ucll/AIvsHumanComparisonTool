@@ -172,17 +172,18 @@ if "manual_image_bytes" in st.session_state:
             max-width: 900px;
             margin: 0 auto;
         }
-        .button-align-right {
+        [data-testid="stButton"] button {
             display: flex;
-            justify-content: flex-end;
+            justify-content: center;
+            margin-right: 0;
+            margin-left: auto;
+            width: fit-content; 
         }
         </style>
     """, unsafe_allow_html=True)
 
     with st.container(key="next-container"):
-        st.markdown('<div class="button-align-right">', unsafe_allow_html=True)
         st.button("Restart", on_click=restart)
-        st.markdown('</div>', unsafe_allow_html=True)
 else:
     st.button("Upload image", on_click=go_to_upload_page)
 
