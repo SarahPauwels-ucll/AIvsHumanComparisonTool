@@ -1,8 +1,9 @@
 import base64
 from io import BytesIO
 from pathlib import Path
-
+from st_click_detector import click_detector
 import streamlit as st
+from PIL import Image
 from PIL.ImageFile import ImageFile
 from st_clickable_images import clickable_images
 from streamlit_cookies_controller import CookieController
@@ -91,6 +92,10 @@ except:
 
     print("no ai teeth found")
 
+if st.session_state.get("customize_tooth", False):
+    teeth = st.session_state.get("teeth_dict_manual")
+    show_options(teeth)
+
 def normalize(value):
     if value is None:
         return None
@@ -118,57 +123,57 @@ ai_image_bytes = st.session_state.get("AI_image_bytes")
 manual_image_bytes = st.session_state.get("manual_image_bytes")
 
 
+TARGET_IMAGE_HEIGHT = 120
 
 
-
+# Simplified pick_correct_tooth - it no longer needs to manage complex last_click states
 @st.dialog(title=" ")
-def pick_correct_tooth(clicked_tooth):
-    if not st.session_state.get("corrected_teeth", None):
+def pick_correct_tooth(clicked_tooth_id):
+    if "corrected_teeth" not in st.session_state:  # Use .get for safer access if not always present
         st.session_state.corrected_teeth = set()
 
-    st.title(f"Tooth {clicked_tooth}")
-    tooth_differences = differences.get(clicked_tooth, False)
-    # st.write(f"This tooth has tooth_differences: **{tooth_differences}**")
+    st.title(f"Tooth {clicked_tooth_id}")
+    tooth_differences_value = differences.get(clicked_tooth_id, False)
 
     columns = st.columns(2)
-    #radio_value = "manual"
     with columns[0]:
-        radio_value = st.radio(" ", ("manual", "ai"))
+        radio_value = st.radio(" ", ("manual", "ai"), key=f"radio_modal_{clicked_tooth_id}")
 
     with columns[1]:
-        modal_tooth_pil_manual = get_tooth_image(clicked_tooth, manual_teeth[clicked_tooth])
+        modal_tooth_pil_manual = get_tooth_image(clicked_tooth_id, manual_teeth[clicked_tooth_id])
         st.image(modal_tooth_pil_manual, width=40)
 
-        modal_tooth_pil_ai = get_tooth_image(clicked_tooth, tooth_differences)
-        st.image(modal_tooth_pil_ai, width=40)
+        if tooth_differences_value is not False:
+            modal_tooth_pil_ai = get_tooth_image(clicked_tooth_id, tooth_differences_value)
+            st.image(modal_tooth_pil_ai, width=40)
+        else:
+            st.write("AI data not available for this tooth.")  # Or handle appropriately
 
-    # Add more details or interactive elements for the modal here
-
-    if st.button("Something different", key=f"something_different", use_container_width=True, type="tertiary"):
-        st.session_state.selected_tooth = clicked_tooth
+    if st.button("Something different", key=f"something_different_modal_{clicked_tooth_id}", use_container_width=True):
+        st.session_state.selected_tooth = clicked_tooth_id
         st.session_state.show_tooth_config_dialog = True
-        st.session_state.last_clicked_bottom_idx_processed = -1
-        teeth = st.session_state.get("teeth_dict_manual")
-        show_options(teeth)
-        #st.rerun()
+        st.rerun()  # Rerun to handle the new dialog state
 
-    columns = st.columns(2)
-    with columns[0]:
-        if st.button("Return", key=f"close_modal_{clicked_tooth}", use_container_width=True):
-            # Reset processed click
+    modal_cols = st.columns(2)
+    with modal_cols[0]:
+        if st.button("Return", key=f"close_modal_{clicked_tooth_id}", use_container_width=True):
             st.session_state.modal_tooth_num = None
-            st.session_state.last_clicked_bottom_idx_processed = -1
             st.rerun()
 
-    with columns[1]:
-        if st.button("Save", key=f"save_modal_{clicked_tooth}", use_container_width=True, type="primary"):
+    with modal_cols[1]:
+        if st.button("Save", key=f"save_modal_{clicked_tooth_id}", use_container_width=True, type="primary"):
             if radio_value == "ai":
-                manual_teeth[clicked_tooth] = AI_teeth[clicked_tooth] # check
+                manual_teeth[clicked_tooth_id] = AI_teeth[clicked_tooth_id]
 
-            st.session_state.corrected_teeth.add(clicked_tooth)
+            if clicked_tooth_id in differences:
+                del differences[clicked_tooth_id]
+
+            if "corrected_teeth" in st.session_state:  # Check if it exists
+                st.session_state.corrected_teeth.add(clicked_tooth_id)
+
             st.session_state.modal_tooth_num = None
-            st.session_state.last_clicked_bottom_idx_processed = -1
             st.rerun()
+
 
 # Check if the image exists
 if ai_image_bytes and manual_image_bytes:
@@ -217,60 +222,68 @@ if ai_image_bytes and manual_image_bytes:
         load_teeth(manual_teeth, outline_corrected_images=True)
 
         st.markdown("Differences bottom Teeth")
-        bottom_row = list(reversed(range(41, 49))) + list(range(31, 39))
+        bottom_row_ordered_tooth_ids = list(reversed(range(41, 49))) + list(range(31, 39))
 
-        bottom_teeth_images_data_urls = []
-        bottom_teeth_titles = []
-        bottom_teeth_display_order = []
+        # We still need to know which differences apply to the bottom row
+        actual_differences_in_bottom_row = {
+            tn: diff_value
+            for tn, diff_value in differences.items()
+            if tn in bottom_row_ordered_tooth_ids
+        }
 
-        for tooth_num in bottom_row:
-            if tooth_num in differences.keys():
-                tooth_pil = get_tooth_image(tooth_num, differences[tooth_num])
-                data_url = pil_to_data_url(tooth_pil)
-                bottom_teeth_images_data_urls.append(data_url)
-                bottom_teeth_titles.append(f"Tooth {tooth_num}\n (Difference(s): {differences[tooth_num]})")
-                bottom_teeth_display_order.append(tooth_num)
+        # Check if there are any differences to display at all for the bottom row
+        no_differences_to_show = not any(tooth_id in differences for tooth_id in bottom_row_ordered_tooth_ids)
 
-        if not bottom_teeth_images_data_urls:
-            st.write("No tooth data to display for the bottom row.")
+        if no_differences_to_show:
+            st.write("No tooth differences to display for the bottom row.")
         else:
-            # Use a dynamic key to force streamlit to update the component, resetting its internal state.
-            # This avoids issues where it still uses the index from last render, while the item might have been removed.
-            gallery_key_suffix = "_".join(map(str, bottom_teeth_display_order))
-            gallery_key = f"bottom_teeth_gallery_{len(bottom_teeth_images_data_urls)}_{gallery_key_suffix}"
+            cols = st.columns(len(bottom_row_ordered_tooth_ids))
+            clicked_image_id = None  # Variable to store the ID from click_detector
 
-            clicked_bottom_idx = clickable_images(
-                paths=bottom_teeth_images_data_urls,
-                titles=bottom_teeth_titles,
-                div_style={"display": "flex", "justify-content": "center", "flex-wrap": "wrap", "gap": "5px"},
-                img_style={"margin": "2px", "cursor": "pointer"},
-                key=gallery_key
-            )
+            for i, tooth_id_in_sequence in enumerate(bottom_row_ordered_tooth_ids):
+                with cols[i]:
+                    if tooth_id_in_sequence in actual_differences_in_bottom_row:
+                        diff_value = actual_differences_in_bottom_row[tooth_id_in_sequence]
+                        tooth_pil = get_tooth_image(tooth_id_in_sequence, diff_value)
+                        image_data_url = pil_to_data_url(tooth_pil)
 
-            if clicked_bottom_idx != -1 and \
-                    clicked_bottom_idx != st.session_state.get('last_clicked_bottom_idx_processed', -1):
+                        # The <a> tag needs the id attribute for click_detector to return it
+                        anchor_html_id = f"diff_tooth_{tooth_id_in_sequence}"
+                        html_content = f"""
+                            <div style="display: flex; justify-content: center; align-items: center; height: 100%; cursor: pointer;">
+                                <a href='#' id="{anchor_html_id}" >
+                                <img src="{image_data_url}" 
+                                     alt="Tooth {tooth_id_in_sequence} difference" 
+                                     style="max-width: 100%; max-height: {TARGET_IMAGE_HEIGHT}px; object-fit: contain;">
+                                </a>
+                            </div>
+                        """
+                        detected_click = click_detector(html_content, key=f"detector_{tooth_id_in_sequence}")
 
-                current_list_size = len(bottom_teeth_display_order)
-                actual_index_to_access = -1
+                        if detected_click:
+                            if detected_click == anchor_html_id:
+                                clicked_image_id = detected_click
+                    else:
+                        st.markdown(
+                            f"""<div style='height: {TARGET_IMAGE_HEIGHT}px;
+                                        display: flex; align-items: center;
+                                        justify-content: center; width: 100%;'>
+                                 </div>""",
+                            unsafe_allow_html=True
+                        )
 
-                # workaround for st_clickable_images possibly returning 1 for a 1-item list.
-                if clicked_bottom_idx == 1 and current_list_size == 1:
-                    actual_index_to_access = 0
-                elif 0 <= clicked_bottom_idx < current_list_size:
-                    actual_index_to_access = clicked_bottom_idx
+            # Process the click AFTER iterating through all detectors in the current script run
+            if clicked_image_id:
+                # Extract the tooth_id from the clicked_image_id (e.g., "diff_tooth_31" -> 31)
+                try:
+                    # Make sure the prefix matches what you used for image_html_id
+                    actual_tooth_id_str = clicked_image_id.replace("diff_tooth_", "")
+                    actual_tooth_id = int(actual_tooth_id_str)
+                    st.session_state.modal_tooth_num = actual_tooth_id
+                except ValueError:
+                    st.error(f"Could not parse tooth ID from clicked element ID: {clicked_image_id}")
 
-                if actual_index_to_access != -1:
-                    selected_tooth_num = bottom_teeth_display_order[actual_index_to_access]
-                    st.session_state.modal_tooth_num = selected_tooth_num
-                    st.session_state.last_clicked_bottom_idx_processed = clicked_bottom_idx
-                    st.rerun()
-                else:
-                    st.warning(
-                        f"Clickable_images (key: {gallery_key}) returned an unhandled index: {clicked_bottom_idx} "
-                        f"for a list of size {current_list_size}. Click ignored."
-                    )
-                    st.session_state.last_clicked_bottom_idx_processed = clicked_bottom_idx
-
+        # This part remains the same for showing the modal
         if st.session_state.get('modal_tooth_num', None):
             selected_tooth = st.session_state.modal_tooth_num
             pick_correct_tooth(selected_tooth)
