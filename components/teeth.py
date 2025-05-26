@@ -4,6 +4,25 @@ import streamlit as st
 from PIL import Image
 import base64
 from io import BytesIO
+
+def pil_image_to_base64(pil_image):
+    buffered = BytesIO()
+    pil_image.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+    return img_str
+
+def img_to_html(pil_image):
+    encoded_img = pil_image_to_base64(pil_image)
+    mime_type = f"image/png"
+    img_html = f"<img src='data:{mime_type};base64,{encoded_img}' class='img-fluid' alt='Tooth Image'>"
+    return img_html
+
+def pil_to_data_url(pil_image):
+    buffered = BytesIO()
+    pil_image.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue()).decode()
+    return f"data:image/png;base64,{img_str}"
+
 #example input
 teeth = {
     11: None, 12: "missing,implant", 13: None, 14: None, 15: "impacted", 16: None, 17: None, 18: None,
@@ -71,21 +90,55 @@ def get_tooth_image(tooth_number, status, height=80, icon_variant="white", as_ba
         return img_resized
 
 
-def load_teeth(teeth):
+def load_teeth(teeth, outline_corrected_images: bool = False):
 
     top_row = list(reversed(range(11, 19))) + list(range(21, 29))
     bottom_row = list(reversed(range(41, 49))) + list(range(31, 39))
 
+    corrected_teeth = st.session_state.get("corrected_teeth", set())
 
     cols = st.columns(16)
     for i, tooth_num in enumerate(top_row):
         with cols[i]:
-            st.image(get_tooth_image(tooth_num, teeth[tooth_num]))
+            img = get_tooth_image(tooth_num, teeth[tooth_num])
+            if outline_corrected_images and tooth_num in corrected_teeth:
+                data_url = pil_to_data_url(img)
+                st.markdown(
+                    f"""
+                    <img src="{data_url}"
+                         style="
+                             outline:2px solid red;
+                             outline-offset:-2px;
+                             border-radius: 5px;
+                             height:auto; width:auto;
+                         ">
+                    """,
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.image(img)
+
 
     cols2 = st.columns(16)
     for i, tooth_num in enumerate(bottom_row):
         with cols2[i]:
-            st.image(get_tooth_image(tooth_num, teeth[tooth_num]))
+            img = get_tooth_image(tooth_num, teeth[tooth_num])
+            if outline_corrected_images and tooth_num in corrected_teeth:
+                data_url = pil_to_data_url(img)
+                st.markdown(
+                    f"""
+                    <img src="{data_url}"
+                         style="
+                             outline:2px solid red;
+                             outline-offset:-2px;
+                             border-radius: 5px;
+                             height:auto; width:auto;
+                         ">
+                    """,
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.image(img)
 
 def load_teeth_circle(teeth):
     top_row = list(reversed(range(11, 19))) + list(range(21, 29))
