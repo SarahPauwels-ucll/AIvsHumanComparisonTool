@@ -64,18 +64,20 @@ with st.container(key="uploader-container"):
 # Define the callback
 def go_to_next():
     st.session_state.go_to_next_page = True
-
 st.markdown("""
     <style>
     .st-key-next-container {
         max-width: 900px;
         margin: 0 auto;
     }
+    .button-align-right {
+        display: flex;
+        justify-content: flex-end;
+    }
     </style>
-    """, unsafe_allow_html=True)
-with st.container(key="next-container"):
-    col1, col2 = st.columns([8, 1])
+""", unsafe_allow_html=True)
 
-    with col2:
-        # Show the button
-        st.button("Next Page", on_click=go_to_next)
+with st.container(key="next-container"):
+    st.markdown('<div class="button-align-right">', unsafe_allow_html=True)
+    st.button("Next page", on_click=go_to_next())
+    st.markdown('</div>', unsafe_allow_html=True)
