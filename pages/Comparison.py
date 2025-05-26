@@ -142,26 +142,7 @@ if ai_image_bytes and manual_image_bytes :
                     st.image(get_tooth_image(tooth_num, differences[tooth_num]))
 else:
     st.warning("No image has been uploaded yet.")
-
-if "manual_image_bytes" in st.session_state:
-    st.markdown("""
-        <style>
-        .st-key-pdf-container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-    with st.container(key="pdf-container"):
-        col1, col2 = st.columns([16, 5])
-
-        with col2:
-            if st.session_state.Professional:
-                combined_download_button()
-            else:
-                pdf_button()
-               # excel_button()
-
+    
 def go_to_upload_page():
     st.session_state.go_to_upload_page = True
 
@@ -183,6 +164,24 @@ if "manual_image_bytes" in st.session_state:
     """, unsafe_allow_html=True)
 
     with st.container(key="next-container"):
+        st.markdown("""
+        <style>
+        .st-key-pdf-container {
+            max-width: fit-content; 
+            margin-right: 0;
+            margin-left: auto;
+            display: flex;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        with st.container(key="pdf-container"):
+            if st.session_state.Professional:
+                combined_download_button()
+            else:
+                pdf_button()
+                # excel_button()
+
+
         st.button("Restart", on_click=restart)
 else:
     st.button("Upload image", on_click=go_to_upload_page)
@@ -190,11 +189,3 @@ else:
 if st.session_state.get("just_restarted"):
     st.session_state.just_restarted = False
     st.session_state.go_to_next_page = True
-
-# if "AI_image_bytes" not in st.session_state and not st.session_state.get("just_restarted"):
-#     st.session_state.go_to_AI_page = True
-
-# # Trigger the actual page switch
-# if st.session_state.get("go_to_AI_page"):
-#     st.session_state.go_to_AI_page = False
-#     st.switch_page("pages/AI.py")
