@@ -35,7 +35,7 @@ def toggle_tooth_presence(presence: str, tooth_number: int, teeth: dict[int, str
         teeth[tooth_number] = str(teeth[tooth_number]) + f",{presence}"
 
 @st.dialog( " ", width="large")
-def show_options(teeth: dict[int, str | None]):
+def show_options(teeth: dict[int, str | None], add_to_corrected_set: bool = False):
     tooth_number = st.session_state.selected_tooth
     missing_properties = ["Implant", "Implant bridge", "Implant crown", "Bridge"]
     present_properties = ["Dental filling", "Impacted", "Crown", "Bridge", "Root canal filling"]
@@ -85,6 +85,8 @@ def show_options(teeth: dict[int, str | None]):
     with col2:
         if st.button("Submit"):
             st.session_state.show_tooth_config_dialog = False
+            if add_to_corrected_set:
+                st.session_state.corrected_teeth.add(tooth_number)
             st.rerun()
 
 def render_teeth(page: str, disable_buttons: bool = False,circle=False):
