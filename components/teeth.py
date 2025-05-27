@@ -100,7 +100,7 @@ def load_teeth(teeth, child=False):
 def load_teeth_circle(teeth, child):
     if child:
         top_row = list(reversed(range(51, 56))) + list(range(61, 66))
-        bottom_row = list(reversed(range(81, 86))) + list(range(71, 76))
+        bottom_row = list(reversed(range(71, 76))) + list(range(81, 86))
     else:
         top_row = list(reversed(range(11, 19))) + list(range(21, 29))
         bottom_row = list(reversed(range(31, 39))) + list(range(41, 49)) 

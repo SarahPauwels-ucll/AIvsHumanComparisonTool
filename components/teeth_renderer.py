@@ -119,8 +119,8 @@ def render_teeth(page: str, disable_buttons: bool = False,circle=False,child=Fal
     if child:
         top_left_nums = [55,54,53,52,51]
         top_right_nums = [61,62,63,64,65]
-        bottom_left_nums = [75,74,73,72,71]
-        bottom_right_nums = [81,82,83,84,85]
+        bottom_left_nums = [85,84,83,82,81]
+        bottom_right_nums = [71,72,73,74,75]
     else:
         top_left_nums = [18,17,16,15,14,13,12,11]
         top_right_nums = [21,22,23,24,25,26,27,28]
