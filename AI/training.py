@@ -1,6 +1,7 @@
 from torch.utils.data import DataLoader
 import torch.optim as optim
 from datacleaning import TeethLineDataset 
+import torch
 
 # Assuming image_paths and keypoints are lists
 train_dataset = TeethLineDataset(image_paths, keypoints)
