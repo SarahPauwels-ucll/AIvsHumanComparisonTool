@@ -1,11 +1,9 @@
 import base64
 from io import BytesIO
 from pathlib import Path
-from st_click_detector import click_detector
 import streamlit as st
 from PIL import Image
 from PIL.ImageFile import ImageFile
-from st_clickable_images import clickable_images
 from streamlit_cookies_controller import CookieController
 
 from components.excel import excel_button
