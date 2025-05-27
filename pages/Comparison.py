@@ -11,7 +11,7 @@ from components.pdf import pdf_button
 from components.sidebar import load_sidebar
 from components.teeth import load_teeth, pil_to_data_url
 from components.teeth_renderer import check_checkbox_disabled, check_checkbox_status, toggle_tooth_presence, \
-    show_options
+    show_options, render_button_row
 from input.teethSet import teeth as manualteeth
 from AIOutput.teethSet import teeth as AIteeth
 import os
@@ -121,7 +121,7 @@ ai_image_bytes = st.session_state.get("AI_image_bytes")
 manual_image_bytes = st.session_state.get("manual_image_bytes")
 
 
-TARGET_IMAGE_HEIGHT = 120
+TARGET_IMAGE_HEIGHT = 90
 
 
 # Simplified pick_correct_tooth - it no longer needs to manage complex last_click states
@@ -169,51 +169,26 @@ def pick_correct_tooth(clicked_tooth_id):
             st.session_state.modal_tooth_num = None
             st.rerun()
 
-def render_diff_row(
-        ordered_tooth_ids: list[int],
-        arch_label: str,
-        buttons_above: bool = True,
-    ):
-    st.markdown(f"Differences {arch_label} Teeth")
+TOP_ROW    = list(reversed(range(11, 19))) + list(range(21, 29))
+BOTTOM_ROW = list(reversed(range(41, 49))) + list(range(31, 39))
 
-    columns = st.columns(len(ordered_tooth_ids))
-
-    for i, tooth_id in enumerate(ordered_tooth_ids):
-        has_diff = tooth_id in differences
-
-        if not has_diff:
-            with columns[i]:
-                st.markdown(f"<div style='height:{TARGET_IMAGE_HEIGHT}px'></div>",
-                            unsafe_allow_html=True)
-            continue
-
-        def tooth_button():
-            button_key = f"btn_{tooth_id}_b"
-            corr_teeth = st.session_state.get("corrected_teeth", set())
-            bg_style = "background-color: rgb(255, 51, 0)" \
-                       if tooth_id in corr_teeth else ""
-            st.markdown(
-                f"""
-                <style>
-                    .st-key-{button_key} button {{
-                        white-space: nowrap !important;
-                        color: white !important;
-                        {bg_style}
-                    }}
-                </style>
-                """,
-                unsafe_allow_html=True,
-            )
-            if st.button(f"{tooth_id}", key=button_key):
-                st.session_state.modal_tooth_num = tooth_id
-
-        with columns[i]:
-            if buttons_above:
-                tooth_button()
-                st.image(get_tooth_image(tooth_id, differences[tooth_id]))
+def load_diff_teeth_top(differences):
+    cols = st.columns(16)
+    for col, tooth in zip(cols, TOP_ROW):
+        with col:
+            if tooth in differences:
+                st.image(get_tooth_image(tooth, differences[tooth]))
             else:
-                st.image(get_tooth_image(tooth_id, differences[tooth_id]))
-                tooth_button()
+                st.empty()
+
+def load_diff_teeth_bottom(differences):
+    cols = st.columns(16)
+    for col, tooth in zip(cols, BOTTOM_ROW):
+        with col:
+            if tooth in differences:
+                st.image(get_tooth_image(tooth, differences[tooth]))
+            else:
+                st.empty()
 
 # Check if the image exists
 if ai_image_bytes and manual_image_bytes:
@@ -250,22 +225,28 @@ if ai_image_bytes and manual_image_bytes:
     """, unsafe_allow_html=True)
     with st.container(key="container"):
 
-        top_order = list(reversed(range(11, 19))) + list(range(21, 29))
-        render_diff_row(top_order, "Top", False)
+        st.markdown("### Differences Top Teeth")
 
-        st.markdown("Your input")
+        load_diff_teeth_top(differences)  # images row
+        render_button_row(st.columns(16), TOP_ROW, manual_teeth, False, differences)  # button row
+
+        st.markdown("### Your input")
         load_teeth(manual_teeth, outline_corrected_images=True)
 
-        bottom_order = list(reversed(range(41, 49))) + list(range(31, 39))
-        render_diff_row(bottom_order, "Bottom", True)
+        st.markdown("### Differences Bottom Teeth")
 
+        render_button_row(st.columns(16), BOTTOM_ROW, manual_teeth, False, differences)  # button row
+        load_diff_teeth_bottom(differences)
         if (
                 st.session_state.get("modal_tooth_num") is not None
                 and not st.session_state.get("show_tooth_config_dialog", True)
         ):
             selected_tooth = st.session_state.modal_tooth_num
             st.session_state.selected_tooth = selected_tooth
-            pick_correct_tooth(selected_tooth)
+            if st.session_state.get("modal_tooth_show_diff_modal", False):
+                pick_correct_tooth(selected_tooth)
+            else:
+                show_options(manual_teeth, False)
 
 else:
     st.warning("No image has been uploaded yet.")

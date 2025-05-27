@@ -6,6 +6,38 @@ from AIOutput.teethSet import teeth as teethAI
 import copy
 
 
+def show_tooth_modal(tooth_number):
+    st.session_state.selected_tooth = tooth_number
+    st.session_state.show_tooth_config_dialog = True
+
+
+def render_button_row(columns, numbers, teeth, disable_buttons, differences=None):
+    if differences is None:
+        differences = {}
+    for column, n in zip(columns, numbers):
+        with column:
+            button_key = f"btn_{n}_b"
+            button_color = None
+            if teeth[n] is not None:
+                button_color = "background-color: rgb(255, 51, 0)"
+            custom_css = f"""
+            <style>
+                .st-key-{button_key} button {{
+                    white-space: nowrap !important;
+                    color: white !important;
+                    {button_color if button_color else ""}
+                }}
+            </style>
+            """
+            st.markdown(custom_css, unsafe_allow_html=True)
+            button = st.button(str(n), key=button_key, disabled=disable_buttons)
+            if button:
+                if differences and n in differences:
+                    st.session_state.modal_tooth_num = n
+                    st.session_state.modal_tooth_show_diff_modal = True
+                else:
+                    show_tooth_modal(n)
+
 def check_checkbox_disabled(false_when_enabled: list[str], tooth_number: int, teeth: dict[int, str | None]) -> bool:
     return len([x for x in false_when_enabled if x in str(teeth[tooth_number])]) > 0
 
@@ -115,30 +147,8 @@ def render_teeth(page: str, disable_buttons: bool = False,circle=False):
 
     teeth_base_folder = os.path.join("image", "teeth")
 
-    def show_tooth_modal(tooth_number):
-        st.session_state.selected_tooth = tooth_number
-        st.session_state.show_tooth_config_dialog = True
 
-    def render_button_row(columns, numbers):
-        for column, n in zip(columns, numbers):
-            with column:
-                button_key = f"btn_{n}_b"
-                button_color = None
-                if teeth[n] is not None:
-                    button_color = "background-color: rgb(255, 51, 0)"
-                custom_css = f"""
-                <style>
-                    .st-key-{button_key} button {{
-                        white-space: nowrap !important;
-                        color: white !important;
-                        {button_color if button_color else ""}
-                    }}
-                </style>
-                """
-                st.markdown(custom_css, unsafe_allow_html=True)
-                button = st.button(str(n), key=button_key, disabled=disable_buttons)
-                if button:
-                    show_tooth_modal(n)
+
 
     st.markdown("""
     <style>
@@ -155,7 +165,7 @@ def render_teeth(page: str, disable_buttons: bool = False,circle=False):
 
         top_cols = st.columns(len(top_left_nums + top_right_nums))
         top_nums = top_left_nums + top_right_nums
-        render_button_row(top_cols,top_nums)
+        render_button_row(top_cols,top_nums, teeth, disable_buttons)
         
         if circle:
             load_teeth_circle(teeth)
@@ -164,7 +174,7 @@ def render_teeth(page: str, disable_buttons: bool = False,circle=False):
 
         bottom_cols = st.columns(len(bottom_left_nums + bottom_right_nums))
         bottom_nums = bottom_left_nums + bottom_right_nums
-        render_button_row(bottom_cols,bottom_nums)
+        render_button_row(bottom_cols,bottom_nums, teeth, disable_buttons)
 
         if st.session_state.show_tooth_config_dialog:
             show_options(teeth)
