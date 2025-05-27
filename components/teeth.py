@@ -13,6 +13,10 @@ teeth = {
 }
 
 def get_tooth_image(tooth_number, status, height=80, icon_variant="white", as_base64=False):
+    #remove this if you we add children tooth icons
+    if tooth_number>50:
+        tooth_number-=40
+    
     if icon_variant == "black":
         path_prefix = "icons"
     elif icon_variant == "white":
@@ -69,23 +73,34 @@ def get_tooth_image(tooth_number, status, height=80, icon_variant="white", as_ba
         # Return PIL image for st.image
         return img_resized
 
-def load_teeth(teeth):
-    top_row = list(reversed(range(11, 19))) + list(range(21, 29))
-    bottom_row = list(reversed(range(41, 49))) + list(range(31, 39))
+def load_teeth(teeth, child=False):
+    if child:
+        top_row = list(reversed(range(51, 56))) + list(range(61, 66))
+        bottom_row = list(reversed(range(81, 86))) + list(range(71, 76))
+        cols = st.columns(10)
+        cols2 = st.columns(10)
+    else:
+        top_row = list(reversed(range(11, 19))) + list(range(21, 29))
+        bottom_row = list(reversed(range(41, 49))) + list(range(31, 39))
+        cols = st.columns(16)
+        cols2 = st.columns(16)
 
-    cols = st.columns(16)
     for i, tooth_num in enumerate(top_row):
         with cols[i]:
             st.image(get_tooth_image(tooth_num, teeth[tooth_num]))
 
-    cols2 = st.columns(16)
     for i, tooth_num in enumerate(bottom_row):
         with cols2[i]:
             st.image(get_tooth_image(tooth_num, teeth[tooth_num]))
 
-def load_teeth_circle(teeth):
-    top_row = list(reversed(range(11, 19))) + list(range(21, 29))
-    bottom_row = list(reversed(range(31, 39))) + list(range(41, 49)) 
+def load_teeth_circle(teeth, child):
+    if child:
+        top_row = list(reversed(range(51, 56))) + list(range(61, 66))
+        bottom_row = list(reversed(range(81, 86))) + list(range(71, 76))
+    else:
+        top_row = list(reversed(range(11, 19))) + list(range(21, 29))
+        bottom_row = list(reversed(range(31, 39))) + list(range(41, 49)) 
+
     all_teeth =bottom_row+top_row
 
     num_items = len(all_teeth)

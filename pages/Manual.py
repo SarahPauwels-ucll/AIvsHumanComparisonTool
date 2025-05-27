@@ -54,7 +54,7 @@ if "manual_image_bytes" in st.session_state:
     else:
         disable_teeth_buttons = False
     circleView=st.session_state.circleView if "circleView" in st.session_state and st.session_state.circleView is not None else False
-    manual_teeth = render_teeth("manual", disable_teeth_buttons,circle=circleView)
+    manual_teeth = render_teeth("manual", disable_teeth_buttons,circle=circleView, child=True)
     st.session_state.manual_teeth = manual_teeth
 else:
     st.warning("No image has been uploaded yet.")
