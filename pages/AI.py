@@ -58,7 +58,10 @@ if os.path.exists(image_path) and "manual_image_bytes" in st.session_state:
     else:
         child=False
     ai_teeth = render_teeth("ai",circle=circleView,child=child)
-    st.session_state.ai_teeth = ai_teeth
+    if child:
+         st.session_state.ai_teeth_child = ai_teeth
+    else:
+        st.session_state.ai_teeth = ai_teeth
 
     with open(image_path, "rb") as img_file:
         st.session_state.AI_image_bytes = img_file.read()

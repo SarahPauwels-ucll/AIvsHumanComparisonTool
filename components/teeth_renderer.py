@@ -34,23 +34,11 @@ def render_teeth(page: str, disable_buttons: bool = False,circle=False,child=Fal
         st.session_state[f"teeth_dict_{page}"] = teeth
 
     if child:
-        if st.session_state.get(f"childteeth_dict_{page}"):
-            teeth = st.session_state[f"childteeth_dict_{page}"]
-        else:
-            if page=="ai":
-                teeth = get_teeth_data(childteethAI)
-            else:
-                teeth = get_teeth_data(childteethInput)
-            st.session_state[f"childteeth_dict_{page}"] = teeth
+        teeth = st.session_state[f"childteeth_dict_{page}"]
     else:
-        if st.session_state.get(f"teeth_dict_{page}"):
-            teeth = st.session_state[f"teeth_dict_{page}"]
-        else:
-            if page=="ai":
-                teeth = get_teeth_data(teethAI)
-            else:
-                teeth = get_teeth_data(teethInput)
-            st.session_state[f"teeth_dict_{page}"] = teeth
+
+        teeth = st.session_state[f"teeth_dict_{page}"]
+
     if "show_tooth_config_dialog" not in st.session_state:
         st.session_state.show_tooth_config_dialog = False
 

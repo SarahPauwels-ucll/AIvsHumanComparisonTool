@@ -62,7 +62,10 @@ if "manual_image_bytes" in st.session_state:
     else:
         child=False
     manual_teeth = render_teeth("manual", disable_teeth_buttons,circle=circleView, child=child)
-    st.session_state.manual_teeth = manual_teeth
+    if child:
+        st.session_state.manual_teeth_child = manual_teeth
+    else:
+        st.session_state.manual_teeth = manual_teeth
 else:
     st.warning("No image has been uploaded yet.")
 

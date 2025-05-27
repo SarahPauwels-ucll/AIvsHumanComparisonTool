@@ -6,8 +6,8 @@ from components.pdf import pdf_button
 from components.zipDownload import combined_download_button
 from components.sidebar import load_sidebar
 from components.teeth import load_teeth
-from input.teethSet import teeth as manualteeth
-from AIOutput.teethSet import teeth as AIteeth
+from input.teethSet import teeth as manualteeth, childteeth as manualchildteeth 
+from AIOutput.teethSet import teeth as AIteeth, childteeth as AIchildteeth
 import os
 from components.teeth import get_tooth_image
 from components.pdf_profesionnal import pdf_button_professional
@@ -54,17 +54,6 @@ if st.session_state.go_to_upload_page:
     st.session_state.go_to_upload_page = False
     st.switch_page("pages/Upload_img.py")
 
-try:
-    manual_teeth =st.session_state.manual_teeth
-except:
-    manual_teeth=manualteeth
-    print("no manual teeth found")
-
-try:
-    AI_teeth =st.session_state.ai_teeth
-except:
-    AI_teeth=AIteeth
-    print("no ai teeth found")
 
 def normalize(value):
     if value is None:
@@ -94,6 +83,31 @@ if st.session_state.Teethkind == "Child":
     child=True
 else:
     child=False
+
+if child:
+    try:
+        manual_teeth =st.session_state.manual_teeth_child
+    except:
+        manual_teeth=manualchildteeth
+        print("no manual teeth found")
+
+    try:
+        AI_teeth =st.session_state.ai_teeth_child
+    except:
+        AI_teeth=AIchildteeth
+    print("no ai teeth found")
+else:
+    try:
+        manual_teeth =st.session_state.manual_teeth
+    except:
+        manual_teeth=manualteeth
+        print("no manual teeth found")
+
+    try:
+        AI_teeth =st.session_state.ai_teeth
+    except:
+        AI_teeth=AIteeth
+        print("no ai teeth found")
 
 st.title("Comparison page!")
 
