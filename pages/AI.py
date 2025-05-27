@@ -40,8 +40,15 @@ if os.path.exists(image_path) and "manual_image_bytes" in st.session_state:
     with st.container(key="photo-container"):
         st.image(image_path,  use_container_width=True)
     circleView=st.session_state.circleView if "circleView" in st.session_state and st.session_state.circleView is not None else False
-    ai_teeth = render_teeth("ai",circle=circleView)
-    st.session_state.ai_teeth = ai_teeth
+    if st.session_state.Teethkind == "Child":
+        child=True
+    else:
+        child=False
+    ai_teeth = render_teeth("ai",circle=circleView,child=child)
+    if child:
+         st.session_state.ai_teeth_child = ai_teeth
+    else:
+        st.session_state.ai_teeth = ai_teeth
 
     with open(image_path, "rb") as img_file:
         st.session_state.AI_image_bytes = img_file.read()

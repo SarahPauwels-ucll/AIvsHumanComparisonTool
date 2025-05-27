@@ -1,11 +1,11 @@
 import os
 import streamlit as st
 from components.teeth import load_teeth, load_teeth_circle
-from input.teethSet import teeth as teethInput
-from AIOutput.teethSet import teeth as teethAI
+from input.teethSet import teeth as teethInput, childteeth as childteethInput
+from AIOutput.teethSet import teeth as teethAI, childteeth as childteethAI
 import copy
 
-def render_teeth(page: str, disable_buttons: bool = False,circle=False):
+def render_teeth(page: str, disable_buttons: bool = False,circle=False,child=False):
     if not page:
         raise Exception("page can't be empty")
     @st.cache_data()
@@ -18,15 +18,27 @@ def render_teeth(page: str, disable_buttons: bool = False,circle=False):
 
     def check_checkbox_disabled(false_when_enabled: list[str], tooth_number: int) -> bool:
         return len([x for x in false_when_enabled if x in str(teeth[tooth_number])]) > 0
+    
+    if not st.session_state.get(f"childteeth_dict_{page}"):
+        if page=="ai":
+                teeth = get_teeth_data(childteethAI)
+        else:
+                teeth = get_teeth_data(childteethInput)
+        st.session_state[f"childteeth_dict_{page}"] = teeth
 
-    if st.session_state.get(f"teeth_dict_{page}"):
-        teeth = st.session_state[f"teeth_dict_{page}"]
-    else:
+    if not st.session_state.get(f"teeth_dict_{page}"):
         if page=="ai":
             teeth = get_teeth_data(teethAI)
         else:
             teeth = get_teeth_data(teethInput)
         st.session_state[f"teeth_dict_{page}"] = teeth
+
+    if child:
+        teeth = st.session_state[f"childteeth_dict_{page}"]
+    else:
+
+        teeth = st.session_state[f"teeth_dict_{page}"]
+
     if "show_tooth_config_dialog" not in st.session_state:
         st.session_state.show_tooth_config_dialog = False
 
@@ -104,11 +116,16 @@ def render_teeth(page: str, disable_buttons: bool = False,circle=False):
             if st.button("Submit"):
                 st.session_state.show_tooth_config_dialog = False
                 st.rerun()
-
-    top_left_nums = [18,17,16,15,14,13,12,11]
-    top_right_nums = [21,22,23,24,25,26,27,28]
-    bottom_left_nums = [48,47,46,45,44,43,42,41]
-    bottom_right_nums = [31,32,33,34,35,36,37,38]
+    if child:
+        top_left_nums = [55,54,53,52,51]
+        top_right_nums = [61,62,63,64,65]
+        bottom_left_nums = [85,84,83,82,81]
+        bottom_right_nums = [71,72,73,74,75]
+    else:
+        top_left_nums = [18,17,16,15,14,13,12,11]
+        top_right_nums = [21,22,23,24,25,26,27,28]
+        bottom_left_nums = [48,47,46,45,44,43,42,41]
+        bottom_right_nums = [31,32,33,34,35,36,37,38]
 
     teeth_base_folder = os.path.join("image", "teeth")
 
@@ -155,9 +172,9 @@ def render_teeth(page: str, disable_buttons: bool = False,circle=False):
         render_button_row(top_cols,top_nums)
         
         if circle:
-            load_teeth_circle(teeth)
+            load_teeth_circle(teeth,child)
         else:
-            load_teeth(teeth)
+            load_teeth(teeth,child)
 
         bottom_cols = st.columns(len(bottom_left_nums + bottom_right_nums))
         bottom_nums = bottom_left_nums + bottom_right_nums
