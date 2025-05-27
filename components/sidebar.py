@@ -14,7 +14,8 @@ def load_sidebar(page="login"):
             "birthdate",
             "consultation date",
             "Gender",
-            "Professional"
+            "Professional",
+            "Teethkind"
         ]
         for key in st.session_state.keys():
             del st.session_state[key]
@@ -157,6 +158,25 @@ def load_sidebar(page="login"):
     if consultation_date!=None and birthdate!=None:
         years = consultation_date.year - birthdate.year - ((consultation_date.month, consultation_date.day) < (birthdate.month, birthdate.day))
         st.sidebar.markdown(f"Age: {years}")
+        if years>6:
+            controller.set("Teethkind", "Adult")
+            st.session_state.Teethkind = "Adult"
+        else:
+            controller.set("Teethkind", "Child")
+            st.session_state.Teethkind = "Child"
+
+    # --- teeth ---
+    stored_Teethkind = controller.get("Teethkind")
+    if "Teethkind" not in st.session_state or not st.session_state.Teethkind:
+        st.session_state.Teethkind = stored_Teethkind
+
+    Teethkind = st.sidebar.radio("Teeth", ["Adult", "Child"],
+                              index=0 if st.session_state.gender == "Adult" else 1,
+                              key="Teethkind")
+
+    if Teethkind != stored_Teethkind:
+        controller.set("Teethkind", Teethkind)
+    
 
     if st.session_state.Professional:
         st.sidebar.button("Log out",on_click=logout)

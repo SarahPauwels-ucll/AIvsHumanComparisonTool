@@ -19,7 +19,7 @@ def restart():
     print(controller.getAll())
 
     keys_to_clear = [
-        "ProfileNumber", "LastName", "FirstName", "birthdate", "consultation date", "Gender"
+        "ProfileNumber", "LastName", "FirstName", "birthdate", "consultation date", "Gender","Teethkind"
     ]
 
     # Clear all session_state keys
@@ -87,6 +87,14 @@ def compair(manualteeth, AIteeth):
 
 load_sidebar("Comparison")
 
+if "Teethkind" not in st.session_state or not st.session_state.Teethkind:
+    st.session_state.Teethkind = "Adult"
+
+if st.session_state.Teethkind == "Child":
+    child=True
+else:
+    child=False
+
 st.title("Comparison page!")
 
 ai_image_bytes = st.session_state.get("AI_image_bytes")
@@ -122,8 +130,12 @@ if ai_image_bytes and manual_image_bytes :
     """, unsafe_allow_html=True)
     with st.container(key="container"):
         st.markdown("Differences Top Teeth")
-        top_row = list(reversed(range(11, 19))) + list(range(21, 29))
-        cols = st.columns(16)
+        if child:
+            top_row = list(reversed(range(51, 56))) + list(range(61, 66))
+            cols = st.columns(10)
+        else:
+            top_row = list(reversed(range(11, 19))) + list(range(21, 29))
+            cols = st.columns(16)
         for i, tooth_num in enumerate(top_row):
             if tooth_num in differences:
                 with cols[i]:
@@ -131,11 +143,15 @@ if ai_image_bytes and manual_image_bytes :
 
         st.markdown("Your input")
 
-        load_teeth(manual_teeth)
+        load_teeth(manual_teeth, child=child)
 
         st.markdown("Differences bottom Teeth")
-        bottom_row = list(reversed(range(41, 49))) + list(range(31, 39))
-        cols2 = st.columns(16)
+        if child:
+            bottom_row = list(reversed(range(81, 86))) + list(range(71, 76))
+            cols2 = st.columns(10)
+        else:
+            bottom_row = list(reversed(range(41, 49))) + list(range(31, 39))
+            cols2 = st.columns(16)
         for i, tooth_num in enumerate(bottom_row):
             if tooth_num in differences:
                 with cols2[i]:
