@@ -132,7 +132,11 @@ def load_teeth_circle(teeth, child):
     for i, tooth_num in enumerate(all_teeth):
         img_src, (width, height)= get_tooth_image(tooth_num, teeth[tooth_num], as_base64=True)
         angle_deg = (i * (360 / num_items))+(360 / num_items)/2
-        if i < 16:
+        if child:
+            row=10
+        else:
+            row=16
+        if i < row:
             rotation=angle_deg + 90
         else:
             rotation=angle_deg-90
