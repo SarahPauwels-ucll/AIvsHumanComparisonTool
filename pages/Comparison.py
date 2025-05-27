@@ -227,15 +227,17 @@ if ai_image_bytes and manual_image_bytes:
 
         st.markdown("### Differences Top Teeth")
 
-        load_diff_teeth_top(differences)  # images row
-        render_button_row(st.columns(16), TOP_ROW, manual_teeth, False, differences)  # button row
+        load_diff_teeth_top(differences)
+        if st.session_state.get("Professional", False):
+            render_button_row(st.columns(16), TOP_ROW, manual_teeth, False, differences)
 
         st.markdown("### Your input")
         load_teeth(manual_teeth, outline_corrected_images=True)
 
         st.markdown("### Differences Bottom Teeth")
+        if st.session_state.get("Professional", False):
+            render_button_row(st.columns(16), BOTTOM_ROW, manual_teeth, False, differences)
 
-        render_button_row(st.columns(16), BOTTOM_ROW, manual_teeth, False, differences)  # button row
         load_diff_teeth_bottom(differences)
         if (
                 st.session_state.get("modal_tooth_num") is not None
