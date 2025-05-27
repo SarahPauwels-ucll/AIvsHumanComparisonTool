@@ -23,9 +23,6 @@ if st.session_state.go_to_upload_page:
     st.session_state.go_to_upload_page = False
     st.switch_page("pages/Upload_img.py")
 
-if "Teethkind" not in st.session_state or not st.session_state.Teethkind:
-    st.session_state.Teethkind = "Adult"
-
 st.set_page_config(page_title="AI vs. Human analysis: A smart comparison tool",
                    layout="wide")
 

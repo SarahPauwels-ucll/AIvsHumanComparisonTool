@@ -76,9 +76,6 @@ def compair(manualteeth, AIteeth):
 
 load_sidebar("Comparison")
 
-if "Teethkind" not in st.session_state or not st.session_state.Teethkind:
-    st.session_state.Teethkind = "Adult"
-
 if st.session_state.Teethkind == "Child":
     child=True
 else:
