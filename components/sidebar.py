@@ -45,12 +45,18 @@ def load_sidebar(page="login"):
 
     st.markdown("""
     <style>
-        [data-testid="stForm"] button {
+        [data-testid="stSidebarContent"] [data-testid="stButton"] button{
+                margin-left:0;
+                margin-right:auto
+                }
+                
+        [data-testid="stSidebarContent"] [data-testid="stForm"] button {
                 justify-content:left;
                 margin-left: 1rem;
+                border-style:none;
                 } 
         
-        [data-testid="stForm"] [data-testid="stVerticalBlock"]{ 
+        [data-testid="stSidebarContent"] [data-testid="stForm"] [data-testid="stVerticalBlock"]{ 
                 gap:0rem;
                 }
     </style>
