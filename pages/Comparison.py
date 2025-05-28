@@ -26,7 +26,7 @@ st.markdown("""
         color: black;
         border-radius: 0.5rem;
     }
-    [role=radiogroup]{
+    .st-key-radio_modal_difference *{
         gap: 6rem;
     }
     </style>
@@ -164,7 +164,7 @@ def pick_correct_tooth(clicked_tooth_id):
 
     columns = st.columns(2)
     with columns[0]:
-        radio_value = st.radio(" ", ("manual", "ai"), key=f"radio_modal_{clicked_tooth_id}")
+        radio_value = st.radio(" ", ("manual", "ai"), key=f"radio_modal_difference")
 
     with columns[1]:
         modal_tooth_pil_manual = get_tooth_image(clicked_tooth_id, manual_teeth[clicked_tooth_id])
@@ -198,12 +198,15 @@ def pick_correct_tooth(clicked_tooth_id):
             st.session_state.modal_tooth_num = None
             st.rerun()
 
-TOP_ROW    = list(reversed(range(11, 19))) + list(range(21, 29))
-BOTTOM_ROW = list(reversed(range(41, 49))) + list(range(31, 39))
+TOP_ROW_ADULT    = list(reversed(range(11, 19))) + list(range(21, 29))
+BOTTOM_ROW_ADULT = list(reversed(range(41, 49))) + list(range(31, 39))
+
+TOP_ROW_CHILD = list(reversed(range(51, 56))) + list(range(61, 66))
+BOTTOM_ROW_CHILD= list(reversed(range(81, 86))) + list(range(71, 76))
 
 def load_diff_teeth_top(differences):
     cols = st.columns(16)
-    for col, tooth in zip(cols, TOP_ROW):
+    for col, tooth in zip(cols, TOP_ROW_ADULT):
         with col:
             if tooth in differences:
                 st.image(get_tooth_image(tooth, differences[tooth]))
@@ -212,7 +215,7 @@ def load_diff_teeth_top(differences):
 
 def load_diff_teeth_bottom(differences):
     cols = st.columns(16)
-    for col, tooth in zip(cols, BOTTOM_ROW):
+    for col, tooth in zip(cols, BOTTOM_ROW_ADULT):
         with col:
             if tooth in differences:
                 st.image(get_tooth_image(tooth, differences[tooth]))
@@ -267,7 +270,13 @@ if ai_image_bytes and manual_image_bytes:
 
         load_diff_teeth_top(differences)
         if st.session_state.get("Professional", False):
-            render_button_row(st.columns(16), TOP_ROW, manual_teeth, disable_buttons=False, differences=differences, color_differences_instead_of_manual=True)
+            if child:
+                top_row = TOP_ROW_CHILD
+                cols = st.columns(10)
+            else:
+                top_row = TOP_ROW_ADULT
+                cols = st.columns(16)
+            render_button_row(cols, top_row, manual_teeth, disable_buttons=False, differences=differences, color_differences_instead_of_manual=True)
 
         # load_teeth(manual_teeth, child=child)
         st.markdown("### Your input")
@@ -285,10 +294,11 @@ if ai_image_bytes and manual_image_bytes:
         #         with cols2[i]:
         #             st.image(get_tooth_image(tooth_num, differences[tooth_num]))
         # st.markdown("### Differences Bottom Teeth")
-        if st.session_state.get("Professional", False):
-            render_button_row(st.columns(16), BOTTOM_ROW, manual_teeth, disable_buttons=False, differences=differences, color_differences_instead_of_manual=True)
 
-        load_diff_teeth_bottom(differences)
+        # if st.session_state.get("Professional", False):
+        #     render_button_row(st.columns(16), BOTTOM_ROW_ADULT, manual_teeth, disable_buttons=False, differences=differences, color_differences_instead_of_manual=True)
+
+        # load_diff_teeth_bottom(differences)
         if (
                 st.session_state.get("modal_tooth_num") is not None
                 and not st.session_state.get("show_tooth_config_dialog", True)
