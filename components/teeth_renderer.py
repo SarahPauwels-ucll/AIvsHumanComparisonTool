@@ -11,14 +11,14 @@ def show_tooth_modal(tooth_number):
     st.session_state.show_tooth_config_dialog = True
 
 
-def render_button_row(columns, numbers, teeth, disable_buttons, differences=None):
+def render_button_row(columns, numbers, teeth, disable_buttons, differences=None, color_differences_instead_of_manual=False):
     if differences is None:
         differences = {}
     for column, n in zip(columns, numbers):
         with column:
             button_key = f"btn_{n}_b"
             button_color = None
-            if teeth[n] is not None:
+            if teeth[n] is not None or (n in differences.keys() and color_differences_instead_of_manual):
                 button_color = "background-color: rgb(255, 51, 0)"
             custom_css = f"""
             <style>

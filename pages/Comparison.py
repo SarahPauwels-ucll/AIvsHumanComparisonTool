@@ -229,14 +229,14 @@ if ai_image_bytes and manual_image_bytes:
 
         load_diff_teeth_top(differences)
         if st.session_state.get("Professional", False):
-            render_button_row(st.columns(16), TOP_ROW, manual_teeth, False, differences)
+            render_button_row(st.columns(16), TOP_ROW, manual_teeth, disable_buttons=False, differences=differences, color_differences_instead_of_manual=True)
 
         st.markdown("### Your input")
         load_teeth(manual_teeth, outline_corrected_images=True)
 
         st.markdown("### Differences Bottom Teeth")
         if st.session_state.get("Professional", False):
-            render_button_row(st.columns(16), BOTTOM_ROW, manual_teeth, False, differences)
+            render_button_row(st.columns(16), BOTTOM_ROW, manual_teeth, disable_buttons=False, differences=differences, color_differences_instead_of_manual=True)
 
         load_diff_teeth_bottom(differences)
         if (
