@@ -254,37 +254,37 @@ if ai_image_bytes and manual_image_bytes:
     """, unsafe_allow_html=True)
     with st.container(key="container"):
         st.markdown("Differences Top Teeth")
-        if child:
-            top_row = list(reversed(range(51, 56))) + list(range(61, 66))
-            cols = st.columns(10)
-        else:
-            top_row = list(reversed(range(11, 19))) + list(range(21, 29))
-            cols = st.columns(16)
-        for i, tooth_num in enumerate(top_row):
-            if tooth_num in differences:
-                with cols[i]:
-                    st.image(get_tooth_image(tooth_num, differences[tooth_num]))
+        # if child:
+        #     top_row = list(reversed(range(51, 56))) + list(range(61, 66))
+        #     cols = st.columns(10)
+        # else:
+        #     top_row = list(reversed(range(11, 19))) + list(range(21, 29))
+        #     cols = st.columns(16)
+        # for i, tooth_num in enumerate(top_row):
+        #     if tooth_num in differences:
+        #         with cols[i]:
+        #             st.image(get_tooth_image(tooth_num, differences[tooth_num]))
 
         load_diff_teeth_top(differences)
         if st.session_state.get("Professional", False):
             render_button_row(st.columns(16), TOP_ROW, manual_teeth, disable_buttons=False, differences=differences, color_differences_instead_of_manual=True)
 
-        load_teeth(manual_teeth, child=child)
+        # load_teeth(manual_teeth, child=child)
         st.markdown("### Your input")
-        load_teeth(manual_teeth, outline_corrected_images=True)
+        load_teeth(manual_teeth, outline_corrected_images=True, child=child)
 
         st.markdown("Differences bottom Teeth")
-        if child:
-            bottom_row = list(reversed(range(81, 86))) + list(range(71, 76))
-            cols2 = st.columns(10)
-        else:
-            bottom_row = list(reversed(range(41, 49))) + list(range(31, 39))
-            cols2 = st.columns(16)
-        for i, tooth_num in enumerate(bottom_row):
-            if tooth_num in differences:
-                with cols2[i]:
-                    st.image(get_tooth_image(tooth_num, differences[tooth_num]))
-        st.markdown("### Differences Bottom Teeth")
+        # if child:
+        #     bottom_row = list(reversed(range(81, 86))) + list(range(71, 76))
+        #     cols2 = st.columns(10)
+        # else:
+        #     bottom_row = list(reversed(range(41, 49))) + list(range(31, 39))
+        #     cols2 = st.columns(16)
+        # for i, tooth_num in enumerate(bottom_row):
+        #     if tooth_num in differences:
+        #         with cols2[i]:
+        #             st.image(get_tooth_image(tooth_num, differences[tooth_num]))
+        # st.markdown("### Differences Bottom Teeth")
         if st.session_state.get("Professional", False):
             render_button_row(st.columns(16), BOTTOM_ROW, manual_teeth, disable_buttons=False, differences=differences, color_differences_instead_of_manual=True)
 
