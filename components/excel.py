@@ -16,13 +16,11 @@ def excel_button():
     data_sources: List[Dict[int, str]] = [manual_teeth, ai_teeth, final_teeth]
     source_names: List[str] = ["Manual", "AI", "Corrected"]
 
-
     def parse_tags(raw_value: str) -> List[str]:
         if raw_value is None:
             return []
         pieces = [part.strip() for part in raw_value.split(",")]
         return [p for p in pieces if p]
-
 
     all_tags: Set[str] = {"normal"}
     for src_dict in data_sources:

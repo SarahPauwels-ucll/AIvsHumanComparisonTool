@@ -28,9 +28,6 @@ TOOTH_H_PT = math.floor(0.8 * inch)
 RASTER_SCALE = 3 # factor to scale PIL images to make them less blurry
 DIFF_IMG_W  = 0.45 * inch
 
-
-# --- main function ---
-
 def create_pdf_professional(
         patient_id: str,
         patient_name: str,
@@ -123,7 +120,6 @@ def create_pdf_professional(
     ]))
 
     story.append(table)
-
 
     # --- panoramic image ---
     pano1 = make_scaled_image(pano_bytes, max_w=USABLE_WIDTH, max_h=MAX_PANO_H)

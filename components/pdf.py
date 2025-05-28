@@ -27,7 +27,6 @@ RASTER_SCALE = 3 # factor to scale PIL images to make them less blurry
 DIFF_IMG_W  = 0.45 * inch
 
 # --- helpers ---
-
 def make_scaled_image(source_bytes, *, max_w: float, max_h: float) -> Image:
     source = io.BytesIO(source_bytes)
     img = Image(source)
@@ -36,7 +35,6 @@ def make_scaled_image(source_bytes, *, max_w: float, max_h: float) -> Image:
     img.drawWidth  = iw * scale
     img.drawHeight = ih * scale
     return img
-
 
 def tooth_image(number: int, status: str, *, height_pt: float = TOOTH_H_PT) -> Image:
     # Generate a PIL image with higher pixel height for crispness
@@ -57,7 +55,6 @@ def tooth_image(number: int, status: str, *, height_pt: float = TOOTH_H_PT) -> I
 
 
 # --- main function ---
-
 def create_pdf(
         patient_id: str,
         scan_date: str,
@@ -107,7 +104,6 @@ def create_pdf(
     if gender == "Unknown":
         gender_color = "red"
 
-
     # --- patient details ---
     story.append(Paragraph(
         f'<b> Patient ID: </b><font color="{patient_id_color}"> {patient_id} </font><br/>'
@@ -119,7 +115,6 @@ def create_pdf(
     story.append(Spacer(1, 6))
     story.append(HRFlowable(width="100%", thickness=1))
     story.append(Spacer(1, 12))
-
 
     # --- panoramic images ---
     pano1 = make_scaled_image(pano1_bytes, max_w=HALF_W, max_h=MAX_PANO_H)

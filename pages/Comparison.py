@@ -1,14 +1,13 @@
-import base64
-from io import BytesIO
-from pathlib import Path
 import streamlit as st
-from PIL import Image
-from PIL.ImageFile import ImageFile
 from streamlit_cookies_controller import CookieController
 
 from components.excel import excel_button
 from components.pdf import pdf_button
+from components.zipDownload import combined_download_button
 from components.sidebar import load_sidebar
+from components.teeth import load_teeth
+from input.teethSet import teeth as manualteeth, childteeth as manualchildteeth
+from AIOutput.teethSet import teeth as AIteeth, childteeth as AIchildteeth
 from components.teeth import load_teeth, pil_to_data_url
 from components.teeth_renderer import check_checkbox_disabled, check_checkbox_status, toggle_tooth_presence, \
     show_options, render_button_row
@@ -38,7 +37,7 @@ def restart():
     print(controller.getAll())
 
     keys_to_clear = [
-        "ProfileNumber", "LastName", "FirstName", "birthdate", "consultation date", "Gender"
+        "ProfileNumber", "LastName", "FirstName", "birthdate", "consultation date", "Gender","Teethkind"
     ]
 
     # Clear all session_state keys
@@ -114,6 +113,36 @@ def compair(manualteeth, AIteeth) -> dict[int, str | None]:
     return(differences)
 
 load_sidebar("Comparison")
+
+if st.session_state.Teethkind == "Child":
+    child=True
+else:
+    child=False
+
+if child:
+    try:
+        manual_teeth =st.session_state.manual_teeth_child
+    except:
+        manual_teeth=manualchildteeth
+        print("no manual teeth found")
+
+    try:
+        AI_teeth =st.session_state.ai_teeth_child
+    except:
+        AI_teeth=AIchildteeth
+    print("no ai teeth found")
+else:
+    try:
+        manual_teeth =st.session_state.manual_teeth
+    except:
+        manual_teeth=manualteeth
+        print("no manual teeth found")
+
+    try:
+        AI_teeth =st.session_state.ai_teeth
+    except:
+        AI_teeth=AIteeth
+        print("no ai teeth found")
 
 st.title("Comparison page!")
 
@@ -224,16 +253,37 @@ if ai_image_bytes and manual_image_bytes:
     </style>
     """, unsafe_allow_html=True)
     with st.container(key="container"):
-
-        st.markdown("### Differences Top Teeth")
+        st.markdown("Differences Top Teeth")
+        if child:
+            top_row = list(reversed(range(51, 56))) + list(range(61, 66))
+            cols = st.columns(10)
+        else:
+            top_row = list(reversed(range(11, 19))) + list(range(21, 29))
+            cols = st.columns(16)
+        for i, tooth_num in enumerate(top_row):
+            if tooth_num in differences:
+                with cols[i]:
+                    st.image(get_tooth_image(tooth_num, differences[tooth_num]))
 
         load_diff_teeth_top(differences)
         if st.session_state.get("Professional", False):
             render_button_row(st.columns(16), TOP_ROW, manual_teeth, disable_buttons=False, differences=differences, color_differences_instead_of_manual=True)
 
+        load_teeth(manual_teeth, child=child)
         st.markdown("### Your input")
         load_teeth(manual_teeth, outline_corrected_images=True)
 
+        st.markdown("Differences bottom Teeth")
+        if child:
+            bottom_row = list(reversed(range(81, 86))) + list(range(71, 76))
+            cols2 = st.columns(10)
+        else:
+            bottom_row = list(reversed(range(41, 49))) + list(range(31, 39))
+            cols2 = st.columns(16)
+        for i, tooth_num in enumerate(bottom_row):
+            if tooth_num in differences:
+                with cols2[i]:
+                    st.image(get_tooth_image(tooth_num, differences[tooth_num]))
         st.markdown("### Differences Bottom Teeth")
         if st.session_state.get("Professional", False):
             render_button_row(st.columns(16), BOTTOM_ROW, manual_teeth, disable_buttons=False, differences=differences, color_differences_instead_of_manual=True)
@@ -253,32 +303,6 @@ if ai_image_bytes and manual_image_bytes:
 else:
     st.warning("No image has been uploaded yet.")
 
-
-if "manual_image_bytes" in st.session_state:
-    st.markdown("""
-        <style>
-        .st-key-pdf-container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-    with st.container(key="pdf-container"):
-        col1, col2 = st.columns([16, 5])
-
-        with col2:
-            if st.session_state.Professional:
-                pdf_button_professional()
-                excel_button()
-
-            else:
-                pdf_button()
-                excel_button()
-
-#switch page
-# Define the callback
-
-
 def go_to_upload_page():
     st.session_state.go_to_upload_page = True
 
@@ -289,14 +313,36 @@ if "manual_image_bytes" in st.session_state:
             max-width: 900px;
             margin: 0 auto;
         }
+        [data-testid="stButton"] button {
+            display: flex;
+            justify-content: center;
+            margin-right: 0;
+            margin-left: auto;
+            width: fit-content; 
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    with st.container(key="next-container"):
+        st.markdown("""
+        <style>
+        .st-key-pdf-container {
+            max-width: fit-content; 
+            margin-right: 0;
+            margin-left: auto;
+            display: flex;
+        }
         </style>
         """, unsafe_allow_html=True)
-    with st.container(key="next-container"):
-        col1, col2 = st.columns([8, 1])
+        with st.container(key="pdf-container"):
+            if st.session_state.Professional:
+                combined_download_button()
+            else:
+                pdf_button()
+                # excel_button()
 
-        with col2:
-        # Show the button
-            st.button("Restart", on_click=restart)
+
+        st.button("Restart", on_click=restart)
 else:
     st.button("Upload image", on_click=go_to_upload_page)
 
