@@ -313,7 +313,7 @@ if "manual_image_bytes" in st.session_state:
             max-width: 900px;
             margin: 0 auto;
         }
-        [data-testid="stButton"] button {
+        .st-key-next-container [data-testid="stButton"] button {
             display: flex;
             justify-content: center;
             margin-right: 0;
