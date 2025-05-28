@@ -48,7 +48,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 with st.container(key="uploader-container"):
-    st.error("Please ensure the image is an 'jpeg' or 'jpg'")
+    st.error("Please ensure the image is a 'jpeg' or 'jpg'")
     with st.container(border=True):
         file = st.file_uploader("Image uploader", accept_multiple_files=False, key="uploaded_files", type=["jpeg"], on_change=upload_files)
     for message in st.session_state.get("upload_errors", []):

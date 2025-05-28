@@ -42,7 +42,8 @@ def restart():
 
     # Clear all session_state keys
     for key in list(st.session_state.keys()):
-        del st.session_state[key]
+        if key != "Professional":
+            del st.session_state[key]
 
     # Remove cookies
     for key in keys_to_clear:
@@ -317,7 +318,7 @@ if "manual_image_bytes" in st.session_state:
             max-width: 900px;
             margin: 0 auto;
         }
-        [data-testid="stButton"] button {
+        .st-key-next-container [data-testid="stButton"] button {
             display: flex;
             justify-content: center;
             margin-right: 0;

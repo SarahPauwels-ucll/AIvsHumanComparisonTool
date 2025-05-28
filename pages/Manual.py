@@ -105,7 +105,7 @@ if "manual_image_bytes" in st.session_state:
     with st.container(key="next-container"):
         st.markdown("""
             <style>
-                [data-testid="stForm"] button {
+                .st-key-next-container [data-testid="stForm"] button {
                         border-style: solid;
                         border-width: 1px;
                         justify-content:center;
