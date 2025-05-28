@@ -65,8 +65,7 @@ def switch_view():
         st.session_state.circleView = True  
     else: 
         st.session_state.circleView=False
-if st.session_state.Professional:
-    st.button("switch view", on_click=switch_view)
+        
 if "manual_image_bytes" in st.session_state:
     st.markdown("""
     <style>
@@ -91,9 +90,13 @@ if "manual_image_bytes" in st.session_state:
                         } 
             </style>
             """, unsafe_allow_html=True)            
-
-        with st.form("next", border=False):
-            nextpage = st.form_submit_button("Next page",use_container_width=True,type="tertiary")
+        col1, col2 = st.columns([1, 1])  
+        with col1:
+            if st.session_state.Professional:
+                st.button("switch view", on_click=switch_view)
+        with col2:
+            with st.form("next", border=False):
+                nextpage = st.form_submit_button("Next page",use_container_width=True,type="tertiary")
         if nextpage:
             st.switch_page("pages/Comparison.py") 
 
