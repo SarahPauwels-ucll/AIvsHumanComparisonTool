@@ -3,3 +3,4 @@ image
 .venv
 __pycache__/
 .idea
+AI/data
