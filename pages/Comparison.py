@@ -267,13 +267,17 @@ if ai_image_bytes and manual_image_bytes:
         st.markdown("### Differences top teeth")
         if child:
             top_row = TOP_ROW_CHILD
-            cols = st.columns(10)
         else:
             top_row = TOP_ROW_ADULT
-            cols = st.columns(16)
+
+        # Render the images first
         load_diff_teeth_top(differences, top_row)
+
+        # Then render the buttons, in fresh columns
         if st.session_state.get("Professional", False):
-            render_button_row(cols, top_row, manual_teeth, disable_buttons=False, differences=differences, color_differences_instead_of_manual=True)
+            button_cols = st.columns(len(top_row))  # Create fresh columns for buttons
+            render_button_row(button_cols, top_row, manual_teeth, disable_buttons=False, differences=differences,
+                              color_differences_instead_of_manual=True)
 
         st.markdown("### Your input")
         load_teeth(manual_teeth, outline_corrected_images=True, child=child)
