@@ -65,7 +65,8 @@ def switch_view():
         st.session_state.circleView = True  
     else: 
         st.session_state.circleView=False
-
+if st.session_state.Professional:
+    st.button("switch view", on_click=switch_view)
 if "manual_image_bytes" in st.session_state:
     st.markdown("""
     <style>
