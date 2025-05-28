@@ -18,8 +18,11 @@ def render_button_row(columns, numbers, teeth, disable_buttons, differences=None
         with column:
             button_key = f"btn_{n}_b"
             button_color = None
-            if teeth[n] is not None or (n in differences.keys() and color_differences_instead_of_manual):
+            if teeth[n] is not None and not color_differences_instead_of_manual:
                 button_color = "background-color: rgb(255, 51, 0)"
+            if n in differences.keys() and color_differences_instead_of_manual:
+                button_color = "background-color: rgb(255, 51, 0)"
+
             custom_css = f"""
             <style>
                 .st-key-{button_key} button {{
@@ -118,6 +121,8 @@ def show_options(teeth: dict[int, str | None], add_to_corrected_set: bool = Fals
         if st.button("Submit"):
             st.session_state.show_tooth_config_dialog = False
             if add_to_corrected_set:
+                if not st.session_state.get("corrected_teeth", False):
+                    st.session_state.corrected_teeth = set()
                 st.session_state.corrected_teeth.add(tooth_number)
             st.rerun()
 
