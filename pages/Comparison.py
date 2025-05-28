@@ -42,7 +42,8 @@ def restart():
 
     # Clear all session_state keys
     for key in list(st.session_state.keys()):
-        del st.session_state[key]
+        if key != "Professional":
+            del st.session_state[key]
 
     # Remove cookies
     for key in keys_to_clear:
