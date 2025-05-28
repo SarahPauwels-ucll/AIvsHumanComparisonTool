@@ -204,18 +204,26 @@ BOTTOM_ROW_ADULT = list(reversed(range(41, 49))) + list(range(31, 39))
 TOP_ROW_CHILD = list(reversed(range(51, 56))) + list(range(61, 66))
 BOTTOM_ROW_CHILD= list(reversed(range(81, 86))) + list(range(71, 76))
 
-def load_diff_teeth_top(differences):
-    cols = st.columns(16)
-    for col, tooth in zip(cols, TOP_ROW_ADULT):
+if st.session_state.get("modal_tooth_num", False):
+    if child and (st.session_state.modal_tooth_num not in TOP_ROW_CHILD and st.session_state.modal_tooth_num not in BOTTOM_ROW_CHILD):
+        st.session_state.show_tooth_config_dialog = False
+        st.session_state.modal_tooth_num = None
+    elif not child and (st.session_state.modal_tooth_num not in TOP_ROW_ADULT and st.session_state.modal_tooth_num not in BOTTOM_ROW_ADULT):
+        st.session_state.show_tooth_config_dialog = False
+        st.session_state.modal_tooth_num = None
+
+def load_diff_teeth_top(differences, teeth_list):
+    cols = st.columns(len(teeth_list))
+    for col, tooth in zip(cols, teeth_list):
         with col:
             if tooth in differences:
                 st.image(get_tooth_image(tooth, differences[tooth]))
             else:
                 st.empty()
 
-def load_diff_teeth_bottom(differences):
-    cols = st.columns(16)
-    for col, tooth in zip(cols, BOTTOM_ROW_ADULT):
+def load_diff_teeth_bottom(differences, teeth_list):
+    cols = st.columns(len(teeth_list))
+    for col, tooth in zip(cols, teeth_list):
         with col:
             if tooth in differences:
                 st.image(get_tooth_image(tooth, differences[tooth]))
@@ -256,49 +264,31 @@ if ai_image_bytes and manual_image_bytes:
     </style>
     """, unsafe_allow_html=True)
     with st.container(key="container"):
-        st.markdown("Differences Top Teeth")
-        # if child:
-        #     top_row = list(reversed(range(51, 56))) + list(range(61, 66))
-        #     cols = st.columns(10)
-        # else:
-        #     top_row = list(reversed(range(11, 19))) + list(range(21, 29))
-        #     cols = st.columns(16)
-        # for i, tooth_num in enumerate(top_row):
-        #     if tooth_num in differences:
-        #         with cols[i]:
-        #             st.image(get_tooth_image(tooth_num, differences[tooth_num]))
-
-        load_diff_teeth_top(differences)
+        st.markdown("### Differences top teeth")
+        if child:
+            top_row = TOP_ROW_CHILD
+            cols = st.columns(10)
+        else:
+            top_row = TOP_ROW_ADULT
+            cols = st.columns(16)
+        load_diff_teeth_top(differences, top_row)
         if st.session_state.get("Professional", False):
-            if child:
-                top_row = TOP_ROW_CHILD
-                cols = st.columns(10)
-            else:
-                top_row = TOP_ROW_ADULT
-                cols = st.columns(16)
             render_button_row(cols, top_row, manual_teeth, disable_buttons=False, differences=differences, color_differences_instead_of_manual=True)
 
-        # load_teeth(manual_teeth, child=child)
         st.markdown("### Your input")
         load_teeth(manual_teeth, outline_corrected_images=True, child=child)
 
-        st.markdown("Differences bottom Teeth")
-        # if child:
-        #     bottom_row = list(reversed(range(81, 86))) + list(range(71, 76))
-        #     cols2 = st.columns(10)
-        # else:
-        #     bottom_row = list(reversed(range(41, 49))) + list(range(31, 39))
-        #     cols2 = st.columns(16)
-        # for i, tooth_num in enumerate(bottom_row):
-        #     if tooth_num in differences:
-        #         with cols2[i]:
-        #             st.image(get_tooth_image(tooth_num, differences[tooth_num]))
-        # st.markdown("### Differences Bottom Teeth")
+        st.markdown("### Differences bottom teeth")
+        if child:
+            bottom_row = BOTTOM_ROW_CHILD
+            cols = st.columns(10)
+        else:
+            bottom_row = BOTTOM_ROW_ADULT
+            cols = st.columns(16)
+        load_diff_teeth_top(differences, bottom_row)
+        if st.session_state.get("Professional", False):
+            render_button_row(cols, bottom_row, manual_teeth, disable_buttons=False, differences=differences, color_differences_instead_of_manual=True)
 
-        # if st.session_state.get("Professional", False):
-        #     render_button_row(st.columns(16), BOTTOM_ROW_ADULT, manual_teeth, disable_buttons=False, differences=differences, color_differences_instead_of_manual=True)
-
-        # load_diff_teeth_bottom(differences)
         if (
                 st.session_state.get("modal_tooth_num") is not None
                 and not st.session_state.get("show_tooth_config_dialog", True)
