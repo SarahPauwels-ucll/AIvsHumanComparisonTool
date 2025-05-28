@@ -27,6 +27,10 @@ def upload_files():
             st.session_state["manual_image_bytes"] = img_bytes
             st.session_state["upload_errors"]=[f"File '{name}' is uploaded successfully"]
             st.session_state.submitted_manual_teeth = False
+            image_path = os.path.join("AIOutput", "image.jpg")
+            if os.path.exists(image_path):
+                with open(image_path, "rb") as img_file:
+                    st.session_state.AI_image_bytes = img_file.read()
 
         else:
             st.session_state["upload_errors"]=[f"Cannot use files with extension '{ext}' use 'jpeg' or 'jpg' instead"]
