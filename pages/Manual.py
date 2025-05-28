@@ -117,7 +117,7 @@ if "manual_image_bytes" in st.session_state:
         col1, col2 = st.columns([1, 1])  
         with col1:
             if st.session_state.Professional:
-                st.button("switch view", on_click=switch_view)
+                st.button("Switch view", on_click=switch_view)
         with col2:
             with st.form("next", border=False):
                 nextpage = st.form_submit_button("Next page",use_container_width=True,type="tertiary")
