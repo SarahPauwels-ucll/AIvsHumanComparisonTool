@@ -154,7 +154,6 @@ def combined_download_button():
         manual_teeth=manual_teeth,
         top_row=top_row,
         bottom_row=bottom_row,
-        show_teeth_numbers=True
     )
 
     # --- Create ZIP ---
