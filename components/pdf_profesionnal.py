@@ -37,6 +37,7 @@ def create_pdf_professional(
         gender: str,
         pano_bytes: bytes,
         manual_teeth: dict,
+        show_teeth_numbers: bool = False,
         *,
         top_row: list[int],
         bottom_row: list[int],
@@ -144,27 +145,33 @@ def create_pdf_professional(
     story.append(Spacer(1, 12))
 
     # --- full mouth teeth lineup ---
-    def full_lineup(teeth_map: dict[int, str]):
+    def full_lineup(teeth_map: dict[int, str], show_numbers: bool):
         rows: list[list] = []
-        rows.append([Paragraph(str(n), center8) for n in top_row])
+        invisible_style = ParagraphStyle('invisible', fontSize=8, alignment=1, textColor=colors.white, leading=12)
+        if show_numbers:
+            rows.append([Paragraph(str(n), center8) for n in top_row])
+        else:
+            rows.append([Paragraph("&nbsp;", invisible_style) for n in top_row])
+
         rows.append([tooth_image(n, teeth_map.get(n, "normal")) for n in top_row])
         rows.append([tooth_image(n, teeth_map.get(n, "normal")) for n in bottom_row])
-        rows.append([Paragraph(str(n), center8) for n in bottom_row])
+        if show_numbers:
+            rows.append([Paragraph(str(n), center8) for n in bottom_row])
+        else:
+            rows.append([Paragraph("&nbsp;", invisible_style) for n in bottom_row])
 
         tbl = Table(rows)
-        tbl.setStyle(TableStyle([
-            ('LEFTPADDING', (0, 0), (-1, -1), 0),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 0),
-            ('TOPPADDING', (0, 0), (-1, -1), 1),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            # keep in case teeth should have black background
-            #('BACKGROUND', (0, 1), (-1, 2), colors.black),
-        ]))
+        style = [('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+                 ('TOPPADDING', (0, 0), (-1, -1), 1), ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
+                 ('ALIGN', (0, 0), (-1, -1), 'CENTER'), ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                 ('LINEBEFORE', (8, 0), (8, -1), 0.5, colors.grey),
+                 ('LINEBELOW', (0, 1), (-1, 1), 0.5, colors.grey)
+                 ]
+
+        tbl.setStyle(TableStyle(style))
         return tbl
 
-    manual_tbl = full_lineup(manual_teeth)
+    manual_tbl = full_lineup(manual_teeth, show_numbers=show_teeth_numbers)
 
     lineups = Table([[manual_tbl]],
                     colWidths=[USABLE_WIDTH],
@@ -236,9 +243,6 @@ def create_pdf_professional(
     implant_teeth = [str(key) for key, value in manual_teeth.items() if "implant" in str(value)]
     impacted_teeth = [str(key) for key, value in manual_teeth.items() if "impacted" in str(value)]
     data = [
-        Paragraph(f'The panoramic radiograph reveals {present_teeth_count} teeth are present. The following teeth are present:', styles['Normal']),
-        Paragraph(f'Maxilla: {", ".join(top_row_present_teeth) if top_row_present_teeth else "-"}'),
-        Paragraph(f'Mandible: {", ".join(bottom_row_present_teeth) if bottom_row_present_teeth else "-"}'),
         Paragraph('The following teeth are missing:'),
         Paragraph(f'Maxilla: {", ".join(top_row_missing_teeth) if top_row_missing_teeth else "-"}'),
         Paragraph(f'Mandible: {", ".join(bottom_row_missing_teeth) if bottom_row_missing_teeth else "-"}'),
@@ -317,6 +321,7 @@ def pdf_button_professional():
         manual_teeth=manual_teeth,
         top_row=top_row,
         bottom_row=bottom_row,
+        show_teeth_numbers=False
     )
 
     st.download_button(

@@ -152,6 +152,8 @@ def create_pdf(
             ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('LINEBEFORE', (8, 0), (8, -1), 0.5, colors.grey),
+            ('LINEBELOW', (0, 1), (-1, 1), 0.5, colors.grey),
             # keep in case teeth should have black background
             #('BACKGROUND', (0, 1), (-1, 2), colors.black),
         ]))
