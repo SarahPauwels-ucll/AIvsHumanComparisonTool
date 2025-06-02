@@ -25,6 +25,7 @@ HALF_W         = USABLE_WIDTH / 2
 
 MAX_PANO_H = 3.8 * inch
 TOOTH_H_PT = math.floor(0.8 * inch)
+TOOTH_H_PT_LARGE = math.floor(0.6 * inch)
 RASTER_SCALE = 3 # factor to scale PIL images to make them less blurry
 DIFF_IMG_W  = 0.45 * inch
 
@@ -146,15 +147,16 @@ def create_pdf_professional(
 
     # --- full mouth teeth lineup ---
     def full_lineup(teeth_map: dict[int, str], show_numbers: bool):
+        tooth_height = TOOTH_H_PT if show_numbers else TOOTH_H_PT_LARGE
         rows: list[list] = []
-        invisible_style = ParagraphStyle('invisible', fontSize=8, alignment=1, textColor=colors.white, leading=12)
+        invisible_style = ParagraphStyle('invisible', fontSize=1, alignment=1, textColor=colors.white, leading=1)
         if show_numbers:
             rows.append([Paragraph(str(n), center8) for n in top_row])
         else:
             rows.append([Paragraph("&nbsp;", invisible_style) for n in top_row])
 
-        rows.append([tooth_image(n, teeth_map.get(n, "normal")) for n in top_row])
-        rows.append([tooth_image(n, teeth_map.get(n, "normal")) for n in bottom_row])
+        rows.append([tooth_image(n, teeth_map.get(n, "normal"), height_pt=TOOTH_H_PT_LARGE) for n in top_row])
+        rows.append([tooth_image(n, teeth_map.get(n, "normal"), height_pt=TOOTH_H_PT_LARGE) for n in bottom_row])
         if show_numbers:
             rows.append([Paragraph(str(n), center8) for n in bottom_row])
         else:
@@ -321,7 +323,6 @@ def pdf_button_professional():
         manual_teeth=manual_teeth,
         top_row=top_row,
         bottom_row=bottom_row,
-        show_teeth_numbers=False
     )
 
     st.download_button(
