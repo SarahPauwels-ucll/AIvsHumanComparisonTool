@@ -5,3 +5,5 @@ __pycache__/
 .idea
 yolo_dataset
 runs
+yolo12n.pt
+annotated_output.jpg
