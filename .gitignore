@@ -3,3 +3,5 @@ image
 .venv
 __pycache__/
 .idea
+yolo_dataset
+runs

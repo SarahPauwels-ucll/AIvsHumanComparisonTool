@@ -14,7 +14,7 @@ from PIL import Image
 #     print("✅ YOLOv8 (ultralytics) is already installed.")
 
 # Load trained YOLO model
-model = YOLO('yolo12n.pt')
+model = YOLO('runs/detect/train/weights/best.pt')
 
 # --- STEP 1: Load Ground Truth from JSON ---
 def load_ground_truth_labels(json_path):
