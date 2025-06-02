@@ -11,7 +11,6 @@ def login(username, password):
         return USER_CREDENTIALS[username] == password
     return False
 
-
 st.title("Login Page")
 
 st.markdown("""
