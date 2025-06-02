@@ -199,7 +199,7 @@ def load_teeth_circle(teeth, child):
             rotation=angle_deg-90
         angle_rad = math.radians(angle_deg)
         x = center + radius * math.cos(angle_rad)
-        y = center-50 + 1.3*(radius * math.sin(angle_rad))
+        y = center-50 + 1.7*(radius * math.sin(angle_rad))
         if y>center-50:
             y+=50
         html += (
