@@ -7,7 +7,7 @@ from ultralytics import YOLO
 import numpy as np
 
 # --- Configuration ---
-MODEL_PATH = 'runs/segment/train/weights/best.pt'
+MODEL_PATH = 'AI/models/yolo11m_segmentation_finetuned.pt'
 
 # Path to your YOLO dataset (used to find test images)
 # Assumes this script is run from a directory where '../yolo_dataset_segmentation' is valid
@@ -66,6 +66,7 @@ def run_inference_on_test_set(model, image_dir, output_dir, conf_threshold):
 
             # Load image (BGR for OpenCV drawing)
             image_cv = cv2.imread(image_path)
+            overlay = image_cv.copy()
             h, w = image_cv.shape[:2]
 
             # Drawing parameters
@@ -101,6 +102,7 @@ def run_inference_on_test_set(model, image_dir, output_dir, conf_threshold):
                     top_left_y = max(0, min(top_left_y, h - text_h - 1))
                     label_origin = (top_left_x, top_left_y + text_h)  # baseline-left for putText
 
+
                     # ----- Draw label text in black -----
                     cv2.putText(
                         image_cv,
@@ -113,8 +115,11 @@ def run_inference_on_test_set(model, image_dir, output_dir, conf_threshold):
                         cv2.LINE_AA,
                     )
 
+            # Make yolo polygons transparent
+            imagecv_transparent = cv2.addWeighted(overlay, 0.5, image_cv, 0.5, 0)
+
             output_image_path = os.path.join(output_dir, f"contoured_{image_name}")
-            cv2.imwrite(output_image_path, image_cv)
+            cv2.imwrite(output_image_path, imagecv_transparent)
 
         except Exception as e:
             print(f"Error processing image {image_path}: {e}")
