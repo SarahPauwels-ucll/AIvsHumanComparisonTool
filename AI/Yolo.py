@@ -17,7 +17,7 @@ from PIL import Image
 #     print("✅ YOLOv8 (ultralytics) is already installed.")
 
 # Load trained YOLO model
-model = YOLO('runs/detect/train/weights/best.pt')
+model = YOLO('runs/detect/train2/weights/best.pt')
 if torch.cuda.is_available():
     model.to("cuda")
     gpu_name = torch.cuda.get_device_name(0)
@@ -121,8 +121,8 @@ def get_teeth_presence(image_path, confidence_threshold=0.5):
 
     return present_teeth, missing_teeth
 # Example Usage
-image_path = 'AI/data/450416V340/450416V340.jpeg'
-json_path = 'AI/data/450416V340/450416V340.json'
+image_path = 'AI/data/650228V319/650228V319.jpeg'
+json_path = 'AI/data/650228V319/650228V319.json'
 
 evaluate(image_path, json_path)
 print(get_teeth_presence(image_path, confidence_threshold=0))
