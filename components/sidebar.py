@@ -1,10 +1,9 @@
-import streamlit as st
-import re
-from streamlit_cookies_controller import CookieController
-from datetime import date
-import regex
-
 def load_sidebar(page="login"):
+    import streamlit as st
+    import re
+    from streamlit_cookies_controller import CookieController
+    from datetime import date
+    import regex
     def logout():
         controller = CookieController()
         keys_to_clear = [

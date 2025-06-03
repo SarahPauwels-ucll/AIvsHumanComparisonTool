@@ -1,6 +1,4 @@
 from streamlit.testing.v1 import AppTest
-import streamlit as st
-
 
 def test_loginpage():
     at = AppTest.from_file("app.py").run()
