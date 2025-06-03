@@ -2,6 +2,7 @@ import json
 import os
 
 import cv2
+import torch
 from ultralytics import YOLO
 from PIL import Image
 
@@ -16,7 +17,13 @@ from PIL import Image
 #     print("✅ YOLOv8 (ultralytics) is already installed.")
 
 # Load trained YOLO model
-model = YOLO('runs/detect/train2/weights/best.pt')
+model = YOLO('runs/detect/train/weights/best.pt')
+if torch.cuda.is_available():
+    model.to("cuda")
+    gpu_name = torch.cuda.get_device_name(0)
+    print(f"Using GPU {gpu_name} for inference")
+else:
+    print("CUDA not detected, using CPU for inference")
 
 # --- STEP 1: Load Ground Truth from JSON ---
 def load_ground_truth_labels(json_path):
