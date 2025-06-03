@@ -4,7 +4,7 @@ import torch
 
 if __name__ == "__main__":
     freeze_support()
-    model = YOLO("yolo12m-seg.pt")
+    model = YOLO("yolo11m-seg.pt")
     if torch.cuda.is_available():
         model.to("cuda")
         gpu_name = torch.cuda.get_device_name(0)

@@ -4,6 +4,7 @@ image
 __pycache__/
 .idea
 yolo_dataset
+yolo_dataset_segmentation
 runs
 yolo12n.pt
 annotated_output.jpg
