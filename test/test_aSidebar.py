@@ -33,3 +33,25 @@ def test_sidebar_loads_correctly():
     # Log out button
     logout_button = at.sidebar.button[-1]
     assert logout_button.label in ["Log out", "Log in as professional"]
+
+def test_sidebar_full_interaction():
+    at = AppTest.from_function(load_sidebar).run()
+
+    # Simulate user interaction
+    at.radio[0].set_value("Female")  # Gender
+    at.radio[1].set_value("Child")   # Teeth
+    at.sidebar.text_input[0].set_value("12345")  # Profile number
+    at.sidebar.date_input[0].set_value("1990-01-01")  # Birthdate
+    at.sidebar.date_input[1].set_value("2025-06-01")  # Consultation date
+
+    # Run the app after interactions
+    at.run()
+
+    # Assertions to confirm saved inputs
+    assert at.sidebar.radio[0].value == "Female"
+    assert at.sidebar.radio[1].value == "Child"
+    assert at.sidebar.text_input[0].value == "12345"
+    assert str(at.sidebar.date_input[0].value) == "1990-01-01"
+    assert str(at.sidebar.date_input[1].value) == "2025-06-01"
+    #age calculate correctly
+    assert at.sidebar.markdown[0].value == "Age: 35"
