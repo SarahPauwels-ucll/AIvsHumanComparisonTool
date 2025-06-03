@@ -70,26 +70,52 @@ def detect_teeth(image_path, conf_threshold=0.40, save_path='filtered_output.jpg
 
 # --- STEP 3: Compare and Output Results ---
 def evaluate(image_path, json_path):
-    ground_truth = load_ground_truth_labels(json_path)
-    detected_teeth = detect_teeth(image_path)
-    print(detected_teeth)
-    for tooth in range(11, 19):
-        status = "Present" if str(tooth) in ground_truth else "Missing"
-        print(f"Tooth {tooth}: {status}")
-    for tooth in range(21, 29):
-        status = "Present" if str(tooth) in ground_truth else "Missing"
-        print(f"Tooth {tooth}: {status}")
+    ground_truth = load_ground_truth_labels(json_path)  # e.g., ['11', '12', '13', ...]
+    detections = detect_teeth(image_path)  # [{'tooth': '21', 'confidence': 0.812}, ...]
 
-    for tooth in range(31, 39):
-        status = "Present" if str(tooth) in ground_truth else "Missing"
-        print(f"Tooth {tooth}: {status}")
+    # Extract unique detected tooth numbers as strings
+    detected_teeth = set([d['tooth'] for d in detections])
 
-    for tooth in range(41, 49):
-            status = "Present" if str(tooth) in ground_truth else "Missing"
-            print(f"Tooth {tooth}: {status}")
+    print(f"\n📸 Evaluating image: {image_path}")
+    print(f"✅ Detected Teeth: {detected_teeth}")
+    print(f"📋 Ground Truth: {ground_truth}\n")
 
+    all_teeth = list(range(11, 19)) + list(range(21, 29)) + list(range(31, 39)) + list(range(41, 49))
+
+    for tooth in all_teeth:
+        tooth_str = str(tooth)
+        in_ground_truth = tooth_str in ground_truth
+        is_detected = tooth_str in detected_teeth
+
+        if in_ground_truth and is_detected:
+            print(f"✅ Tooth {tooth}: correctly detected")
+        elif in_ground_truth and not is_detected:
+            print(f"❌ Tooth {tooth}: not detected")
+        elif not in_ground_truth and is_detected:
+            print(f"❌ Tooth {tooth}: falsely detected")
+        else:
+            print(f"Tooth {tooth}: missing (not expected and not detected)")
+
+def get_teeth_presence(image_path, confidence_threshold=0.5):
+    detections = detect_teeth(image_path)  # [{'tooth': '21', 'confidence': 0.812}, ...]
+
+    # Filter and extract tooth numbers above confidence threshold
+    detected_teeth = set(
+        d['tooth'] for d in detections if d['confidence'] >= confidence_threshold
+    )
+
+    all_teeth = set(str(t) for t in (
+        list(range(11, 19)) + list(range(21, 29)) +
+        list(range(31, 39)) + list(range(41, 49))
+    ))
+
+    present_teeth = sorted(list(detected_teeth & all_teeth))
+    missing_teeth = sorted(list(all_teeth - detected_teeth))
+
+    return present_teeth, missing_teeth
 # Example Usage
 image_path = 'AI/data/450416V340/450416V340.jpeg'
 json_path = 'AI/data/450416V340/450416V340.json'
 
 evaluate(image_path, json_path)
+print(get_teeth_presence(image_path, confidence_threshold=0))
