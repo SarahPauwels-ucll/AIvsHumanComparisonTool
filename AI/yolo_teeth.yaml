@@ -1,6 +1,7 @@
 path: yolo_dataset
 train: images/train
 val: images/val
+test: images/test
 
 nc: 32
 names: ['11', '12', '13', '14', '15', '16', '17', '18',
