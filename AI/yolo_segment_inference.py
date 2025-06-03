@@ -19,7 +19,8 @@ TEST_IMAGE_DIR = os.path.join(DATASET_BASE_DIR, "images", "test")
 # This will be created relative to where the script is run.
 OUTPUT_VISUALIZATION_DIR = "AI/output/segmentation"
 
-CONF_THRESHOLD = 0.50  # Confidence threshold for displaying detections
+CONF_THRESHOLD = 0.35
+# Confidence threshold for displaying detections
 
 # Class names for labeling (should match your YAML)
 CLASS_NAMES = [
