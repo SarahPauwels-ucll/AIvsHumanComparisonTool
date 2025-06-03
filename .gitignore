@@ -8,3 +8,4 @@ yolo_dataset_segmentation
 runs
 yolo12n.pt
 annotated_output.jpg
+/AI/output/
