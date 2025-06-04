@@ -59,7 +59,8 @@ def load_sidebar(page="login"):
                 gap:0rem;
                 }
     </style>
-    """, unsafe_allow_html=True)            
+    """, unsafe_allow_html=True) 
+    st.sidebar.image("omfs_logo.png")           
     if st.session_state.Professional:
         with st.sidebar.form("menu", border=False):
             st.title("Menu")
