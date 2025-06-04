@@ -1,6 +1,7 @@
 import json
 import os
-
+import numpy as np
+import io
 import cv2
 import torch
 from ultralytics import YOLO
@@ -33,6 +34,52 @@ def load_ground_truth_labels(json_path):
     return present_teeth
 
 # --- STEP 2: Run YOLO Inference ---
+def detect_teethAISlop(image_source, conf_threshold=0.40, save_path='filtered_output.jpg'):
+    """
+    image_source: can be a file path (str) or image bytes
+    """
+    if isinstance(image_source, bytes):
+        # Convert bytes to OpenCV image
+        pil_image = Image.open(io.BytesIO(image_source)).convert("RGB")
+        image = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
+        results = model(pil_image)[0]  # Run YOLO on PIL image directly
+    elif isinstance(image_source, str):
+        image = cv2.imread(image_source)
+        results = model(image_source)[0]  # Run YOLO on file path
+    else:
+        raise ValueError("image_source must be a file path or image bytes")
+
+    detected_teeth = []
+
+    for box in results.boxes.data.tolist():
+        x1, y1, x2, y2, conf, class_id = box
+        if conf < conf_threshold:
+            continue
+
+        class_id = int(class_id)
+
+        if class_id < 8:
+            tooth_num = 11 + class_id
+        elif class_id < 16:
+            tooth_num = 21 + (class_id - 8)
+        elif class_id < 24:
+            tooth_num = 31 + (class_id - 16)
+        else:
+            tooth_num = 41 + (class_id - 24)
+
+        detected_teeth.append({
+            "tooth": str(tooth_num),
+            "confidence": round(conf, 3)
+        })
+
+        p1, p2 = (int(x1), int(y1)), (int(x2), int(y2))
+        cv2.rectangle(image, p1, p2, (0, 255, 0), 2)
+        label = f"{tooth_num} {conf:.2f}"
+        cv2.putText(image, label, (p1[0], p1[1] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+
+    cv2.imwrite(save_path, image)
+
+    return detected_teeth
 # --- STEP 2: Run YOLO Inference and Show ---
 def detect_teeth(image_path, conf_threshold=0.40, save_path='filtered_output.jpg'):
     results = model(image_path)[0]
@@ -120,9 +167,29 @@ def get_teeth_presence(image_path, confidence_threshold=0.5):
     missing_teeth = sorted(list(all_teeth - detected_teeth))
 
     return present_teeth, missing_teeth
-# Example Usage
-image_path = 'AI/data/650228V319/650228V319.jpeg'
-json_path = 'AI/data/650228V319/650228V319.json'
+def get_teeth_presenceAISlop(image_source, confidence_threshold=0.5):
+    """
+    Accepts either image path (str) or image bytes (bytes)
+    """
+    detections = detect_teethAISlop(image_source, conf_threshold=confidence_threshold)
 
-evaluate(image_path, json_path)
-print(get_teeth_presence(image_path, confidence_threshold=0))
+    detected_teeth = set(
+        d['tooth'] for d in detections if d['confidence'] >= confidence_threshold
+    )
+
+    all_teeth = set(str(t) for t in (
+        list(range(11, 19)) + list(range(21, 29)) +
+        list(range(31, 39)) + list(range(41, 49))
+    ))
+
+    present_teeth = sorted(list(detected_teeth & all_teeth))
+    missing_teeth = sorted(list(all_teeth - detected_teeth))
+
+    return present_teeth, missing_teeth
+
+# Example Usage
+# image_path = 'AI/data/650228V319/650228V319.jpeg'
+# json_path = 'AI/data/650228V319/650228V319.json'
+#
+# evaluate(image_path, json_path)
+# print(get_teeth_presence(image_path, confidence_threshold=0))
