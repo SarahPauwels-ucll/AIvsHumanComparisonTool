@@ -3,13 +3,6 @@ import streamlit as st
 from components.sidebar import load_sidebar
 import os
 
-# Define a session flag to trigger the page switch
-if "go_to_next_page" not in st.session_state:
-    st.session_state.go_to_next_page = False
-# Perform the page switch "outside" the callback
-if st.session_state.go_to_next_page:
-    st.session_state.go_to_next_page = False
-    st.switch_page("pages/Manual.py")
 
 st.set_page_config(page_title="Upload image",
                    layout="wide")
@@ -34,6 +27,10 @@ def upload_files():
             st.session_state["manual_image_bytes"] = img_bytes
             st.session_state["upload_errors"]=[f"File '{name}' is uploaded successfully"]
             st.session_state.submitted_manual_teeth = False
+            image_path = os.path.join("AIOutput", "image.jpg")
+            if os.path.exists(image_path):
+                with open(image_path, "rb") as img_file:
+                    st.session_state.AI_image_bytes = img_file.read()
 
         else:
             st.session_state["upload_errors"]=[f"Cannot use files with extension '{ext}' use 'jpeg' or 'jpg' instead"]
@@ -51,7 +48,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 with st.container(key="uploader-container"):
-    st.error("Please ensure the image is an 'jpeg' or 'jpg'")
+    st.error("Please ensure the image is a 'jpeg' or 'jpg'")
     with st.container(border=True):
         file = st.file_uploader("Image uploader", accept_multiple_files=False, key="uploaded_files", type=["jpeg"], on_change=upload_files)
     for message in st.session_state.get("upload_errors", []):
@@ -59,23 +56,22 @@ with st.container(key="uploader-container"):
             st.success(message)
         else:
             st.error(message)
+    st.markdown("""
+        <style>
+            [data-testid="stForm"] button {
+                    border-style: solid;
+                    border-width: 1px;
+                    justify-content:center;
+                    width: fit-content;       
+                    padding: 0.5rem;
+                    margin-right: 0;
+                    margin-left: auto;
+                    display: flex;
+                    } 
+        </style>
+        """, unsafe_allow_html=True)            
 
-# switch page
-# Define the callback
-def go_to_next():
-    st.session_state.go_to_next_page = True
-
-st.markdown("""
-    <style>
-    .st-key-next-container {
-        max-width: 900px;
-        margin: 0 auto;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-with st.container(key="next-container"):
-    col1, col2 = st.columns([8, 1])
-
-    with col2:
-        # Show the button
-        st.button("Next Page", on_click=go_to_next)
+    with st.form("next", border=False):
+        nextpage = st.form_submit_button("Next page",use_container_width=True,type="tertiary")
+    if nextpage:
+        st.switch_page("pages/Manual.py") 

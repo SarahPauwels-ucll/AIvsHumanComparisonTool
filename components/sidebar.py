@@ -14,7 +14,8 @@ def load_sidebar(page="login"):
             "birthdate",
             "consultation date",
             "Gender",
-            "Professional"
+            "Professional",
+            "Teethkind"
         ]
         for key in st.session_state.keys():
             del st.session_state[key]
@@ -44,12 +45,18 @@ def load_sidebar(page="login"):
 
     st.markdown("""
     <style>
-        [data-testid="stForm"] button {
+        [data-testid="stSidebarContent"] [data-testid="stButton"] button{
+                margin-left:0;
+                margin-right:auto
+                }
+                
+        [data-testid="stSidebarContent"] [data-testid="stForm"] button {
                 justify-content:left;
                 margin-left: 1rem;
+                border-style:none;
                 } 
         
-        [data-testid="stForm"] [data-testid="stVerticalBlock"]{ 
+        [data-testid="stSidebarContent"] [data-testid="stForm"] [data-testid="stVerticalBlock"]{ 
                 gap:0rem;
                 }
     </style>
@@ -157,6 +164,34 @@ def load_sidebar(page="login"):
     if consultation_date!=None and birthdate!=None:
         years = consultation_date.year - birthdate.year - ((consultation_date.month, consultation_date.day) < (birthdate.month, birthdate.day))
         st.sidebar.markdown(f"Age: {years}")
+
+        stored_Teethkind = controller.get("Teethkind")
+        if not stored_Teethkind:
+            if years>6:
+                controller.set("Teethkind", "Adult")
+                st.session_state.Teethkind = "Adult"
+            else:
+                controller.set("Teethkind", "Child")
+                st.session_state.Teethkind = "Child"
+        
+    # --- teeth ---
+    stored_Teethkind = controller.get("Teethkind")
+    if "Teethkind" not in st.session_state or not st.session_state.Teethkind:
+        st.session_state.Teethkind = stored_Teethkind
+
+    if "Teethkindpicker" not in st.session_state or not st.session_state.Teethkindpicker:
+        st.session_state.Teethkindpicker = stored_Teethkind
+
+    Teethkindpicker = st.sidebar.radio("Teeth", ["Adult", "Child"],
+                              index=0 if st.session_state.Teethkindpicker == "Adult" else 1,
+                              key="Teethkindpicker")
+                              
+    if "teethkindManualySet" in st.session_state:
+        print(st.session_state.teethkindManualySet)
+
+    if Teethkindpicker != stored_Teethkind:
+        st.session_state.Teethkind=Teethkindpicker
+        controller.set("Teethkind", Teethkindpicker)
 
     if st.session_state.Professional:
         st.sidebar.button("Log out",on_click=logout)
