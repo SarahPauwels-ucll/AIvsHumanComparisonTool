@@ -155,52 +155,54 @@ def show_options(teeth: dict[int, str | None], add_to_corrected_set: bool = Fals
                 st.rerun()
 
 
-def render_teeth(page: str, disable_buttons: bool = False,circle=False,child=False):
+def render_teeth(page: str, disable_buttons: bool = False, circle=False, child=False):
     if not page:
         raise Exception("page can't be empty")
 
+    # Use preloaded AI data if available in session state
+    if page == "ai":
+        if child and "ai_teeth_child" in st.session_state:
+            st.session_state["childteeth_dict_ai"] = st.session_state["ai_teeth_child"]
+        elif not child and "ai_teeth" in st.session_state:
+            st.session_state["teeth_dict_ai"] = st.session_state["ai_teeth"]
 
+    # Fallback to default if not yet in session state
     if not st.session_state.get(f"childteeth_dict_{page}"):
-        if page=="ai":
-                teeth = get_teeth_data(childteethAI)
+        if page == "ai":
+            teeth = get_teeth_data(childteethAI)
         else:
-                teeth = get_teeth_data(childteethInput)
+            teeth = get_teeth_data(childteethInput)
         st.session_state[f"childteeth_dict_{page}"] = teeth
 
     if not st.session_state.get(f"teeth_dict_{page}"):
-        if page=="ai":
+        if page == "ai":
             teeth = get_teeth_data(teethAI)
         else:
             teeth = get_teeth_data(teethInput)
         st.session_state[f"teeth_dict_{page}"] = teeth
 
+    # Pick the right one
     if child:
         teeth = st.session_state[f"childteeth_dict_{page}"]
     else:
-
         teeth = st.session_state[f"teeth_dict_{page}"]
 
     if "show_tooth_config_dialog" not in st.session_state:
         st.session_state.show_tooth_config_dialog = False
 
-
-
+    # Define tooth layout
     if child:
-        top_left_nums = [55,54,53,52,51]
-        top_right_nums = [61,62,63,64,65]
-        bottom_left_nums = [85,84,83,82,81]
-        bottom_right_nums = [71,72,73,74,75]
+        top_left_nums = [55, 54, 53, 52, 51]
+        top_right_nums = [61, 62, 63, 64, 65]
+        bottom_left_nums = [85, 84, 83, 82, 81]
+        bottom_right_nums = [71, 72, 73, 74, 75]
     else:
-        top_left_nums = [18,17,16,15,14,13,12,11]
-        top_right_nums = [21,22,23,24,25,26,27,28]
-        bottom_left_nums = [48,47,46,45,44,43,42,41]
-        bottom_right_nums = [31,32,33,34,35,36,37,38]
+        top_left_nums = [18, 17, 16, 15, 14, 13, 12, 11]
+        top_right_nums = [21, 22, 23, 24, 25, 26, 27, 28]
+        bottom_left_nums = [48, 47, 46, 45, 44, 43, 42, 41]
+        bottom_right_nums = [31, 32, 33, 34, 35, 36, 37, 38]
 
-
-
-
-
-
+    # Style and layout
     st.markdown("""
     <style>
     .st-key-tooth-container {
@@ -212,22 +214,23 @@ def render_teeth(page: str, disable_buttons: bool = False,circle=False,child=Fal
     }
     </style>
     """, unsafe_allow_html=True)
-    with st.container(key="tooth-container"):
 
+    with st.container(key="tooth-container"):
         top_cols = st.columns(len(top_left_nums + top_right_nums))
         top_nums = top_left_nums + top_right_nums
-        render_button_row(top_cols,top_nums, teeth, disable_buttons)
-        
+        render_button_row(top_cols, top_nums, teeth, disable_buttons)
+
         if circle:
-            load_teeth_circle(teeth,child)
+            load_teeth_circle(teeth, child)
         else:
-            load_teeth(teeth,child)
+            load_teeth(teeth, child)
 
         bottom_cols = st.columns(len(bottom_left_nums + bottom_right_nums))
         bottom_nums = bottom_left_nums + bottom_right_nums
-        render_button_row(bottom_cols,bottom_nums, teeth, disable_buttons)
+        render_button_row(bottom_cols, bottom_nums, teeth, disable_buttons)
 
         if st.session_state.show_tooth_config_dialog:
             show_options(teeth)
+
     return teeth
 
