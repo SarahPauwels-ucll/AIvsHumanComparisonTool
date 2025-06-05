@@ -3,4 +3,13 @@ image
 .venv
 __pycache__/
 .idea
+yolo_dataset
+yolo_dataset_segmentation
+runs
+yolo12n.pt
+annotated_output.jpg
+/AI/output/
+yolo11*
+filtered_output.jpg
 AI/data
+node_modules

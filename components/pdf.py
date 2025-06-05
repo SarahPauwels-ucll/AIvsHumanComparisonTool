@@ -116,6 +116,23 @@ def create_pdf(
     story.append(HRFlowable(width="100%", thickness=1))
     story.append(Spacer(1, 12))
 
+    # --- image headers ---
+    headers_table = Table(
+        [[Paragraph("Manual observations", header_style),
+            Paragraph("AI observations", header_style)]],
+        colWidths=[HALF_W, HALF_W],
+        hAlign="CENTER"
+    )
+    headers_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+    ]))
+    story.append(headers_table)
+
     # --- panoramic images ---
     pano1 = make_scaled_image(pano1_bytes, max_w=HALF_W, max_h=MAX_PANO_H)
     pano2 = make_scaled_image(pano2_bytes, max_w=HALF_W, max_h=MAX_PANO_H)
@@ -152,6 +169,8 @@ def create_pdf(
             ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('LINEBEFORE', (8, 0), (8, -1), 0.5, colors.grey),
+            ('LINEBELOW', (0, 1), (-1, 1), 0.5, colors.grey),
             # keep in case teeth should have black background
             #('BACKGROUND', (0, 1), (-1, 2), colors.black),
         ]))
@@ -164,7 +183,7 @@ def create_pdf(
                     colWidths=[HALF_W, HALF_W],
                     hAlign="CENTER")
     lineups.setStyle(TableStyle([
-        ('LINEBEFORE', (1, 0), (1, 0), 0.5, colors.grey),
+        ('LINEBEFORE', (1, 0), (1, 0), 2, colors.grey),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
     ]))

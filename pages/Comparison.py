@@ -6,7 +6,7 @@ from components.pdf import pdf_button
 from components.zipDownload import combined_download_button
 from components.sidebar import load_sidebar
 from components.teeth import load_teeth
-from input.teethSet import teeth as manualteeth, childteeth as manualchildteeth
+from input.teethSet import missingteeth as manualteeth, missingchildteeth as manualchildteeth
 from AIOutput.teethSet import teeth as AIteeth, childteeth as AIchildteeth
 from components.teeth import load_teeth, pil_to_data_url
 from components.teeth_renderer import check_checkbox_disabled, check_checkbox_status, toggle_tooth_presence, \
@@ -32,12 +32,13 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+
 def restart():
     controller = CookieController()
     print(controller.getAll())
 
     keys_to_clear = [
-        "ProfileNumber", "LastName", "FirstName", "birthdate", "consultation date", "Gender","Teethkind"
+        "ProfileNumber", "LastName", "FirstName", "birthdate", "consultation date", "Gender", "Teethkind"
     ]
 
     # Clear all session_state keys
@@ -58,8 +59,9 @@ def restart():
     # Set flag to trigger page switch on next rerun
     st.session_state.just_restarted = True
 
+
 if "go_to_next_page" not in st.session_state:
-   st.session_state.go_to_next_page = False
+    st.session_state.go_to_next_page = False
 
 # Perform the page switch "outside" the callback
 if st.session_state.go_to_next_page:
@@ -78,15 +80,15 @@ if st.session_state.go_to_upload_page:
 
 
 try:
-    manual_teeth =st.session_state.manual_teeth
+    manual_teeth = st.session_state.manual_teeth
 except:
-    manual_teeth=manualteeth
+    manual_teeth = manualteeth
     print("no manual teeth found")
 
 try:
-    AI_teeth =st.session_state.ai_teeth
+    AI_teeth = st.session_state.ai_teeth
 except:
-    AI_teeth=AIteeth
+    AI_teeth = AIteeth
 
     print("no ai teeth found")
 
@@ -94,10 +96,12 @@ if st.session_state.get("customize_tooth", False):
     teeth = st.session_state.get("teeth_dict_manual")
     show_options(teeth)
 
+
 def normalize(value):
     if value is None:
         return None
     return set(map(str.strip, value.split(",")))
+
 
 def compair(manualteeth, AIteeth) -> dict[int, str | None]:
     differences = {}
@@ -109,40 +113,41 @@ def compair(manualteeth, AIteeth) -> dict[int, str | None]:
         norm_ai = normalize(ai_val)
 
         if norm_user != norm_ai:
-            if not (norm_user==None and norm_ai=="normal") or not (norm_user=="normal" and norm_ai==None):
-                differences[tooth]=ai_val
-    return(differences)
+            if not (norm_user == None and norm_ai == "normal") or not (norm_user == "normal" and norm_ai == None):
+                differences[tooth] = ai_val
+    return (differences)
+
 
 load_sidebar("Comparison")
 
 if st.session_state.Teethkind == "Child":
-    child=True
+    child = True
 else:
-    child=False
+    child = False
 
 if child:
     try:
-        manual_teeth =st.session_state.manual_teeth_child
+        manual_teeth = st.session_state.manual_teeth_child
     except:
-        manual_teeth=manualchildteeth
+        manual_teeth = manualchildteeth
         print("no manual teeth found")
 
     try:
-        AI_teeth =st.session_state.ai_teeth_child
+        AI_teeth = st.session_state.ai_teeth_child
     except:
-        AI_teeth=AIchildteeth
+        AI_teeth = AIchildteeth
     print("no ai teeth found")
 else:
     try:
-        manual_teeth =st.session_state.manual_teeth
+        manual_teeth = st.session_state.manual_teeth
     except:
-        manual_teeth=manualteeth
+        manual_teeth = manualteeth
         print("no manual teeth found")
 
     try:
-        AI_teeth =st.session_state.ai_teeth
+        AI_teeth = st.session_state.ai_teeth
     except:
-        AI_teeth=AIteeth
+        AI_teeth = AIteeth
         print("no ai teeth found")
 
 st.title("Comparison page!")
@@ -165,17 +170,21 @@ def pick_correct_tooth(clicked_tooth_id):
 
     columns = st.columns(2)
     with columns[0]:
-        radio_value = st.radio(" ", ("manual", "ai"), key=f"radio_modal_difference")
+        radio_value = st.radio(" ", ("manual", "ai"),
+                               key=f"radio_modal_difference")
 
     with columns[1]:
-        modal_tooth_pil_manual = get_tooth_image(clicked_tooth_id, manual_teeth[clicked_tooth_id])
+        modal_tooth_pil_manual = get_tooth_image(
+            clicked_tooth_id, manual_teeth[clicked_tooth_id])
         st.image(modal_tooth_pil_manual, width=40)
 
         if tooth_differences_value is not False:
-            modal_tooth_pil_ai = get_tooth_image(clicked_tooth_id, tooth_differences_value)
+            modal_tooth_pil_ai = get_tooth_image(
+                clicked_tooth_id, tooth_differences_value)
             st.image(modal_tooth_pil_ai, width=40)
         else:
-            st.write("AI data not available for this tooth.")  # Or handle appropriately
+            # Or handle appropriately
+            st.write("AI data not available for this tooth.")
 
     modal_cols = st.columns(2)
     with modal_cols[0]:
@@ -199,11 +208,12 @@ def pick_correct_tooth(clicked_tooth_id):
             st.session_state.modal_tooth_num = None
             st.rerun()
 
-TOP_ROW_ADULT    = list(reversed(range(11, 19))) + list(range(21, 29))
+
+TOP_ROW_ADULT = list(reversed(range(11, 19))) + list(range(21, 29))
 BOTTOM_ROW_ADULT = list(reversed(range(41, 49))) + list(range(31, 39))
 
 TOP_ROW_CHILD = list(reversed(range(51, 56))) + list(range(61, 66))
-BOTTOM_ROW_CHILD= list(reversed(range(81, 86))) + list(range(71, 76))
+BOTTOM_ROW_CHILD = list(reversed(range(81, 86))) + list(range(71, 76))
 
 if st.session_state.get("modal_tooth_num", False):
     if child and (st.session_state.modal_tooth_num not in TOP_ROW_CHILD and st.session_state.modal_tooth_num not in BOTTOM_ROW_CHILD):
@@ -212,6 +222,7 @@ if st.session_state.get("modal_tooth_num", False):
     elif not child and (st.session_state.modal_tooth_num not in TOP_ROW_ADULT and st.session_state.modal_tooth_num not in BOTTOM_ROW_ADULT):
         st.session_state.show_tooth_config_dialog = False
         st.session_state.modal_tooth_num = None
+
 
 def load_diff_teeth_top(differences, teeth_list):
     cols = st.columns(len(teeth_list))
@@ -222,6 +233,7 @@ def load_diff_teeth_top(differences, teeth_list):
             else:
                 st.empty()
 
+
 def load_diff_teeth_bottom(differences, teeth_list):
     cols = st.columns(len(teeth_list))
     for col, tooth in zip(cols, teeth_list):
@@ -230,6 +242,7 @@ def load_diff_teeth_bottom(differences, teeth_list):
                 st.image(get_tooth_image(tooth, differences[tooth]))
             else:
                 st.empty()
+
 
 # Check if the image exists
 if ai_image_bytes and manual_image_bytes:
@@ -265,7 +278,7 @@ if ai_image_bytes and manual_image_bytes:
     </style>
     """, unsafe_allow_html=True)
     with st.container(key="container"):
-        st.markdown("### Differences top teeth")
+        st.markdown("### Differences maxillary teeth")
         if child:
             top_row = TOP_ROW_CHILD
             cols_count = 10
@@ -275,12 +288,13 @@ if ai_image_bytes and manual_image_bytes:
         load_diff_teeth_top(differences, top_row)
         if st.session_state.get("Professional", False):
             cols = st.columns(cols_count)
-            render_button_row(cols, top_row, manual_teeth, disable_buttons=False, differences=differences, color_differences_instead_of_manual=True)
+            render_button_row(cols, top_row, manual_teeth, disable_buttons=False,
+                              differences=differences, color_differences_instead_of_manual=True)
 
         st.markdown("### Your input")
         load_teeth(manual_teeth, outline_corrected_images=True, child=child)
 
-        st.markdown("### Differences bottom teeth")
+        st.markdown("### Differences mandibular teeth")
         if child:
             bottom_row = BOTTOM_ROW_CHILD
             cols_count = 10
@@ -289,7 +303,8 @@ if ai_image_bytes and manual_image_bytes:
             cols_count = 16
         if st.session_state.get("Professional", False):
             cols = st.columns(cols_count)
-            render_button_row(cols, bottom_row, manual_teeth, disable_buttons=False, differences=differences, color_differences_instead_of_manual=True)
+            render_button_row(cols, bottom_row, manual_teeth, disable_buttons=False,
+                              differences=differences, color_differences_instead_of_manual=True)
         load_diff_teeth_top(differences, bottom_row)
 
         if (
@@ -306,8 +321,10 @@ if ai_image_bytes and manual_image_bytes:
 else:
     st.warning("No image has been uploaded yet.")
 
+
 def go_to_upload_page():
     st.session_state.go_to_upload_page = True
+
 
 if "manual_image_bytes" in st.session_state:
     st.markdown("""
@@ -344,7 +361,6 @@ if "manual_image_bytes" in st.session_state:
                 pdf_button()
                 # excel_button()
 
-
         st.button("Restart", on_click=restart)
 else:
     st.button("Upload image", on_click=go_to_upload_page)
@@ -364,4 +380,3 @@ if st.session_state.get("show_tooth_config_dialog", False):
     st.session_state.show_tooth_config_dialog = False
     st.session_state.modal_tooth_num = None
     show_options(manual_teeth, True)
-
