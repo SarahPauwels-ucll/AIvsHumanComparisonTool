@@ -18,7 +18,7 @@ from PIL import Image
 #     print("✅ YOLOv8 (ultralytics) is already installed.")
 
 # Load trained YOLO model
-model = YOLO('runs/detect/train2/weights/best.pt')
+model = YOLO('AI/models/yolo12m_bounding_finetuned_v2.pt')
 if torch.cuda.is_available():
     model.to("cuda")
     gpu_name = torch.cuda.get_device_name(0)
@@ -187,9 +187,103 @@ def get_teeth_presenceAISlop(image_source, confidence_threshold=0.5):
 
     return present_teeth, missing_teeth
 
-# Example Usage
-# image_path = 'AI/data/650228V319/650228V319.jpeg'
-# json_path = 'AI/data/650228V319/650228V319.json'
+def load_ground_truth_labels_from_txt(txt_path):
+    """
+    Load YOLO-format label file and convert class indices to tooth numbers.
+    Each line in the file is expected to be: <class_id> <x_center> <y_center> <width> <height>
+    """
+    present_teeth = set()
+    if not os.path.exists(txt_path):
+        return present_teeth
+
+    with open(txt_path, 'r') as file:
+        for line in file:
+            parts = line.strip().split()
+            if not parts:
+                continue
+            class_id = int(parts[0])
+            # Map class index to FDI tooth number
+            if class_id < 8:
+                tooth_num = 11 + class_id
+            elif class_id < 16:
+                tooth_num = 21 + (class_id - 8)
+            elif class_id < 24:
+                tooth_num = 31 + (class_id - 16)
+            else:
+                tooth_num = 41 + (class_id - 24)
+
+            present_teeth.add(str(tooth_num))
+    return present_teeth
+
+def test_model_on_yolo_dataset_with_metrics(
+    image_dir='yolo_dataset/images/test',
+    label_dir='yolo_dataset/labels/test',
+    save_results=True,
+    output_dir='yolo_dataset/results',
+    conf_threshold=0.4
+):
+    os.makedirs(output_dir, exist_ok=True)
+    image_files = [f for f in os.listdir(image_dir) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
+
+    if not image_files:
+        print("❌ No test images found.")
+        return
+
+    total_tp = 0
+    total_fp = 0
+    total_fn = 0
+
+    for image_file in image_files:
+        image_path = os.path.join(image_dir, image_file)
+        txt_filename = os.path.splitext(image_file)[0] + '.txt'
+        txt_path = os.path.join(label_dir, txt_filename)
+
+        if not os.path.exists(txt_path):
+            print(f"⚠️ Ground truth not found for {image_file}. Skipping.")
+            continue
+
+        # Get detections and ground truth
+        predicted = detect_teeth(image_path, conf_threshold)
+        predicted_teeth = set(d['tooth'] for d in predicted if d['confidence'] >= conf_threshold)
+        ground_truth_teeth = load_ground_truth_labels_from_txt(txt_path)
+
+        # Calculate TP, FP, FN
+        tp = len(predicted_teeth & ground_truth_teeth)
+        fp = len(predicted_teeth - ground_truth_teeth)
+        fn = len(ground_truth_teeth - predicted_teeth)
+
+        total_tp += tp
+        total_fp += fp
+        total_fn += fn
+
+        if save_results:
+            output_image_path = os.path.join(output_dir, f"pred_{image_file}")
+            detect_teeth(image_path, conf_threshold, save_path=output_image_path)
+
+        print(f"📷 {image_file}: TP={tp}, FP={fp}, FN={fn}")
+
+    # --- Compute Metrics ---
+    try:
+        precision = total_tp / (total_tp + total_fp)
+        recall = total_tp / (total_tp + total_fn)
+        f1_score = 2 * (precision * recall) / (precision + recall)
+        accuracy = total_tp / (total_tp + total_fp + total_fn)
+    except ZeroDivisionError:
+        precision = recall = f1_score = accuracy = 0.0
+
+    print("\n📊 Overall Evaluation Metrics:")
+    print(f"✅ Total True Positives: {total_tp}")
+    print(f"❌ Total False Positives: {total_fp}")
+    print(f"❌ Total False Negatives: {total_fn}")
+    print(f"🎯 Precision: {precision:.3f}")
+    print(f"📥 Recall: {recall:.3f}")
+    print(f"🧠 F1 Score: {f1_score:.3f}")
+    print(f"📈 Accuracy: {accuracy:.3f}")
+#
+# test_model_on_yolo_dataset_with_metrics()
+# #Example Usage
+# image_path = 'AI/data/61024377/61024377.jpeg'
+# json_path = 'AI/data/61024377/61024377.json'
 #
 # evaluate(image_path, json_path)
 # print(get_teeth_presence(image_path, confidence_threshold=0))
