@@ -11,14 +11,7 @@ if "go_to_upload_page" not in st.session_state:
     st.session_state.go_to_upload_page = False
 
 controller = CookieController()
-try:
-    stored_professional = controller.get("Professional") if controller.get("Professional") is not None else False
-    if "Professional" not in st.session_state or not st.session_state.Professional:
-        st.session_state.Professional = stored_professional
-except:
-    st.session_state.Professional = False
-if st.session_state.Professional:
-    st.switch_page("pages/Comparison.py")
+
 if st.session_state.go_to_upload_page:
     st.session_state.go_to_upload_page = False
     st.switch_page("pages/Upload_img.py")
@@ -35,7 +28,8 @@ except:
 load_sidebar("AI")
 
 st.title("Welcome to the AI page!")
-
+if st.session_state.Professional:
+    st.switch_page("pages/Comparison.py")
 image_path = os.path.join("AIOutput", "image.jpg")
 # Check if the image exists
 if os.path.exists(image_path) and "manual_image_bytes" in st.session_state:
