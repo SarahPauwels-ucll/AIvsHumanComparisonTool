@@ -6,7 +6,7 @@ from components.pdf import pdf_button
 from components.zipDownload import combined_download_button
 from components.sidebar import load_sidebar
 from components.teeth import load_teeth
-from input.teethSet import teeth as manualteeth, childteeth as manualchildteeth
+from input.teethSet import missingteeth as manualteeth, missingchildteeth as manualchildteeth
 from AIOutput.teethSet import teeth as AIteeth, childteeth as AIchildteeth
 from components.teeth import load_teeth, pil_to_data_url
 from components.teeth_renderer import check_checkbox_disabled, check_checkbox_status, toggle_tooth_presence, \

@@ -41,3 +41,4 @@ with st.container(key="login-container"):
         controller = CookieController()
         controller.set("Professional", False)
         st.switch_page("pages/Upload_img.py")
+st.image("omfs_logo.png")
