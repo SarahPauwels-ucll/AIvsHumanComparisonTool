@@ -319,7 +319,7 @@ if __name__ == "__main__":
         augment_one_pair,
         enumerate(data_pairs),
         max_workers=16,
-        total=len(data_pairs) * NUM_AUGMENTATIONS_PER_IMAGE
+        total=len(data_pairs)
     )
     #for img_idx, (image_path, json_path) in tqdm(enumerate(data_pairs), desc="Creating augmented images", total=len(data_pairs * NUM_AUGMENTATIONS_PER_IMAGE)):
 

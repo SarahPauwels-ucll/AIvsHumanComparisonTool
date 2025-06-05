@@ -6,14 +6,17 @@ import torch
 from ultralytics import YOLO
 import numpy as np
 
+from AI.draw_mask_on_input_data import apply_json_mask_to_image
+
 # --- Configuration ---
-MODEL_PATH = 'runs/segment/train2/weights/best.pt'
+MODEL_PATH = 'runs/segment/train6/weights/best.pt'
 
 # Path to your YOLO dataset (used to find test images)
 # Assumes this script is run from a directory where '../yolo_dataset_segmentation' is valid
 # e.g., if script is in 'AIvsHumanComparisonTool/scripts/', dataset is in 'AIvsHumanComparisonTool/yolo_dataset_segmentation/'
 DATASET_BASE_DIR = "yolo_dataset_segmentation"
 TEST_IMAGE_DIR = os.path.join(DATASET_BASE_DIR, "images", "test")
+JSON_DIR = os.path.join("AI", "data")
 
 # Output directory for images with drawn segmentations
 # This will be created relative to where the script is run.
@@ -29,8 +32,10 @@ CLASS_NAMES = [
     '41', '42', '43', '44', '45', '46', '47', '48'
 ]
 
+USE_BLUR = False
 
-def run_inference_on_test_set(model, image_dir, output_dir, conf_threshold):
+
+def run_inference_on_test_set(model: YOLO, image_dir, output_dir, conf_threshold):
     if not os.path.exists(image_dir):
         print(f"Error: Test image directory not found at '{os.path.abspath(image_dir)}'")
         return
@@ -46,6 +51,8 @@ def run_inference_on_test_set(model, image_dir, output_dir, conf_threshold):
 
     for image_name in image_files:
         image_path = os.path.join(image_dir, image_name)
+        base_filename = os.path.splitext(image_name)[0]
+        json_path = os.path.join(JSON_DIR, base_filename, base_filename + ".json")
         print(f"\nProcessing image: {image_path}")
 
         try:
@@ -57,7 +64,7 @@ def run_inference_on_test_set(model, image_dir, output_dir, conf_threshold):
             H, W, _ = image_cv.shape
 
             # Run inference over the image
-            results = model(image_path, verbose=False)[0]
+            results = model.predict(source=image_path, verbose=False, retina_masks=True, imgsz=1024)[0]
 
             # Prepare class info & deterministic colors per class
             random.seed(42)  # reproducible colors
@@ -66,7 +73,6 @@ def run_inference_on_test_set(model, image_dir, output_dir, conf_threshold):
 
             # Load image (BGR for OpenCV drawing)
             image_cv = cv2.imread(image_path)
-            overlay = image_cv.copy()
             h, w = image_cv.shape[:2]
 
             # Drawing parameters
@@ -75,7 +81,10 @@ def run_inference_on_test_set(model, image_dir, output_dir, conf_threshold):
             font_thickness = 2
 
             for result in results:
-                for mask, box in zip(result.masks.xy, result.boxes):
+                # Get image dimensions once per result
+                H, W = image_cv.shape[:2]
+
+                for i, (poly, box) in enumerate(zip(result.masks.xy, result.boxes)):
                     confidence = box.conf[0].item()
                     if confidence < conf_threshold:
                         continue  # Skip low-confidence detections
@@ -84,8 +93,36 @@ def run_inference_on_test_set(model, image_dir, output_dir, conf_threshold):
                     class_name = yolo_classes[cls_id]
                     mask_color = colors[cls_id]
 
-                    # ----- Draw mask -----
-                    cv2.fillPoly(image_cv, [np.int32(mask)], mask_color)
+                    # ----- Use the per-pixel mask directly (result.masks.data) -----
+                    # mask_tensor has shape (h0, w0); we need to resize it to (H, W)
+                    mask_tensor = result.masks.data[i]  # torch tensor of shape (h0, w0), values 0 or 1
+                    mask_np = (mask_tensor.cpu().numpy().astype(np.uint8)) * 255  # now uint8, shape (h0, w0)
+
+                    # Resize mask to match original image size (W, H)
+                    binary_mask = cv2.resize(mask_np, (W, H), interpolation=cv2.INTER_LINEAR)
+
+                    # ----- Smooth the binary mask with Gaussian blur -----
+                    # You can adjust kernel size for more or less smoothing. Here, (21, 21) is an example.
+                    if USE_BLUR:
+                        blurred_mask = cv2.GaussianBlur(binary_mask, (21, 21), 0)
+                    else:
+                        # If blur is disabled, use the raw binary mask directly
+                        blurred_mask = binary_mask
+
+                    # ----- Build an alpha map in [0.0 .. 1.0] from the blurred mask -----
+                    alpha = (blurred_mask.astype(np.float32) / 255.0)[..., None]  # shape (H, W, 1)
+
+                    # ----- Create a flat color layer of the mask color -----
+                    colored_layer = np.zeros_like(image_cv, dtype=np.uint8)
+                    colored_layer[:] = mask_color  # fill with (B, G, R)
+
+                    # ----- Composite the colored layer onto image_cv using the alpha map -----
+                    max_interior_opacity = 0.6
+                    alpha = alpha * max_interior_opacity
+                    image_cv = (
+                            alpha * colored_layer.astype(np.float32) +
+                            (1.0 - alpha) * image_cv.astype(np.float32)
+                    ).astype(np.uint8)
 
                     # ----- Bounding-box coords & center -----
                     x1, y1, x2, y2 = map(int, box.xyxy[0].cpu().numpy())
@@ -93,15 +130,16 @@ def run_inference_on_test_set(model, image_dir, output_dir, conf_threshold):
                     cy = (y1 + y2) // 2
 
                     # ----- Compute label placement (centered) -----
-                    (text_w, text_h), baseline = cv2.getTextSize(class_name, font, font_scale, font_thickness)
+                    (text_w, text_h), baseline = cv2.getTextSize(
+                        class_name, font, font_scale, font_thickness
+                    )
                     top_left_x = cx - text_w // 2
                     top_left_y = cy - text_h // 2
 
                     # Ensure the text is fully inside the image bounds
                     top_left_x = max(0, min(top_left_x, w - text_w - 1))
                     top_left_y = max(0, min(top_left_y, h - text_h - 1))
-                    label_origin = (top_left_x, top_left_y + text_h)  # baseline-left for putText
-
+                    label_origin = (top_left_x, top_left_y + text_h)
 
                     # ----- Draw label text in black -----
                     cv2.putText(
@@ -115,11 +153,20 @@ def run_inference_on_test_set(model, image_dir, output_dir, conf_threshold):
                         cv2.LINE_AA,
                     )
 
-            # Make yolo polygons transparent
-            imagecv_transparent = cv2.addWeighted(overlay, 0.5, image_cv, 0.5, 0)
+            # Save the result with smoothed, non-blocky masks
+            image_base_filename, image_ext = os.path.splitext(image_name)
+            os.makedirs(os.path.join(output_dir, image_base_filename), exist_ok=True)
+            output_image_path = os.path.join(output_dir, image_base_filename, f"contoured_{image_name}")
+            original_data_comparison_path = os.path.join(output_dir, image_base_filename)
+            cv2.imwrite(output_image_path, image_cv)
 
-            output_image_path = os.path.join(output_dir, f"contoured_{image_name}")
-            cv2.imwrite(output_image_path, imagecv_transparent)
+            apply_json_mask_to_image(
+                image_path=image_path,
+                json_path=json_path,
+                output_path=original_data_comparison_path,
+                mask_color=(0, 255, 0),
+                overlay_alpha=0.5  # 50% tint
+            )
 
         except Exception as e:
             print(f"Error processing image {image_path}: {e}")
@@ -131,7 +178,7 @@ def run_inference_on_test_set(model, image_dir, output_dir, conf_threshold):
 
 if __name__ == "__main__":
     try:
-        yolo_model = YOLO(MODEL_PATH)
+        yolo_model: YOLO = YOLO(MODEL_PATH)
         # A more reliable check for segmentation task might be to see if 'seg' is in the model's head names or similar
         # For now, we'll rely on the presence of results.masks later.
         # The warning you saw with yolov8n-seg.pt suggests the simple check isn't always perfect.

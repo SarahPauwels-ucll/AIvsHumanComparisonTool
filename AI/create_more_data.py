@@ -3,7 +3,7 @@ import os
 
 def flipImages():
     # Folder containing the images
-    folder = "../yolo_dataset_segmentation/images/train"
+    folder = "yolo_dataset_segmentation/images/train"
 
     image_extensions = (".jpg", ".jpeg")
 
@@ -23,7 +23,7 @@ def flipImages():
 
 def fliplabel():
      # Folder containing the images
-    folder = "../yolo_dataset_segmentation/labels/train"
+    folder = "yolo_dataset_segmentation/labels/train"
 
 
     file_extensions = (".txt")
