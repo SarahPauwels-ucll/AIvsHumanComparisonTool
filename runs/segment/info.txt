@@ -1,0 +1,27 @@
+train = 50 epochs (medium)
+train2 = 500 epochs (medium)
+train3 = 500 epochs (nano) no mask scaling (ratio = 1) + imgsize=1024
+train4 = 50 epochs (large) no mask scaling (ratio = 1) + imgsize=1024
+train5 = 50 epochs (yolov8 small seg) on augmented data (2k imgs) no mask scaling (ratio = 1) + imgsize=1024 + batch size 4
+augments =
+    A.HorizontalFlip(p=0.5),
+    A.Rotate(limit=15, p=0.7, border_mode=cv2.BORDER_CONSTANT),
+    A.RandomScale(scale_limit=0.15, p=0.6, interpolation=cv2.INTER_NEAREST),
+    A.RandomBrightnessContrast(brightness_limit=0.1, contrast_limit=0.1, p=0.75),
+    A.GaussianBlur(blur_limit=(3, 7), p=0.3),
+    A.ElasticTransform(p=0.4, alpha=100, sigma=100 * 0.07,
+                       border_mode=cv2.BORDER_CONSTANT),
+    A.GaussNoise(p=0.2),
+
+train6 = 50 epochs (yolo11 medium seg) on augmented data (600 imgs) no mask scaling (ratio = 1) + imgsize=1024 + batch size 2
+augments = flipped images (create_more_data)
+
+train7 = 200 epochs (yolo11 nano seg) on augmented data (280 (2x train) imgs) no mask scaling (ratio = 1) + imgsize=1024 + batch size 8
+augments=
+    A.HorizontalFlip(p=0.5),
+    A.RandomScale(scale_limit=0.05, p=0.6, interpolation=cv2.INTER_NEAREST),
+    A.RandomBrightnessContrast(brightness_limit=0.1, contrast_limit=0.1, p=0.75),
+    A.ElasticTransform(p=0.4, alpha=100, sigma=100 * 0.07,
+                       border_mode=cv2.BORDER_CONSTANT)
+
+train8 = continuation of train7 (300 epochs)
