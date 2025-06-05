@@ -114,7 +114,10 @@ if "manual_image_bytes" in st.session_state:
                 st.session_state.teeth_dict_manual = missingteeth
             if st.session_state.Teethkind == "Adult":
                 st.session_state.childteeth_dict_manual =missingchildteeth
-            st.switch_page("pages/AI.py")
+            if st.session_state.Professional:
+                st.switch_page("pages/Comparison.py")
+            else:
+                st.switch_page("pages/AI.py")
 
 else:
     st.button("Upload image", on_click=go_to_upload_page)
