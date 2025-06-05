@@ -5,9 +5,12 @@ from input.teethSet import teeth as manualteeth
 
 from components.sidebar import load_sidebar
 import os
+from streamlit_cookies_controller import CookieController
 
 if "go_to_upload_page" not in st.session_state:
     st.session_state.go_to_upload_page = False
+
+controller = CookieController()
 
 if st.session_state.go_to_upload_page:
     st.session_state.go_to_upload_page = False
@@ -25,7 +28,8 @@ except:
 load_sidebar("AI")
 
 st.title("Welcome to the AI page!")
-
+if st.session_state.Professional:
+    st.switch_page("pages/Comparison.py")
 image_path = os.path.join("AIOutput", "image.jpg")
 # Check if the image exists
 if os.path.exists(image_path) and "manual_image_bytes" in st.session_state:
