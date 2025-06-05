@@ -4,3 +4,4 @@ image
 __pycache__/
 .idea
 AI/data
+node_modules
