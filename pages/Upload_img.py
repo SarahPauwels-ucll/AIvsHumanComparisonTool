@@ -1,10 +1,15 @@
 from st_pages import Page, add_page_title
-import streamlit as st
+from threading import Thread
+from AIOutput.teethSet import teeth
 from components.sidebar import load_sidebar
 import os
+import torch
+torch.classes.__path__ = [os.path.join(torch.__path__[0], torch.classes.__file__)]
+import streamlit as st
 
-
+from AI.Yolo import get_teeth_presenceAISlop
 st.set_page_config(page_title="Upload image",
+
                    layout="wide")
 
 if "upload_errors" not in st.session_state:
@@ -25,12 +30,27 @@ def upload_files():
         if ext == 'jpeg' or ext =='jpg':
             img_bytes = file.read()
             st.session_state["manual_image_bytes"] = img_bytes
+            presentTeeth, missingTeeth = get_teeth_presenceAISlop(st.session_state["manual_image_bytes"])
+            print("Detected present teeth:", presentTeeth)
+            print("Detected missing teeth:", missingTeeth)
+
+            # Update AI teeth dictionary
+            updated_teeth = teeth.copy()
+
+            for tooth in missingTeeth:
+                tooth_num = int(tooth)  # Ensure key is int, not str
+                updated_teeth[tooth_num] = "missing"
+
+            # Save updated dictionary in session state
+            st.session_state["ai_teeth"] = updated_teeth
+            print(st.session_state["ai_teeth"])
             st.session_state["upload_errors"]=[f"File '{name}' is uploaded successfully"]
             st.session_state.submitted_manual_teeth = False
             image_path = os.path.join("AIOutput", "image.jpg")
             if os.path.exists(image_path):
                 with open(image_path, "rb") as img_file:
                     st.session_state.AI_image_bytes = img_file.read()
+
 
         else:
             st.session_state["upload_errors"]=[f"Cannot use files with extension '{ext}' use 'jpeg' or 'jpg' instead"]
