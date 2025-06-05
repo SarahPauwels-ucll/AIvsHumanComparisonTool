@@ -13,3 +13,13 @@ to run the application:
 ```bash
 streamlit run app.py
 ```
+
+to run tests:
+```bash
+pytest
+```
+to run the E2E test:
+```bash
+streamlit run app.py
+npx cypress open
+```
