@@ -14,3 +14,8 @@ yolo11*
 filtered_output.jpg
 AI/data
 !info.txt
+comparison_output.jpg
+YOLO_dataset_bone_seg
+AI/Normal bone
+inference_output
+node_modules
