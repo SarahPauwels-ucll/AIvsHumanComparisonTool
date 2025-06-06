@@ -30,7 +30,8 @@ load_sidebar("AI")
 st.title("Welcome to the AI page!")
 if st.session_state.Professional:
     st.switch_page("pages/Comparison.py")
-image_path = os.path.join("AIOutput", "image.jpg")
+
+image_path = "filtered_output.jpg"
 # Check if the image exists
 if os.path.exists(image_path) and "manual_image_bytes" in st.session_state:
     st.markdown("""

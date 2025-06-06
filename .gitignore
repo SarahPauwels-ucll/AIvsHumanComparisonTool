@@ -11,5 +11,12 @@ annotated_output.jpg
 /AI/output/
 yolo11*
 filtered_output.jpg
+yolo_dataset_augmented
+yolo_dataset_augmented_v2
 AI/data
 node_modules
+!info.txt
+comparison_output.jpg
+YOLO_dataset_bone_seg
+AI/Normal bone
+inference_output
