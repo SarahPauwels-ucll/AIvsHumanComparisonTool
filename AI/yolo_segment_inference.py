@@ -9,7 +9,7 @@ import numpy as np
 from AI.draw_mask_on_input_data import apply_json_mask_to_image
 
 # --- Configuration ---
-MODEL_PATH = 'runs/segment/train8/weights/best.pt'
+MODEL_PATH = 'runs/segment/train9/weights/best.pt'
 
 # Path to your YOLO dataset (used to find test images)
 # Assumes this script is run from a directory where '../yolo_dataset_segmentation' is valid

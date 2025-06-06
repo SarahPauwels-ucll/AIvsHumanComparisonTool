@@ -25,3 +25,4 @@ augments=
                        border_mode=cv2.BORDER_CONSTANT)
 
 train8 = continuation of train7 (300 epochs)
+train9 = continuation of train8 (200 epochs)
