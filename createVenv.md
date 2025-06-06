@@ -7,3 +7,6 @@ source streamlit_env/bin/activate # linux
 pip install -r requirements.txt
 npm install cypress
 ```
+
+download eID middelwaire
+https://eid.belgium.be/nl
