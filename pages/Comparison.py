@@ -75,9 +75,12 @@ if st.session_state.go_to_upload_page:
     st.session_state.go_to_upload_page = False
     st.switch_page("pages/Upload_img.py")
 
-
-# Define a session flag to trigger the page switch
-
+def switch_teeth():
+    if "View" not in  st.session_state or st.session_state.View is None or st.session_state.View=="Adult":
+        st.session_state.View = "Child"  
+    else: 
+        st.session_state.View="Adult"
+    print(st.session_state.View)
 
 try:
     manual_teeth = st.session_state.manual_teeth
@@ -122,6 +125,13 @@ load_sidebar("Comparison")
 
 if st.session_state.Teethkind == "Child":
     child = True
+if st.session_state.Teethkind == "Mixed":
+    if "View" not in st.session_state:
+        st.session_state.View = "Child"
+    if st.session_state.View=="Child":
+        child=True
+    else:
+        child=False
 else:
     child = False
 
@@ -355,6 +365,8 @@ if "manual_image_bytes" in st.session_state:
         </style>
         """, unsafe_allow_html=True)
         with st.container(key="pdf-container"):
+            if st.session_state.Teethkind=="Mixed":
+                st.button("Display other teeth", on_click=switch_teeth)
             if st.session_state.Professional:
                 combined_download_button()
             else:

@@ -67,7 +67,7 @@ def load_sidebar(page="login"):
             Upload = st.form_submit_button("Upload",use_container_width=True,type="tertiary", disabled=(page=="Upload") )
             Manual = st.form_submit_button("Manual input",use_container_width=True,type="tertiary", disabled=(page=="Manual"))
             AI = st.form_submit_button("AI result",use_container_width=True,type="tertiary", disabled=(page=="AI"))
-            Compair = st.form_submit_button("Compair",use_container_width=True,type="tertiary", disabled=(page=="Comparison"))
+            Compair = st.form_submit_button("Compare",use_container_width=True,type="tertiary", disabled=(page=="Comparison"))
 
         if Upload:
             st.switch_page("pages/Upload_img.py")
@@ -167,9 +167,12 @@ def load_sidebar(page="login"):
 
         stored_Teethkind = controller.get("Teethkind")
         if not stored_Teethkind:
-            if years>6:
+            if years>18:
                 controller.set("Teethkind", "Adult")
                 st.session_state.Teethkind = "Adult"
+            if years>6 and years<=18:
+                controller.set("Teethkind", "Mixed")
+                st.session_state.Teethkind = "Mixed"
             else:
                 controller.set("Teethkind", "Child")
                 st.session_state.Teethkind = "Child"
@@ -182,7 +185,7 @@ def load_sidebar(page="login"):
     if "Teethkindpicker" not in st.session_state or not st.session_state.Teethkindpicker:
         st.session_state.Teethkindpicker = stored_Teethkind
 
-    Teethkindpicker = st.sidebar.radio("Teeth", ["Adult", "Child"],
+    Teethkindpicker = st.sidebar.radio("Teeth", ["Adult","Mixed", "Child"],
                               index=0 if st.session_state.Teethkindpicker == "Adult" else 1,
                               key="Teethkindpicker")
                               
