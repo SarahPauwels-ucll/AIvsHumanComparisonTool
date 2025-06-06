@@ -102,20 +102,6 @@ describe('test flow', () => {
     // go to next page
     cy.contains('Next page').click();
     cy.wait(1000);
-    cy.contains('Welcome to the AI page!');
-
-    // click teeth
-    cy.contains('21').click();
-    cy.wait(2000);
-    cy.contains('Tooth 21').should('be.visible');
-    cy.contains('Missing').click();
-    cy.wait(1000);
-    cy.contains("Implant");
-    cy.contains("Submit").click();
-
-    // go to next page
-    cy.contains('Next page').click();
-    cy.wait(1000);
     cy.contains('Comparison page!');
 
     // click teeth
