@@ -1,10 +1,11 @@
-import streamlit as st
-import re
-from streamlit_cookies_controller import CookieController
-from datetime import date
-import regex
-
 def load_sidebar(page="login"):
+    import streamlit as st
+    import re
+    from streamlit_cookies_controller import CookieController
+    from datetime import date, datetime
+    import regex
+    import subprocess
+    import json
     def logout():
         controller = CookieController()
         keys_to_clear = [
@@ -60,7 +61,8 @@ def load_sidebar(page="login"):
                 gap:0rem;
                 }
     </style>
-    """, unsafe_allow_html=True)            
+    """, unsafe_allow_html=True) 
+    st.sidebar.image("omfs_logo.png")           
     if st.session_state.Professional:
         with st.sidebar.form("menu", border=False):
             st.title("Menu")
@@ -79,7 +81,39 @@ def load_sidebar(page="login"):
             st.switch_page("pages/Comparison.py")
 
     st.sidebar.title("Dental Chart")
-    name_pattern = regex.compile(r"^[\p{L}'-]*$", regex.UNICODE)
+    name_pattern = regex.compile(r"^[\p{L}'-\s]*$", regex.UNICODE)
+
+    if st.sidebar.button("fill in with IDcard"):
+        try:
+            # Run eidreader with subprocess
+            result = subprocess.run(["eidreader"], capture_output=True, text=True, timeout=10)
+            if result.returncode == 0:
+                output = result.stdout.strip()
+                try:
+                    data = json.loads(output)
+                    if data.get("success"):
+                        lastname=f"{data.get('surname', '')}"
+                        st.session_state.last_name=lastname
+                        controller.set("LastName", lastname)
+                        firstname=f"{data.get('firstnames', '')}"
+                        st.session_state.first_name=firstname
+                        controller.set("firstName", firstname)
+                        dateOfBirthID=f"{data.get('date_of_birth', '')}"
+                        dateOfBirth = datetime.strptime(dateOfBirthID, "%d %b %Y").date()
+                        controller.set("birthdate",dateOfBirth.isoformat())
+                        st.session_state.birthdate=dateOfBirth
+                        genderID=data.get('gender')
+                        if genderID=='V':
+                            gender="Female"
+                        else:
+                            gender="Male"
+                        controller.set("Gender", gender)
+                        st.session_state.gender
+                except:
+                    st.error("error reading the data")
+        except:
+            st.error("Error reading the data")
+
 
     # --- Profile Number ---
     stored_profile_number = controller.get("ProfileNumber")

@@ -1,9 +1,14 @@
 import os
 import json
+import time
+from multiprocessing import freeze_support
+
 import cv2
 import numpy as np
 import albumentations as A
 from matplotlib import pyplot as plt
+from tqdm import tqdm
+from tqdm.contrib.concurrent import thread_map
 
 # --------------------------------------------------------------------------------
 # STEP 1: DEFINE YOUR LABEL MAPPING (CUSTOMIZE THIS!)
@@ -16,13 +21,14 @@ ALL_POSSIBLE_LABELS = ['11', '12', '13', '14', '15', '16', '17', '18',
         '41', '42', '43', '44', '45', '46', '47', '48']
 # This is an example for 32 teeth using FDI notation. Adjust to your actual labels.
 
-LABEL_TO_ID_MAP = {label: i for i, label in enumerate(ALL_POSSIBLE_LABELS)}
+LABEL_TO_ID_MAP = {label: i + 1 for i, label in enumerate(ALL_POSSIBLE_LABELS)}
 # ID 0 will be background implicitly by initializing mask with zeros.
 
 # For visualization (optional, but helpful)
 COLORS = [[0, 0, 0]] + [list(np.random.randint(50, 250, size=3)) for _ in ALL_POSSIBLE_LABELS]  # Brighter random colors
 COLOR_MAP_FOR_VISUALIZATION = np.array(COLORS, dtype=np.uint8)
 
+NUM_AUGMENTATIONS_PER_IMAGE = 3
 
 def get_color_mask(mask_ids, color_map):
     rgb_mask = np.zeros((*mask_ids.shape, 3), dtype=np.uint8)
@@ -137,52 +143,78 @@ def find_data_pairs(data_dir):
 # --------------------------------------------------------------------------------
 transform = A.Compose([
     A.HorizontalFlip(p=0.5),
-    A.Rotate(limit=15, p=0.7, border_mode=cv2.BORDER_CONSTANT, value=0, mask_value=0),
-    A.RandomScale(scale_limit=0.15, p=0.6, interpolation=cv2.INTER_NEAREST),  # Use INTER_NEAREST for masks
-    A.RandomBrightnessContrast(brightness_limit=0.25, contrast_limit=0.25, p=0.75),
-    A.GaussianBlur(blur_limit=(3, 7), p=0.3),
-    A.ElasticTransform(p=0.4, alpha=100, sigma=100 * 0.07, alpha_affine=100 * 0.04,
-                       border_mode=cv2.BORDER_CONSTANT, value=0, mask_value=0),
-    # A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.1, rotate_limit=10, p=0.5,
-    #                    border_mode=cv2.BORDER_CONSTANT, value=0, mask_value=0), # Alternative to separate scale/rotate
-    A.GaussNoise(var_limit=(10.0, 50.0), p=0.2),
+    #A.Rotate(limit=15, p=0.7, border_mode=cv2.BORDER_CONSTANT),
+    A.RandomScale(scale_limit=0.05, p=0.6, interpolation=cv2.INTER_NEAREST),
+    A.RandomBrightnessContrast(brightness_limit=0.1, contrast_limit=0.1, p=0.75),
+    #A.GaussianBlur(blur_limit=(3, 7), p=0.3),
+    A.ElasticTransform(p=0.4, alpha=100, sigma=100 * 0.07,
+                       border_mode=cv2.BORDER_CONSTANT),
+    #A.GaussNoise(p=0.2),
     # Consider adding GridDistortion or OpticalDistortion if they make sense for panoramic X-rays
     # A.GridDistortion(p=0.2, border_mode=cv2.BORDER_CONSTANT, value=0, mask_value=0),
 ])
 
 
-# --------------------------------------------------------------------------------
-# STEP 5: APPLYING AUGMENTATIONS AND VISUALIZING
-# --------------------------------------------------------------------------------
-def visualize(image, mask_ids, augmented_image, augmented_mask_ids, color_map):
-    original_mask_rgb = get_color_mask(mask_ids, color_map)
-    augmented_mask_rgb = get_color_mask(augmented_mask_ids, color_map)
+def convert_mask_to_yolo_format(mask, image_shape, min_contour_area=10):
+    """
+    Converts a segmentation mask to YOLO polygon format.
 
-    fig, axes = plt.subplots(2, 2, figsize=(12, 12))
-    fig.suptitle("Data Augmentation with Albumentations", fontsize=16)
+    Args:
+        mask (np.array): The segmentation mask where pixel values are class IDs.
+                         Assumes class IDs are 1-indexed for objects, and 0 is background.
+        image_shape (tuple): The shape of the corresponding image (height, width)
+                             for normalizing coordinates.
+        min_contour_area (int): Minimum area for a contour to be considered.
 
-    axes[0, 0].imshow(image, cmap='gray')
-    axes[0, 0].set_title("Original Image")
-    axes[0, 0].axis('off')
+    Returns:
+        list: A list of strings, each formatted for a YOLO label file.
+              (e.g., "class_id norm_x1 norm_y1 norm_x2 norm_y2 ...")
+    """
+    yolo_lines = []
+    image_height, image_width = image_shape[:2]
 
-    axes[0, 1].imshow(original_mask_rgb)
-    axes[0, 1].set_title("Original Mask")
-    axes[0, 1].axis('off')
+    unique_class_ids = np.unique(mask)
+    for class_id_from_mask in unique_class_ids:
+        if class_id_from_mask == 0:  # Skip background
+            continue
 
-    axes[1, 0].imshow(augmented_image, cmap='gray')
-    axes[1, 0].set_title("Augmented Image")
-    axes[1, 0].axis('off')
+        # Create binary mask for the current class
+        binary_mask_for_class = (mask == class_id_from_mask).astype(np.uint8)
 
-    axes[1, 1].imshow(augmented_mask_rgb)
-    axes[1, 1].set_title("Augmented Mask")
-    axes[1, 1].axis('off')
+        # Find contours for the current class
+        # cv2.RETR_EXTERNAL retrieves only the extreme outer contours.
+        # cv2.CHAIN_APPROX_SIMPLE compresses horizontal, vertical, and diagonal segments
+        # and leaves only their end points.
+        contours, _ = cv2.findContours(binary_mask_for_class, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    plt.tight_layout(rect=[0, 0, 1, 0.96])  # Adjust layout to make space for suptitle
-    plt.show()
+        for contour in contours:
+            if cv2.contourArea(contour) < min_contour_area:
+                continue
+
+            # YOLO class IDs are typically 0-indexed.
+            # If your LABEL_TO_ID_MAP creates 1-indexed IDs (1 to N),
+            # subtract 1 here.
+            yolo_class_id = class_id_from_mask - 1  # Adjust if your map is already 0-indexed for objects
+
+            # Normalize polygon points
+            polygon_points_normalized = []
+            # Contour is a list of points, e.g., [[[x1,y1]], [[x2,y2]], ...]
+            # We need to flatten it to [x1,y1, x2,y2, ...]
+            for point in contour.reshape(-1, 2):  # Reshape to list of (x,y)
+                norm_x = point[0] / image_width
+                norm_y = point[1] / image_height
+                polygon_points_normalized.extend([norm_x, norm_y])
+
+            if len(polygon_points_normalized) > 0:
+                # Format: class_id x1 y1 x2 y2 ...
+                yolo_line = f"{yolo_class_id} " + " ".join(map(str, polygon_points_normalized))
+                yolo_lines.append(yolo_line)
+
+    return yolo_lines
 
 
-# --- Main Execution Example ---
 if __name__ == "__main__":
+    freeze_support()
     # IMPORTANT: Set your data directory correctly
     # Assuming your script is NOT in the AI folder, but one level above, or provide absolute path.
     # If script is in the same folder as the AI folder:
@@ -208,53 +240,87 @@ if __name__ == "__main__":
 
     print(f"Found {len(data_pairs)} image-annotation pairs.")
 
-    # 3. Load one sample and process
-    image_path, json_path = data_pairs[0]  # Take the first sample for demonstration
-    print(f"\nProcessing sample image: {image_path}")
-    print(f"Processing sample JSON:  {json_path}")
+    data_directory = "AI/data"  # Or your actual path "AI/data"
+    output_base_dir = "yolo_dataset_augmented_v2"  # Choose your output directory
 
-    try:
-        original_image, original_mask = load_image_and_mask(image_path, json_path, LABEL_TO_ID_MAP)
-    except Exception as e:
-        print(f"Error loading sample {image_path}: {e}")
-        # Consider how to handle errors: skip file, log, or exit
-        # For a robust pipeline, you might want to 'continue' in a loop
-        exit()
+    # Create output directories if they don't exist
+    output_images_dir = os.path.join(output_base_dir, "images")
+    output_labels_dir = os.path.join(output_base_dir, "labels")
+    os.makedirs(output_images_dir, exist_ok=True)
+    os.makedirs(output_labels_dir, exist_ok=True)
 
-    print(f"Original image shape: {original_image.shape}, Original mask shape: {original_mask.shape}")
-    print(f"Unique IDs in original mask: {np.unique(original_mask)}")
+    def augment_and_save(task):
+        img_idx, image_path, json_path, aug_idx, out_img_dir, out_lbl_dir, label_map = task
+        try:
+            orig_img, orig_mask = load_image_and_mask(image_path, json_path, label_map)
+        except Exception as e:
+            return f"SKIP load {image_path}: {e}"
 
-    # 4. Apply augmentations
-    try:
-        augmented_data = transform(image=original_image, mask=original_mask)
-        augmented_image = augmented_data['image']
-        augmented_mask = augmented_data['mask']
-    except Exception as e:
-        print(f"Error during augmentation for {image_path}: {e}")
-        # This can happen if a transform fails, e.g. due to image size or type issues
-        exit()
+        base = os.path.splitext(os.path.basename(image_path))[0]
+        try:
+            aug = transform(image=orig_img, mask=orig_mask)
+            aug_img, aug_mask = aug["image"], aug["mask"]
+            fname = f"{base}_aug_{aug_idx:03d}"
+            img_path = os.path.join(out_img_dir, fname + ".jpg")
+            lbl_path = os.path.join(out_lbl_dir, fname + ".txt")
 
-    print(f"Augmented image shape: {augmented_image.shape}, Augmented mask shape: {augmented_mask.shape}")
-    print(f"Unique IDs in augmented mask: {np.unique(augmented_mask)}")
+            cv2.imwrite(img_path, aug_img)
+            yolo_lines = convert_mask_to_yolo_format(aug_mask, aug_img.shape)
+            with open(lbl_path, "w") as f:
+                for line in yolo_lines:
+                    f.write(line + "\n")
 
-    # 5. Visualize
-    print("\nDisplaying original and augmented sample...")
-    visualize(original_image, original_mask,
-              augmented_image, augmented_mask,
-              COLOR_MAP_FOR_VISUALIZATION)
+            return f"DONE {fname}"
+        except Exception as e:
+            return f"ERR aug {base}_{aug_idx}: {e}"
 
-    # --- Further Steps ---
-    # In a real training pipeline, you would loop through all data_pairs:
-    # for image_path, json_path in data_pairs:
-    #     try:
-    #         image, mask = load_image_and_mask(image_path, json_path, LABEL_TO_ID_MAP)
-    #         for _ in range(num_augmentations_per_image): # Generate multiple augmented versions
-    #             augmented = transform(image=image, mask=mask)
-    #             aug_img = augmented['image']
-    #             aug_mask = augmented['mask']
-    #             # TODO: Save aug_img and aug_mask or feed to your YOLO model's dataloader
-    #             # For YOLO, you might need to convert aug_mask back to polygon format
-    #             # or use the mask directly if your YOLO version supports raster masks.
-    #     except Exception as e:
-    #         print(f"Skipping {image_path} due to error: {e}")
-    #         continue
+    def augment_one_pair(pair):
+        img_idx, (image_path, json_path) = pair
+        try:
+            original_image, original_mask = load_image_and_mask(image_path, json_path, LABEL_TO_ID_MAP)
+        except Exception as e:
+            print(f"Error loading sample {image_path}: {e}. Skipping.")
+            return # replaced from continue
+
+        original_basename = os.path.splitext(os.path.basename(image_path))[0]
+
+        for aug_idx in range(NUM_AUGMENTATIONS_PER_IMAGE):
+            try:
+                augmented_data = transform(image=original_image, mask=original_mask)
+                aug_img = augmented_data['image']
+                aug_mask = augmented_data['mask']
+
+                # Create a unique filename for the augmented data
+                # Using original image index, original name, and augmentation index for clarity
+                aug_filename_base = f"{original_basename}_aug_{aug_idx:03d}"
+
+                aug_image_save_path = os.path.join(output_images_dir, f"{aug_filename_base}.jpg")
+                aug_label_save_path = os.path.join(output_labels_dir, f"{aug_filename_base}.txt")
+
+                # 1. Save the augmented image
+                # Ensure image is in BGR if it's color, or save grayscale directly
+                # cv2.imwrite expects BGR or Grayscale. If aug_img is RGB, convert it.
+                # Your images are grayscale, so this should be fine.
+                cv2.imwrite(aug_image_save_path, aug_img)
+
+                # 2. Convert augmented mask to YOLO format and save labels
+                yolo_label_strings = convert_mask_to_yolo_format(aug_mask, aug_img.shape)
+
+                with open(aug_label_save_path, 'w') as f:
+                    for line in yolo_label_strings:
+                        f.write(line + "\n")
+
+            except Exception as e:
+                print(f"Error during augmentation or saving for {original_basename}, aug_idx {aug_idx}: {e}")
+                continue
+
+
+    thread_map(
+        augment_one_pair,
+        enumerate(data_pairs),
+        max_workers=16,
+        total=len(data_pairs)
+    )
+    #for img_idx, (image_path, json_path) in tqdm(enumerate(data_pairs), desc="Creating augmented images", total=len(data_pairs * NUM_AUGMENTATIONS_PER_IMAGE)):
+
+

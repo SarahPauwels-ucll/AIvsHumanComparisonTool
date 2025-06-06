@@ -1,0 +1,7 @@
+path: YOLO_dataset_bone_seg
+train: images/train
+val: images/val
+test: images/test
+
+nc: 2
+names: ["mandibular bone lvl", "maxillary bone lvl"]
