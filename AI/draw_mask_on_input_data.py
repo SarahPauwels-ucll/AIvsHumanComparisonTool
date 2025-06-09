@@ -71,9 +71,6 @@ def apply_json_mask_to_image(image_path, json_path, output_path, mask_color=(0, 
     cv2.imwrite(save_overlay, overlayed)
     print(f"Saved overlay image to: {save_overlay}")
 
-    # 6) Return both results (in case you want to further process them)
-    return masked_only, overlayed
-
 
 if __name__ == "__main__":
 

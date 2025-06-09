@@ -1,6 +1,7 @@
-path: yolo_dataset_augmented_v2
+path: C:/Users/Jarne/Documents/yolo_dataset_segmentation_extra_data_splits
 train: images/train
 val: images/val
+test: images/test
 
 nc: 32
 names: ['11', '12', '13', '14', '15', '16', '17', '18',
