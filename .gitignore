@@ -4,6 +4,7 @@ image
 __pycache__/
 .idea
 yolo_dataset*
+yolo_dataset_augmented_extra_data
 runs
 yolo12n.pt
 annotated_output.jpg
