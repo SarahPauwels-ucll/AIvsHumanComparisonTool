@@ -3,10 +3,7 @@ image
 .venv
 __pycache__/
 .idea
-yolo_dataset
-yolo_dataset_augmented
-yolo_dataset_augmented_v2
-yolo_dataset_segmentation
+yolo_dataset*
 runs
 yolo12n.pt
 annotated_output.jpg
