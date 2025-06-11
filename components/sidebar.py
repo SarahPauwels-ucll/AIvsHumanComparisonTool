@@ -14,7 +14,9 @@ def load_sidebar(page="login"):
             "consultation date",
             "Gender",
             "Professional",
-            "Teethkind"
+            "Teethkind",
+            "studentName",
+            "rnumber"
         ]
         for key in st.session_state.keys():
             del st.session_state[key]
@@ -60,6 +62,9 @@ def load_sidebar(page="login"):
                 }
     </style>
     """, unsafe_allow_html=True) 
+    name_pattern = regex.compile(r"^[\p{L}' -]*$", regex.UNICODE)
+    rnumber_pattern= regex.compile(r"^[a-z]\d{7}$", regex.UNICODE)
+
     st.sidebar.image("omfs_logo.png")           
     if st.session_state.Professional:
         with st.sidebar.form("menu", border=False):
@@ -77,10 +82,34 @@ def load_sidebar(page="login"):
             st.switch_page("pages/AI.py")
         elif Compair:
             st.switch_page("pages/Comparison.py")
+    else:
+        stored_student_name = controller.get("studentName") or ""
+        if "studentName" not in st.session_state or not st.session_state.studentName:
+            st.session_state.studentName = stored_student_name
+
+        student_name = st.sidebar.text_input("Your name", value=st.session_state.studentName, key="studentName")
+
+        if name_pattern.fullmatch(student_name):
+            if student_name != stored_student_name:
+                controller.set("studentName", student_name)
+        elif student_name:
+            st.sidebar.error("Your name can only contain letters, apostrophes ('), and hyphens (-).")
+        
+        stored_rnumber = controller.get("rnumber") or ""
+        if "rnumber" not in st.session_state or not st.session_state.rnumber:
+            st.session_state.rnumber = stored_rnumber
+
+        rnumber = st.sidebar.text_input("Your r-nummer", value=st.session_state.rnumber, key="rnumber")
+
+        if rnumber_pattern.fullmatch(rnumber):
+            if rnumber != stored_rnumber:
+                controller.set("rnumber", rnumber)
+        elif rnumber:
+            st.sidebar.error("Your r-number needs to look like r0123456")
+
+
 
     st.sidebar.title("Dental Chart")
-    name_pattern = regex.compile(r"^[\p{L}'-]*$", regex.UNICODE)
-
     # --- Profile Number ---
     stored_profile_number = controller.get("ProfileNumber")
     stored_profile_number = str(stored_profile_number) if stored_profile_number is not None else ""
