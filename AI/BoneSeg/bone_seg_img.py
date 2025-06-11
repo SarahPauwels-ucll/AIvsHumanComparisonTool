@@ -1,4 +1,3 @@
-import json
 import os
 import numpy as np
 import cv2
@@ -6,86 +5,121 @@ from shapely.geometry import Polygon
 from ultralytics import YOLO
 
 
-def load_ground_truth(json_path):
-    with open(json_path, "r") as f:
-        data = json.load(f)
-    h, w = data["imageHeight"], data["imageWidth"]
+# -------- 1.  LOAD YOLO .TXT GROUND-TRUTH  -----------------------------------
+def load_ground_truth_yolo(txt_path: str, image_path: str):
+    """
+    Reads a YOLO-format .txt annotation file and returns polygons in ABSOLUTE
+    pixel coordinates.
+
+    • Segmentation rows ........ class  x1 y1 x2 y2 ...  (all normalised 0-1)
+    • Bounding-box rows ........ class  xc yc w h        (normalised 0-1)
+
+    Returns
+    -------
+    polygons : list[Polygon]
+    width    : int
+    height   : int
+    """
+    img = cv2.imread(image_path)
+    if img is None:
+        raise FileNotFoundError(f"Image not found: {image_path}")
+    h,  w  = img.shape[:2]
+
     polygons = []
-    for shape in data["shapes"]:
-        if shape["shape_type"] == "polygon":
-            pts = shape["points"]
-            if len(pts) == 4:
-                x_coords = [p[0] for p in pts]
-                y_coords = [p[1] for p in pts]
-                if len(set(x_coords)) <= 2 and len(set(y_coords)) <= 2:
+    with open(txt_path, "r") as f:
+        for line in f:
+            parts = line.strip().split()
+            if len(parts) < 5:                 # need ≥ class + 2 coords
+                continue
+
+            coords = list(map(float, parts[1:]))  # drop class id
+
+            # --- bbox line: xc yc w h -------------
+            if len(coords) == 4:
+                xc, yc, bw, bh = coords
+                x_min = (xc - bw / 2) * w
+                y_min = (yc - bh / 2) * h
+                x_max = (xc + bw / 2) * w
+                y_max = (yc + bh / 2) * h
+                pts   = [(x_min, y_min), (x_max, y_min),
+                         (x_max, y_max), (x_min, y_max)]
+
+            # --- segmentation line: x1 y1 x2 y2 ... -------------
+            else:
+                if len(coords) % 2:             # odd number → malformed
                     continue
+                pts = [(coords[i] * w, coords[i + 1] * h)
+                       for i in range(0, len(coords), 2)]
+
+            # optional: filter out perfectly axis-aligned rectangles
+            if len(pts) == 4:
+                xs, ys = {p[0] for p in pts}, {p[1] for p in pts}
+                if len(xs) <= 2 and len(ys) <= 2:
+                    continue
+
             polygons.append(Polygon(pts))
+
     return polygons, w, h
 
 
+# -------- 2.  REMAINING UTILITY FUNCTIONS  ----------------------------------
 def compute_iou(poly1, poly2):
     if not poly1.is_valid or not poly2.is_valid:
         return 0.0
-    intersection = poly1.intersection(poly2).area
+    inter = poly1.intersection(poly2).area
     union = poly1.union(poly2).area
-    return intersection / union if union != 0 else 0.0
+    return inter / union if union else 0.0
 
 
 def run_inference(model_path, image_path):
-    model = YOLO(model_path)
-    results = model(image_path)[0]
-    h, w = results.orig_shape[:2]
-    predicted_polygons = []
+    model   = YOLO(model_path)
+    result  = model(image_path)[0]
+    h, w    = result.orig_shape[:2]
 
-    for mask in results.masks.xy:
-        if len(mask) == 4:
-            x_coords = [pt[0] for pt in mask]
-            y_coords = [pt[1] for pt in mask]
-            if len(set(x_coords)) <= 2 and len(set(y_coords)) <= 2:
-                continue  # skip boxy predictions
-        predicted_polygons.append(Polygon(mask))
-    return predicted_polygons, w, h, results.orig_img
+    predicted_polys = []
+    for mask in result.masks.xy:
+        if len(mask) == 4:                      # skip box-shaped masks
+            xs, ys = {p[0] for p in mask}, {p[1] for p in mask}
+            if len(xs) <= 2 and len(ys) <= 2:
+                continue
+        predicted_polys.append(Polygon(mask))
 
-
-def draw_polygons(image, gt_polys, pred_polys):
-    image_copy = image.copy()
-
-    # Draw GT in green
-    for poly in gt_polys:
-        pts = np.array(poly.exterior.coords, np.int32)
-        cv2.polylines(image_copy, [pts], isClosed=True, color=(0, 255, 0), thickness=2)
-
-    # Draw predictions in red
-    for poly in pred_polys:
-        pts = np.array(poly.exterior.coords, np.int32)
-        cv2.polylines(image_copy, [pts], isClosed=True, color=(0, 0, 255), thickness=2)
-
-    return image_copy
+    return predicted_polys, w, h, result.orig_img
 
 
-# === CONFIG ===
-image_path = "AI/Normal bone/1_1.jpg"
-json_path = "AI/Normal bone/1_1.json"
-model_path = "runs/segment/train6/weights/best.pt"  # replace with actual path
-output_path = "comparison_output.jpg"
+def draw_polygons(img, gt_polys, pred_polys):
+    out = img.copy()
+    for p in gt_polys:
+        cv2.polylines(out, [np.int32(p.exterior.coords)], True, (0, 255, 0), 2)
+    for p in pred_polys:
+        cv2.polylines(out, [np.int32(p.exterior.coords)], True, (0, 0, 255), 2)
+    return out
 
-# === RUN ===
-pred_polygons, w_pred, h_pred, orig_img = run_inference(model_path, image_path)
-gt_polygons, w_gt, h_gt = load_ground_truth(json_path)
 
-assert w_pred == w_gt and h_pred == h_gt, "[ERROR] Image dimensions mismatch."
+# -------- 3.  MAIN -----------------------------------------------------------
+if __name__ == "__main__":
+    # === CONFIG ===
+    base_path = "C:/Users/Jarne/Documents/yolo_dataset_segmentation_extra_data_bone_seg_splits/"
+    image_end_path = "images/test/32_1_aug_000.jpg"
+    txt_end_path   = "labels/test/32_1_aug_000.txt"      # <-- YOLO label file
+    model_path = "runs/bone_segmentation/train/weights/best.pt"
+    output_path = "comparison_output.jpg"
 
-print(f"GT polygons: {len(gt_polygons)}, Predictions: {len(pred_polygons)}")
-for i, gt_poly in enumerate(gt_polygons):
-    best_iou = 0.0
-    for pred_poly in pred_polygons:
-        iou = compute_iou(gt_poly, pred_poly)
-        best_iou = max(best_iou, iou)
-    print(f"GT Polygon {i + 1}: Best IoU = {best_iou:.4f}")
+    # === RUN ===
+    image_path = base_path + image_end_path
+    txt_path   = base_path + txt_end_path
 
-# === DRAW AND SAVE ===
-result_img = draw_polygons(orig_img, gt_polygons, pred_polygons)
-cv2.imwrite(output_path, result_img)
-cv2.imshow("Comparison", result_img)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+    pred_polys, w_pred, h_pred, img = run_inference(model_path, image_path)
+    gt_polys,   w_gt,   h_gt        = load_ground_truth_yolo(txt_path, image_path)
+
+    if (w_pred, h_pred) != (w_gt, h_gt):
+        raise ValueError("[ERROR] Image dimensions mismatch.")
+
+    print(f"GT polygons: {len(gt_polys)}, Predictions: {len(pred_polys)}")
+    for i, gt in enumerate(gt_polys, 1):
+        best_iou = max((compute_iou(gt, p) for p in pred_polys), default=0.0)
+        print(f"GT Polygon {i}: Best IoU = {best_iou:.4f}")
+
+    # === DRAW & SAVE ===
+    vis = draw_polygons(img, gt_polys, pred_polys)
+    cv2.imwrite(output_path, vis)

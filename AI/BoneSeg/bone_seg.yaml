@@ -1,4 +1,4 @@
-path: YOLO_dataset_bone_seg
+path: C:/Users/Jarne/Documents/yolo_dataset_segmentation_extra_data_bone_seg_splits
 train: images/train
 val: images/val
 test: images/test
