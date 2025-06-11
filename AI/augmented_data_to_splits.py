@@ -6,8 +6,8 @@ from typing import List, Tuple
 
 from tqdm import tqdm
 
-INPUT_DIR: str = "../yolo_dataset_augmented_extra_data"
-OUTPUT_DIR: str = "../yolo_dataset_segmentation_extra_data_splits"
+INPUT_DIR: str = "yolo_dataset_augmented_extra_data_bone_seg"
+OUTPUT_DIR: str = "yolo_dataset_segmentation_extra_data_bone_seg_splits"
 SPLIT_RATIOS = {"train": 0.7, "val": 0.2, "test": 0.1}
 SEED: int = 42
 

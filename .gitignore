@@ -19,3 +19,4 @@ inference_output
 node_modules
 yolo_dataset_augmented_extra_data_bone_seg
 output
+!AI/models
