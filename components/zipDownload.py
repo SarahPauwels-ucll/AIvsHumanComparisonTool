@@ -143,6 +143,9 @@ def combined_download_button():
 
     manual_image_bytes = st.session_state["manual_image_bytes"]
 
+    with open("icons/dentists-approved.png", "rb") as f:
+        sign_image_bytes = f.read()
+
     pdf_bytes = create_pdf_professional(
         patient_id=patient_id,
         patient_name=patient_name,
@@ -154,6 +157,7 @@ def combined_download_button():
         manual_teeth=manual_teeth,
         top_row=top_row,
         bottom_row=bottom_row,
+        sign_image_bytes=sign_image_bytes
     )
 
     # --- Create ZIP ---
