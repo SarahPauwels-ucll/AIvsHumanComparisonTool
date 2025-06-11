@@ -28,6 +28,7 @@ TOOTH_H_PT = math.floor(0.8 * inch)
 TOOTH_H_PT_LARGE = math.floor(0.6 * inch)
 RASTER_SCALE = 3 # factor to scale PIL images to make them less blurry
 DIFF_IMG_W  = 0.45 * inch
+MAX_sign_H = 1 * inch
 
 def create_pdf_professional(
         patient_id: str,
@@ -42,6 +43,7 @@ def create_pdf_professional(
         *,
         top_row: list[int],
         bottom_row: list[int],
+        sign_image_bytes: bytes,
 ) -> bytes:
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -260,6 +262,30 @@ def create_pdf_professional(
     for paragraph in data:
         story.append(paragraph)
 
+    # --- sign image ---
+    if not sign_image_bytes:
+        print("no bytes")
+    sign = make_scaled_image(sign_image_bytes, max_w=USABLE_WIDTH, max_h=MAX_sign_H)
+
+    signtable_data = [[sign]]
+
+    signtable = Table(
+        signtable_data,
+        colWidths=[USABLE_WIDTH],
+        hAlign='RIGHT'
+    )
+
+    signtable.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+    ]))
+    story.append(signtable)
+    story.append(Spacer(1, 12))
+
     doc.build(story)
     pdf_bytes = buffer.getvalue()
     buffer.close()
@@ -312,6 +338,11 @@ def pdf_button_professional():
 
     manual_image_bytes = st.session_state["manual_image_bytes"]
 
+    with open("icons/dentists-approved.png", "rb") as f:
+        sign_image_bytes = f.read()
+    if not sign_image_bytes:
+        print("no image")
+
     pdf_bytes = create_pdf_professional(
         patient_id=patient_id,
         patient_name=patient_name,
@@ -323,6 +354,7 @@ def pdf_button_professional():
         manual_teeth=manual_teeth,
         top_row=top_row,
         bottom_row=bottom_row,
+        sign_image_bytes=sign_image_bytes
     )
 
     st.download_button(
