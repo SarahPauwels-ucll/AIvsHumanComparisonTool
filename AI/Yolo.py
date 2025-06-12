@@ -229,9 +229,24 @@ def test_model_on_yolo_dataset_with_metrics(
         print("❌ No test images found.")
         return
 
-    total_tp = 0
-    total_fp = 0
-    total_fn = 0
+    total_tp = total_fp = total_fn = 0
+
+    all_teeth = [str(t) for t in (
+        list(range(11, 19)) + list(range(21, 29)) +
+        list(range(31, 39)) + list(range(41, 49))
+    )]
+
+    # Initialize per-tooth metrics
+    per_tooth_stats = {
+        tooth: {
+            'tp': 0,
+            'fp': 0,
+            'fn': 0,
+            'pred_count': 0,
+            'gt_count': 0,
+            'accuracy': 0.0  # optional, updated later
+        } for tooth in all_teeth
+    }
 
     for image_file in image_files:
         image_path = os.path.join(image_dir, image_file)
@@ -242,12 +257,10 @@ def test_model_on_yolo_dataset_with_metrics(
             print(f"⚠️ Ground truth not found for {image_file}. Skipping.")
             continue
 
-        # Get detections and ground truth
         predicted = detect_teeth(image_path, conf_threshold)
         predicted_teeth = set(d['tooth'] for d in predicted if d['confidence'] >= conf_threshold)
         ground_truth_teeth = load_ground_truth_labels_from_txt(txt_path)
 
-        # Calculate TP, FP, FN
         tp = len(predicted_teeth & ground_truth_teeth)
         fp = len(predicted_teeth - ground_truth_teeth)
         fn = len(ground_truth_teeth - predicted_teeth)
@@ -256,13 +269,31 @@ def test_model_on_yolo_dataset_with_metrics(
         total_fp += fp
         total_fn += fn
 
+        # Per-tooth updates
+        for tooth in all_teeth:
+            tooth_str = str(tooth)
+            pred = tooth_str in predicted_teeth
+            gt = tooth_str in ground_truth_teeth
+
+            if pred:
+                per_tooth_stats[tooth_str]['pred_count'] += 1
+            if gt:
+                per_tooth_stats[tooth_str]['gt_count'] += 1
+
+            if pred and gt:
+                per_tooth_stats[tooth_str]['tp'] += 1
+            elif pred and not gt:
+                per_tooth_stats[tooth_str]['fp'] += 1
+            elif not pred and gt:
+                per_tooth_stats[tooth_str]['fn'] += 1
+
         if save_results:
             output_image_path = os.path.join(output_dir, f"pred_{image_file}")
             detect_teeth(image_path, conf_threshold, save_path=output_image_path)
 
         print(f"📷 {image_file}: TP={tp}, FP={fp}, FN={fn}")
 
-    # --- Compute Metrics ---
+    # --- Overall Metrics ---
     try:
         precision = total_tp / (total_tp + total_fp)
         recall = total_tp / (total_tp + total_fn)
@@ -279,8 +310,29 @@ def test_model_on_yolo_dataset_with_metrics(
     print(f"📥 Recall: {recall:.3f}")
     print(f"🧠 F1 Score: {f1_score:.3f}")
     print(f"📈 Accuracy: {accuracy:.3f}")
+
+    # --- Per-Tooth Metrics ---
+    print("\n🔍 Per-Tooth Evaluation Metrics:")
+    for tooth, stats in per_tooth_stats.items():
+        tp = stats['tp']
+        fp = stats['fp']
+        fn = stats['fn']
+
+        precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+        recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+        f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
+        acc = tp / (tp + fp + fn) if (tp + fp + fn) > 0 else 0.0
+        per_tooth_stats[tooth]['accuracy'] = acc
+        print(f"🦷 Tooth {tooth}: "
+        f"Precision={precision:.2f}, "
+        f"Recall={recall:.2f}, "
+        f"F1={f1:.2f}, "
+        f"Accuracy={acc:.2f}, "
+        f"Predicted={stats['pred_count']}, "
+        f"GroundTruth={stats['gt_count']}")
+
 #
-# test_model_on_yolo_dataset_with_metrics()
+test_model_on_yolo_dataset_with_metrics()
 # #Example Usage
 # image_path = 'AI/data/61024377/61024377.jpeg'
 # json_path = 'AI/data/61024377/61024377.json'
