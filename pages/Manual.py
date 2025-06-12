@@ -59,15 +59,7 @@ if "manual_image_bytes" in st.session_state:
 else:
     st.warning("No image has been uploaded yet.")
 
-def do_AI():
-    image_path = os.path.join("AIOutput", "image.jpg")
-    if os.path.exists(image_path):
-        # Full import path to clearly show this comes from another file!!
-        st.session_state.ai_teeth = AIOutput.teethSet.teeth
-        with open(image_path, "rb") as img_file:
-            st.session_state.AI_image_bytes = img_file.read()
-
-def go_to_upload_page():
+    # Add a button to download the PDF report go_to_upload_page():
     st.session_state.go_to_upload_page = True
 
 def switch_view():
@@ -108,7 +100,6 @@ if "manual_image_bytes" in st.session_state:
             with st.form("next", border=False):
                 nextpage = st.form_submit_button("Next page",use_container_width=True,type="tertiary")
         if nextpage:
-            do_AI()
             st.session_state.submitted_manual_teeth = True
             if st.session_state.Teethkind == "Child":
                 st.session_state.teeth_dict_manual = missingteeth

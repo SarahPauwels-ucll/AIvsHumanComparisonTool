@@ -3,7 +3,7 @@
 Run inference with a **YOLOv8‑seg** model on either
 
 * the full **test split** (`images/test`) of a YOLO‑style dataset, **or**
-* a **single sample** identified by its filename **stem** (image + matching `labels/test/<stem>.txt`).
+* a **single sample** identified by its filename **stem** (image + matching `labels/test/<stem>.txt`).
 
 Just tweak the variables in the **CONFIGURATION** block—no command‑line flags required.
 
@@ -28,6 +28,7 @@ When `SPECIFIC_SAMPLE` is *None* (default) the script processes **all** images u
 Only the image with that stem is sent through the model; the label file, if found,
 can be used later for evaluation (this script merely reports its presence).
 """
+import io
 import random
 import sys
 from pathlib import Path
@@ -36,10 +37,11 @@ from typing import Iterable, List
 import cv2
 import numpy as np
 import torch
+from PIL import Image
 from ultralytics import YOLO
 
 MODEL_PATH: str = "runs/segment/train10/weights/best.pt"
-#DATASET_ROOT: str = "yolo_dataset_segmentation_extra_data_splits"
+# DATASET_ROOT: str = "yolo_dataset_segmentation_extra_data_splits"
 DATASET_ROOT: str = "C:/Users/Jarne/KU Leuven/Lola Gracea - UCLL_dataset_28/AI_training/Teeth/Test set"
 CONF_THRESHOLD: float = 0.50
 IMG_SIZE: int = 1024
@@ -49,20 +51,101 @@ WRITE_TOOTH_NAMES: bool = False
 DRAW_BOUNDING_BOXES: bool = False
 
 MAX_MASK_OPACITY: float = 0.2
-SPECIFIC_SAMPLE: str | None = None
+SPECIFIC_SAMPLE: str | None = "84373307"
 
 DATASET_ROOT = Path(DATASET_ROOT)
-#TEST_IMAGE_DIR = DATASET_ROOT / "images" / "test"
+# TEST_IMAGE_DIR = DATASET_ROOT / "images" / "test"
 TEST_IMAGE_DIR = DATASET_ROOT
 TEST_LABEL_DIR = DATASET_ROOT / "labels" / "test"
 OUTPUT_DIR = Path(OUTPUT_DIR or (DATASET_ROOT / "output_test"))
 
 TOOTH_LABELS = [
-    '11', '12', '13', '14', '15', '16', '17', '18', #  0,  1,  2,  3,  4,  5,  6,  7
-    '21', '22', '23', '24', '25', '26', '27', '28', #  8,  9, 10, 11, 12, 13, 14, 15
-    '31', '32', '33', '34', '35', '36', '37', '38', # 16, 17, 18, 19, 20, 21, 22, 23
+    '11', '12', '13', '14', '15', '16', '17', '18',  # 0,  1,  2,  3,  4,  5,  6,  7
+    '21', '22', '23', '24', '25', '26', '27', '28',  # 8,  9, 10, 11, 12, 13, 14, 15
+    '31', '32', '33', '34', '35', '36', '37', '38',  # 16, 17, 18, 19, 20, 21, 22, 23
     '41', '42', '43', '44', '45', '46', '47', '48'  # 24, 25, 26, 27, 28, 29, 30, 31
 ]
+
+second_digit_colors = {}
+
+yolo_id_colors = {}
+
+random.seed(42)  # For reproducible random colors
+
+for yolo_id, tooth_label in enumerate(TOOTH_LABELS):
+    if isinstance(tooth_label, int):
+        tooth_label_str = str(tooth_label)
+    else:
+        tooth_label_str = tooth_label
+
+    if len(tooth_label_str) == 2:
+        second_digit = tooth_label_str[1]
+
+        if second_digit not in second_digit_colors:
+            second_digit_colors[second_digit] = random.sample(range(256), 3)
+        yolo_id_colors[yolo_id] = second_digit_colors[second_digit]
+    else:
+        print(
+            f"Warning: Tooth label '{tooth_label_str}' for YOLO ID {yolo_id} is not a two-digit number. Assigning black.")
+        yolo_id_colors[yolo_id] = [0, 0, 0]  # Assign black as a default
+
+
+def get_teeth_presence(image_bytes) -> tuple[set[str], set[str], bytes]:
+    model = YOLO(MODEL_PATH)
+
+    if isinstance(image_bytes, bytes):
+        pil_image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        img = np.array(pil_image)          # RGB ndarray for OpenCV / NumPy work
+    else:
+        raise TypeError("image_bytes must be a bytes object")
+
+    res = model.predict(
+        source=img,
+        verbose=False,
+        retina_masks=True,
+        imgsz=1024,
+    )[0]
+
+    present_teeth: set[str] = set()
+    missing_teeth: set[str] = set(TOOTH_LABELS)
+
+    H, W = img.shape[:2]
+
+    for i, box in enumerate(res.boxes):
+        conf = float(box.conf[0])
+        if conf < CONF_THRESHOLD:
+            continue
+
+        cls_id = int(box.cls[0])
+        cls_name = model.names[cls_id]
+
+        present_teeth.add(cls_name)
+        missing_teeth.discard(cls_name)
+
+        colour = yolo_id_colors[cls_id]
+        mask_tensor = res.masks.data[i]
+        mask_np = (mask_tensor.cpu().numpy().astype(np.uint8)) * 255
+        mask_resized = cv2.resize(mask_np, (W, H), interpolation=cv2.INTER_LINEAR)
+        if USE_BLUR:
+            mask_resized = cv2.GaussianBlur(mask_resized, (21, 21), 0)
+        alpha = (mask_resized.astype(np.float32) / 255.0)[..., None] * MAX_MASK_OPACITY
+
+        colour_layer = np.zeros_like(img, dtype=np.uint8)
+        colour_layer[:] = colour                                     # (B, G, R)
+
+        img = (
+            alpha * colour_layer.astype(np.float32)
+            + (1.0 - alpha) * img.astype(np.float32)
+        ).astype(np.uint8)
+
+    img_bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    success, buf = cv2.imencode(".png", img_bgr)
+    if not success:
+        raise RuntimeError("Failed to encode result image")
+
+    img_bytes: bytes = buf.tobytes()
+
+    return present_teeth, missing_teeth, img_bytes
 
 def _gather_images(root: Path, stem: str | None = None) -> List[Path]:
     """Collect images under *root*.
@@ -86,13 +169,13 @@ def _ensure_parent(path: Path) -> None:
 # ---------- Inference ----------
 
 def run_inference(
-    model: YOLO,
-    image_paths: Iterable[Path],
-    image_root: Path,
-    output_root: Path,
-    *,
-    conf_threshold: float = 0.25,
-    img_size: int = 1024,
+        model: YOLO,
+        image_paths: Iterable[Path],
+        image_root: Path,
+        output_root: Path,
+        *,
+        conf_threshold: float = 0.25,
+        img_size: int = 1024,
 ):
     """Run inference on *i mage_paths* and save visualisations under *output_root*."""
 
@@ -106,29 +189,6 @@ def run_inference(
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 0.6
     font_thickness = 2
-
-    second_digit_colors = {}
-
-    yolo_id_colors = {}
-
-    random.seed(42)  # For reproducible random colors
-
-    for yolo_id, tooth_label in enumerate(TOOTH_LABELS):
-        # Ensure the tooth_label is a string and has at least two digits
-        if isinstance(tooth_label, int):
-            tooth_label_str = str(tooth_label)
-        else:
-            tooth_label_str = tooth_label
-
-        if len(tooth_label_str) == 2:
-            second_digit = tooth_label_str[1]
-
-            if second_digit not in second_digit_colors:
-                second_digit_colors[second_digit] = random.sample(range(256), 3)
-            yolo_id_colors[yolo_id] = second_digit_colors[second_digit]
-        else:
-            print(f"Warning: Tooth label '{tooth_label_str}' for YOLO ID {yolo_id} is not a two-digit number. Assigning black.")
-            yolo_id_colors[yolo_id] = [0, 0, 0]  # Assign black as a default
 
     for img_path in image_paths:
         try:
@@ -168,8 +228,8 @@ def run_inference(
                 colour_layer[:] = colour  # (B, G, R)
 
                 img = (
-                    alpha * colour_layer.astype(np.float32)
-                    + (1.0 - alpha) * img.astype(np.float32)
+                        alpha * colour_layer.astype(np.float32)
+                        + (1.0 - alpha) * img.astype(np.float32)
                 ).astype(np.uint8)
 
                 # ----- Box & label -----

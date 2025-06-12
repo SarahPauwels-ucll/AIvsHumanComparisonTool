@@ -34,7 +34,7 @@ def load_ground_truth_labels(json_path):
     return present_teeth
 
 # --- STEP 2: Run YOLO Inference ---
-def detect_teethAISlop(image_source, conf_threshold=0.40, save_path='filtered_output.jpg'):
+def detect_teeth_ai(image_source, conf_threshold=0.40, save_path='filtered_output.jpg'):
     """
     image_source: can be a file path (str) or image bytes
     """
@@ -167,11 +167,11 @@ def get_teeth_presence(image_path, confidence_threshold=0.5):
     missing_teeth = sorted(list(all_teeth - detected_teeth))
 
     return present_teeth, missing_teeth
-def get_teeth_presenceAISlop(image_source, confidence_threshold=0.5):
+def get_teeth_presence_ai(image_source, confidence_threshold=0.5):
     """
     Accepts either image path (str) or image bytes (bytes)
     """
-    detections = detect_teethAISlop(image_source, conf_threshold=confidence_threshold)
+    detections = detect_teeth_ai(image_source, conf_threshold=confidence_threshold)
 
     detected_teeth = set(
         d['tooth'] for d in detections if d['confidence'] >= confidence_threshold

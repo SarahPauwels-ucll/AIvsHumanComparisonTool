@@ -245,7 +245,7 @@ def load_diff_teeth_bottom(differences, teeth_list):
 
 
 # Check if the image exists
-if ai_image_bytes and manual_image_bytes:
+if ai_image_bytes is not None and manual_image_bytes:
     st.markdown("""
     <style>
     .st-key-photo-container {

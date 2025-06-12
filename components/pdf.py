@@ -2,7 +2,9 @@ import io
 import math
 from datetime import date
 
+from PIL import Image as pilimg
 import streamlit as st
+from numpy import ndarray
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.lib import colors
@@ -28,6 +30,12 @@ DIFF_IMG_W  = 0.45 * inch
 
 # --- helpers ---
 def make_scaled_image(source_bytes, *, max_w: float, max_h: float) -> Image:
+    # if source_bytes is ndarray:
+    #     img = pilimg.fromarray(source_bytes)
+    #     img = Image(img)
+    # else:
+    #     source = io.BytesIO(source_bytes)
+    #     img = Image(source)
     source = io.BytesIO(source_bytes)
     img = Image(source)
     iw, ih = float(img.imageWidth), float(img.imageHeight)

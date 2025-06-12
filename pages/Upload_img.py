@@ -1,5 +1,7 @@
 from st_pages import Page, add_page_title
 from threading import Thread
+
+from AI.yolo_segment_inference import get_teeth_presence
 from AIOutput.teethSet import teeth
 from components.sidebar import load_sidebar
 import os
@@ -7,7 +9,7 @@ import torch
 torch.classes.__path__ = [os.path.join(torch.__path__[0], torch.classes.__file__)]
 import streamlit as st
 
-from AI.Yolo import get_teeth_presenceAISlop
+from AI.Yolo import get_teeth_presence_ai
 st.set_page_config(page_title="Upload image",
 
                    layout="wide")
@@ -30,14 +32,15 @@ def upload_files():
         if ext == 'jpeg' or ext =='jpg':
             img_bytes = file.read()
             st.session_state["manual_image_bytes"] = img_bytes
-            presentTeeth, missingTeeth = get_teeth_presenceAISlop(st.session_state["manual_image_bytes"])
-            print("Detected present teeth:", presentTeeth)
-            print("Detected missing teeth:", missingTeeth)
+            #presentTeeth, missingTeeth = get_teeth_presence_ai(st.session_state["manual_image_bytes"])
+            present_teeth, missing_teeth, image_ndarray = get_teeth_presence(img_bytes)
+            print("Detected present teeth:", present_teeth)
+            print("Detected missing teeth:", missing_teeth)
 
             # Update AI teeth dictionary
             updated_teeth = teeth.copy()
 
-            for tooth in missingTeeth:
+            for tooth in missing_teeth:
                 tooth_num = int(tooth)  # Ensure key is int, not str
                 updated_teeth[tooth_num] = "missing"
 
@@ -46,10 +49,11 @@ def upload_files():
             print(st.session_state["ai_teeth"])
             st.session_state["upload_errors"]=[f"File '{name}' is uploaded successfully"]
             st.session_state.submitted_manual_teeth = False
-            image_path = os.path.join("AIOutput", "image.jpg")
-            if os.path.exists(image_path):
-                with open(image_path, "rb") as img_file:
-                    st.session_state.AI_image_bytes = img_file.read()
+            st.session_state.AI_image_bytes = image_ndarray
+            # image_path = os.path.join("AIOutput", "image.jpg")
+            # if os.path.exists(image_path):
+            #     with open(image_path, "rb") as img_file:
+            #         st.session_state.AI_image_bytes = img_file.read()
 
 
         else:
