@@ -332,7 +332,7 @@ def test_model_on_yolo_dataset_with_metrics(
         f"GroundTruth={stats['gt_count']}")
 
 #
-test_model_on_yolo_dataset_with_metrics()
+#test_model_on_yolo_dataset_with_metrics()
 # #Example Usage
 # image_path = 'AI/data/61024377/61024377.jpeg'
 # json_path = 'AI/data/61024377/61024377.json'

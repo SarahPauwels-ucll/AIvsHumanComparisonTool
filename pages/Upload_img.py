@@ -1,6 +1,7 @@
 from st_pages import Page, add_page_title
 from threading import Thread
 
+from AI.BoneSeg.bone_seg_img import get_bone_level
 from AI.yolo_segment_inference import get_teeth_presence
 from AIOutput.teethSet import teeth
 from components.sidebar import load_sidebar
@@ -33,9 +34,10 @@ def upload_files():
             img_bytes = file.read()
             st.session_state["manual_image_bytes"] = img_bytes
             #presentTeeth, missingTeeth = get_teeth_presence_ai(st.session_state["manual_image_bytes"])
-            present_teeth, missing_teeth, image_ndarray = get_teeth_presence(img_bytes)
-            print("Detected present teeth:", present_teeth)
-            print("Detected missing teeth:", missing_teeth)
+            present_teeth, missing_teeth, presence_image_bytes = get_teeth_presence(img_bytes)
+            image_bytes = get_bone_level(presence_image_bytes)
+            #image_bytes = presence_image_bytes
+
 
             # Update AI teeth dictionary
             updated_teeth = teeth.copy()
@@ -46,10 +48,9 @@ def upload_files():
 
             # Save updated dictionary in session state
             st.session_state["ai_teeth"] = updated_teeth
-            print(st.session_state["ai_teeth"])
             st.session_state["upload_errors"]=[f"File '{name}' is uploaded successfully"]
             st.session_state.submitted_manual_teeth = False
-            st.session_state.AI_image_bytes = image_ndarray
+            st.session_state.AI_image_bytes = image_bytes
             # image_path = os.path.join("AIOutput", "image.jpg")
             # if os.path.exists(image_path):
             #     with open(image_path, "rb") as img_file:

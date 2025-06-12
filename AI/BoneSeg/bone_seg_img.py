@@ -1,6 +1,8 @@
+import io
 import os
 import numpy as np
 import cv2
+from PIL import Image
 from shapely.geometry import Polygon
 from shapely.geometry.multipolygon import MultiPolygon
 from shapely.validation import explain_validity
@@ -23,7 +25,7 @@ def load_ground_truth_yolo(txt_path: str, image_path: str):
     img = cv2.imread(image_path)
     if img is None:
         raise FileNotFoundError(f"Image not found: {image_path}")
-    h,  w  = img.shape[:2]
+    h, w = img.shape[:2]
 
     polygons = []
     classes = []
@@ -68,7 +70,6 @@ def load_ground_truth_yolo(txt_path: str, image_path: str):
 
 # -------- 2.  REMAINING UTILITY FUNCTIONS  ----------------------------------
 def compute_iou(poly1, poly2):
-
     if not poly1.is_valid:
         print("GT polygon invalid:", explain_validity(poly1))
     if not poly2.is_valid:
@@ -88,14 +89,56 @@ def compute_iou(poly1, poly2):
     return inter / union if union else 0.0
 
 
-def run_inference(model_path, image_path):
-    model   = YOLO(model_path)
-    result  = model(image_path)[0]
-    h, w    = result.orig_shape[:2]
+MODEL_PATH: str = "AI/models/yolo11m_bone_segmentation_finetuned.pt"
+
+
+def get_bone_level(image_bytes):
+    model = YOLO(MODEL_PATH)
+
+    if isinstance(image_bytes, bytes):
+        pil_image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        img = np.array(pil_image)
+    else:
+        raise TypeError("image_bytes must be a bytes object")
+
+    result = model.predict(
+        source=img,
+        verbose=False,
+        retina_masks=True,
+        imgsz=1024,
+    )[0]
 
     predicted_polys = []
     for mask in result.masks.xy:
-        if len(mask) == 4:                      # skip box-shaped masks
+        if len(mask) == 4:  # skip box-shaped masks
+            xs, ys = {p[0] for p in mask}, {p[1] for p in mask}
+            if len(xs) <= 2 and len(ys) <= 2:
+                continue
+        poly = Polygon(mask)
+        poly = poly.buffer(0)
+        if not poly.is_valid:
+            poly = poly.buffer(0)
+        predicted_polys.append(poly)
+
+    #pil_image = Image.open(io.BytesIO(image_bytes))
+    image_with_bone = draw_polygons(img, [], predicted_polys)
+    img_bgr = cv2.cvtColor(image_with_bone, cv2.COLOR_RGB2BGR)
+    success, buf = cv2.imencode(".png", img_bgr)
+    if not success:
+        raise RuntimeError("Failed to encode result image")
+
+    img_bytes: bytes = buf.tobytes()
+    return img_bytes
+
+
+def run_inference(model_path, image_path):
+    model = YOLO(model_path)
+    result = model(image_path)[0]
+    h, w = result.orig_shape[:2]
+
+    predicted_polys = []
+    for mask in result.masks.xy:
+        if len(mask) == 4:  # skip box-shaped masks
             xs, ys = {p[0] for p in mask}, {p[1] for p in mask}
             if len(xs) <= 2 and len(ys) <= 2:
                 continue
@@ -122,6 +165,7 @@ def draw_polygons(img, gt_polys, pred_polys):
 
         for cnt in contours:
             cv2.polylines(out, [cnt], True, color, 2)
+
     # if pred_polys:
     #     for p in pred_polys:
     #         pts = np.int32([p.exterior.coords])
@@ -133,6 +177,7 @@ def draw_polygons(img, gt_polys, pred_polys):
         draw(p, (0, 0, 255))  # red = predictionout = cv2.addWeighted(overlay, opacity, out, 1 - opacity, 0)
     out = cv2.addWeighted(overlay, opacity, out, 1 - opacity, 0)
     return out
+
 
 def average_iou_for_folder(image_folder, label_folder, model_path):
     max_iou_scores_mandible = []
@@ -229,6 +274,7 @@ def average_iou_for_folder(image_folder, label_folder, model_path):
 
     return avg_iou_mandible, avg_iou_maxilla
 
+
 # -------- 3.  MAIN -----------------------------------------------------------
 # if __name__ == "__main__":
 #     # === CONFIG ===
@@ -284,13 +330,13 @@ def average_iou_for_folder(image_folder, label_folder, model_path):
 #     cv2.imwrite(output_path, vis)
 
 
-if __name__ == "__main__":
-    base_path = "yolo_dataset_segmentation_extra_data_bone_seg_splits/"
-    image_folder = os.path.join(base_path, "images/test/")
-    label_folder = os.path.join(base_path, "labels/test/")
-    model_path = "AI/models/yolo11m_bone_segmentation_finetuned.pt"
-
-    print(f"Starting IoU evaluation on folder:\n Images: {image_folder}\n Labels: {label_folder}")
-    avg_iou_mandible, avg_iou_maxilla = average_iou_for_folder(image_folder, label_folder, model_path)
-    print(f"Final average IoU - Mandible: {avg_iou_mandible:.4f}")
-    print(f"Final average IoU - Maxilla: {avg_iou_maxilla:.4f}")
+# if __name__ == "__main__":
+#     base_path = "yolo_dataset_segmentation_extra_data_bone_seg_splits/"
+#     image_folder = os.path.join(base_path, "images/test/")
+#     label_folder = os.path.join(base_path, "labels/test/")
+#     model_path = "AI/models/yolo11m_bone_segmentation_finetuned.pt"
+#
+#     print(f"Starting IoU evaluation on folder:\n Images: {image_folder}\n Labels: {label_folder}")
+#     avg_iou_mandible, avg_iou_maxilla = average_iou_for_folder(image_folder, label_folder, model_path)
+#     print(f"Final average IoU - Mandible: {avg_iou_mandible:.4f}")
+#     print(f"Final average IoU - Maxilla: {avg_iou_maxilla:.4f}")

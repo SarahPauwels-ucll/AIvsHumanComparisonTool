@@ -40,7 +40,7 @@ import torch
 from PIL import Image
 from ultralytics import YOLO
 
-MODEL_PATH: str = "runs/segment/train10/weights/best.pt"
+MODEL_PATH: str = "AI/models/yolo11l_segmentation_finetuned_v2.pt"
 # DATASET_ROOT: str = "yolo_dataset_segmentation_extra_data_splits"
 DATASET_ROOT: str = "C:/Users/Jarne/KU Leuven/Lola Gracea - UCLL_dataset_28/AI_training/Teeth/Test set"
 CONF_THRESHOLD: float = 0.50
