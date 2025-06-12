@@ -39,10 +39,11 @@ import torch
 from ultralytics import YOLO
 
 MODEL_PATH: str = "runs/segment/train10/weights/best.pt"
-DATASET_ROOT: str = "yolo_dataset_segmentation_extra_data_splits"
+#DATASET_ROOT: str = "yolo_dataset_segmentation_extra_data_splits"
+DATASET_ROOT: str = "C:/Users/Jarne/KU Leuven/Lola Gracea - UCLL_dataset_28/AI_training/Teeth/Test set"
 CONF_THRESHOLD: float = 0.50
 IMG_SIZE: int = 1024
-OUTPUT_DIR: str | None = "AI/output/segmentation_v2"
+OUTPUT_DIR: str | None = "AI/output/segmentation_v2_test_unlabeled"
 USE_BLUR: bool = False
 WRITE_TOOTH_NAMES: bool = False
 DRAW_BOUNDING_BOXES: bool = False
@@ -51,7 +52,8 @@ MAX_MASK_OPACITY: float = 0.2
 SPECIFIC_SAMPLE: str | None = None
 
 DATASET_ROOT = Path(DATASET_ROOT)
-TEST_IMAGE_DIR = DATASET_ROOT / "images" / "test"
+#TEST_IMAGE_DIR = DATASET_ROOT / "images" / "test"
+TEST_IMAGE_DIR = DATASET_ROOT
 TEST_LABEL_DIR = DATASET_ROOT / "labels" / "test"
 OUTPUT_DIR = Path(OUTPUT_DIR or (DATASET_ROOT / "output_test"))
 
@@ -204,7 +206,6 @@ def run_inference(
             import traceback
 
             traceback.print_exc()
-        break
 
 
 def main() -> None:
