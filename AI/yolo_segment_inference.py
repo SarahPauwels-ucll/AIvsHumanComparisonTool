@@ -37,6 +37,7 @@ from typing import Iterable, List
 import cv2
 import numpy as np
 import torch
+from PIL import Image
 from ultralytics import YOLO
 
 MODEL_PATH: str = "AI/models/yolo11l_segmentation_finetuned_v2.pt"
