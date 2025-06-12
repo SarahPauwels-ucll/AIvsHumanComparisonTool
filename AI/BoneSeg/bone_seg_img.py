@@ -1,7 +1,6 @@
 import os
 import numpy as np
 import cv2
-from matplotlib import pyplot as plt
 from shapely.geometry import Polygon
 from shapely.geometry.multipolygon import MultiPolygon
 from shapely.validation import explain_validity
@@ -111,7 +110,8 @@ def run_inference(model_path, image_path):
 
 def draw_polygons(img, gt_polys, pred_polys):
     out = img.copy()
-
+    overlay = img.copy()
+    opacity = 0.4
     def draw(poly, color):
         if isinstance(poly, Polygon):
             contours = [np.int32(poly.exterior.coords)]
@@ -122,12 +122,16 @@ def draw_polygons(img, gt_polys, pred_polys):
 
         for cnt in contours:
             cv2.polylines(out, [cnt], True, color, 2)
+    # if pred_polys:
+    #     for p in pred_polys:
+    #         pts = np.int32([p.exterior.coords])
+    #         cv2.fillPoly(overlay, pts, (255, 0, 255))
 
     for p in gt_polys:
         draw(p, (0, 255, 0))  # green = ground truth
     for p in pred_polys:
-        draw(p, (0, 0, 255))  # red = prediction
-
+        draw(p, (0, 0, 255))  # red = predictionout = cv2.addWeighted(overlay, opacity, out, 1 - opacity, 0)
+    out = cv2.addWeighted(overlay, opacity, out, 1 - opacity, 0)
     return out
 
 def average_iou_for_folder(image_folder, label_folder, model_path):
