@@ -47,9 +47,15 @@ if "manual_image_bytes" in st.session_state:
     circleView=st.session_state.circleView if "circleView" in st.session_state and st.session_state.circleView is not None else False
     if st.session_state.Teethkind == "Child":
         child=True
+    if st.session_state.Teethkind == "Mixed":
+        if "View" not in st.session_state:
+            st.session_state.View = "Child"
+        if st.session_state.View=="Child":
+            child=True
+        else:
+            child=False
     else:
         child=False
-    print(child)
     manual_teeth = render_teeth("manual", disable_teeth_buttons,circle=circleView, child=child)
     if child:
         st.session_state.manual_teeth_child = manual_teeth
@@ -75,6 +81,13 @@ def switch_view():
         st.session_state.circleView = True  
     else: 
         st.session_state.circleView=False
+
+
+def switch_teeth():
+    if "View" not in  st.session_state or st.session_state.View is None or st.session_state.View=="Adult":
+        st.session_state.View = "Child"  
+    else: 
+        st.session_state.View="Adult"
 
 if "manual_image_bytes" in st.session_state:
     st.markdown("""
@@ -102,6 +115,8 @@ if "manual_image_bytes" in st.session_state:
             """, unsafe_allow_html=True)
         col1, col2 = st.columns([1, 1])  
         with col1:
+            if st.session_state.Teethkind=="Mixed":
+                st.button("Display other teeth", on_click=switch_teeth)
             if st.session_state.Professional:
                 st.button("Switch view", on_click=switch_view)
         with col2:
