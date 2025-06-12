@@ -35,10 +35,11 @@ teeth = {
 def get_tooth_image(tooth_number, status, height=80, icon_variant="white", as_base64=False):
     #remove this if you we add children tooth icons
     if tooth_number>50:
-        if tooth_number%10<4:
-            tooth_number-=40
-        else:
-            tooth_number-=38
+        if status is not None and status != "normal":       
+            if tooth_number%10<4:
+                tooth_number-=40
+            else:
+                tooth_number-=38
     #----------------------------------------------
 
     if icon_variant == "black":
