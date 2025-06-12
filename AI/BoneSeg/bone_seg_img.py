@@ -89,10 +89,19 @@ def run_inference(model_path, image_path):
 
 def draw_polygons(img, gt_polys, pred_polys):
     out = img.copy()
-    for p in gt_polys:
-        cv2.polylines(out, [np.int32(p.exterior.coords)], True, (0, 255, 0), 2)
-    for p in pred_polys:
-        cv2.polylines(out, [np.int32(p.exterior.coords)], True, (0, 0, 255), 2)
+    overlay = img.copy()
+    opacity = 0.4
+
+    if gt_polys:
+        for p in gt_polys:
+            cv2.polylines(out, [np.int32(p.exterior.coords)], True, (0, 255, 0), 2)
+
+    if pred_polys:
+        for p in pred_polys:
+            pts = np.int32([p.exterior.coords])
+            cv2.fillPoly(overlay, pts, (255, 0, 255))
+
+    out = cv2.addWeighted(overlay, opacity, out, 1 - opacity, 0)
     return out
 
 
@@ -115,11 +124,11 @@ if __name__ == "__main__":
     if (w_pred, h_pred) != (w_gt, h_gt):
         raise ValueError("[ERROR] Image dimensions mismatch.")
 
-    print(f"GT polygons: {len(gt_polys)}, Predictions: {len(pred_polys)}")
-    for i, gt in enumerate(gt_polys, 1):
-        best_iou = max((compute_iou(gt, p) for p in pred_polys), default=0.0)
-        print(f"GT Polygon {i}: Best IoU = {best_iou:.4f}")
+    # print(f"GT polygons: {len(gt_polys)}, Predictions: {len(pred_polys)}")
+    # for i, gt in enumerate(gt_polys, 1):
+    #     best_iou = max((compute_iou(gt, p) for p in pred_polys), default=0.0)
+    #     print(f"GT Polygon {i}: Best IoU = {best_iou:.4f}")
 
     # === DRAW & SAVE ===
-    vis = draw_polygons(img, gt_polys, pred_polys)
+    vis = draw_polygons(img, gt_polys=None, pred_polys=pred_polys)
     cv2.imwrite(output_path, vis)
