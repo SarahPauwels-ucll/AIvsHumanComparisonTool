@@ -28,7 +28,7 @@ LABEL_TO_ID_MAP = {label: i + 1 for i, label in enumerate(ALL_POSSIBLE_LABELS)}
 COLORS = [[0, 0, 0]] + [list(np.random.randint(50, 250, size=3)) for _ in ALL_POSSIBLE_LABELS]  # Brighter random colors
 COLOR_MAP_FOR_VISUALIZATION = np.array(COLORS, dtype=np.uint8)
 
-NUM_AUGMENTATIONS_PER_IMAGE = 3
+NUM_AUGMENTATIONS_PER_IMAGE = 5
 
 def get_color_mask(mask_ids, color_map):
     rgb_mask = np.zeros((*mask_ids.shape, 3), dtype=np.uint8)
@@ -73,27 +73,28 @@ def load_image_and_mask(image_path, json_path, label_to_id_map):
 
     for shape in annotations.get('shapes', []):
         label = shape.get('label')
-        points = shape.get('points')
+        if shape.get("contour_points", []):
+            points = shape["contour_points"]
+        elif shape.get("points", []) and len(shape["points"]) > 0:
+            points = shape.get("points", [])
+        else:
+            points = None
 
         if label is None or points is None:
-            print(f"Warning: Skipping shape with missing label or points in {json_path}")
-            continue
+            raise Exception(f"Warning: Skipping shape with missing label or points in {json_path}")
 
-        if not points or len(points) < 3:  # A polygon needs at least 3 points
-            print(f"Warning: Skipping shape with insufficient points for label '{label}' in {json_path}")
-            continue
+        if not points or len(points) < 4:  # A polygon needs at least 3 points
+            raise Exception(f"Warning: Skipping shape with insufficient points for label '{label}' in {json_path}")
 
         if label not in label_to_id_map:
-            print(f"Warning: Label '{label}' in {json_path} not in LABEL_TO_ID_MAP. Skipping.")
-            continue
+            raise Exception(f"Warning: Label '{label}' in {json_path} not in LABEL_TO_ID_MAP. Skipping.")
 
         class_id = label_to_id_map[label]
         try:
             polygon_points = np.array(points, dtype=np.int32)
         except ValueError as e:
-            print(
+            raise Exception(
                 f"Warning: Could not convert points to numpy array for label '{label}' in {json_path}. Error: {e}. Skipping.")
-            continue
 
         cv2.fillPoly(mask, [polygon_points.reshape((-1, 1, 2))], class_id)  # Reshape for fillPoly
 
@@ -110,7 +111,6 @@ def find_data_pairs(data_dir):
     if not os.path.isdir(base_data_dir):
         print(f"Error: Data directory '{base_data_dir}' not found.")
         return data_pairs
-
     # Iterate over items in the base_data_dir
     for item_name in os.listdir(base_data_dir):
         item_path = os.path.join(base_data_dir, item_name)
@@ -120,7 +120,7 @@ def find_data_pairs(data_dir):
             json_file = None
             for f_name in os.listdir(subfolder_path):
                 f_path = os.path.join(subfolder_path, f_name)
-                if f_name.lower().endswith(('.jpg', '.jpeg')):
+                if f_name.lower().endswith(('.jpg', '.jpeg', '.png')):
                     if image_file is None:
                         image_file = f_path
                     else:
@@ -218,7 +218,7 @@ if __name__ == "__main__":
     # IMPORTANT: Set your data directory correctly
     # Assuming your script is NOT in the AI folder, but one level above, or provide absolute path.
     # If script is in the same folder as the AI folder:
-    data_directory = os.path.join("AI", "data")
+    data_directory = os.path.join("C:/Users/Jarne/KU Leuven/Lola Gracea - UCLL_dataset_28/AI_training/Teeth/Lola_eslam")
     # Or if your script is inside the AI folder:
     # data_directory = "data"  # If script is in AI folder and data is AI/data
     # Or an absolute path:
@@ -241,7 +241,7 @@ if __name__ == "__main__":
     print(f"Found {len(data_pairs)} image-annotation pairs.")
 
     data_directory = "AI/data"  # Or your actual path "AI/data"
-    output_base_dir = "yolo_dataset_augmented_v2"  # Choose your output directory
+    output_base_dir = "yolo_dataset_augmented_extra_data"  # Choose your output directory
 
     # Create output directories if they don't exist
     output_images_dir = os.path.join(output_base_dir, "images")
@@ -249,37 +249,12 @@ if __name__ == "__main__":
     os.makedirs(output_images_dir, exist_ok=True)
     os.makedirs(output_labels_dir, exist_ok=True)
 
-    def augment_and_save(task):
-        img_idx, image_path, json_path, aug_idx, out_img_dir, out_lbl_dir, label_map = task
-        try:
-            orig_img, orig_mask = load_image_and_mask(image_path, json_path, label_map)
-        except Exception as e:
-            return f"SKIP load {image_path}: {e}"
-
-        base = os.path.splitext(os.path.basename(image_path))[0]
-        try:
-            aug = transform(image=orig_img, mask=orig_mask)
-            aug_img, aug_mask = aug["image"], aug["mask"]
-            fname = f"{base}_aug_{aug_idx:03d}"
-            img_path = os.path.join(out_img_dir, fname + ".jpg")
-            lbl_path = os.path.join(out_lbl_dir, fname + ".txt")
-
-            cv2.imwrite(img_path, aug_img)
-            yolo_lines = convert_mask_to_yolo_format(aug_mask, aug_img.shape)
-            with open(lbl_path, "w") as f:
-                for line in yolo_lines:
-                    f.write(line + "\n")
-
-            return f"DONE {fname}"
-        except Exception as e:
-            return f"ERR aug {base}_{aug_idx}: {e}"
-
     def augment_one_pair(pair):
         img_idx, (image_path, json_path) = pair
         try:
             original_image, original_mask = load_image_and_mask(image_path, json_path, LABEL_TO_ID_MAP)
         except Exception as e:
-            print(f"Error loading sample {image_path}: {e}. Skipping.")
+            print(f"Error loading {image_path}: {e}. Skipping.")
             return # replaced from continue
 
         original_basename = os.path.splitext(os.path.basename(image_path))[0]
@@ -313,6 +288,15 @@ if __name__ == "__main__":
             except Exception as e:
                 print(f"Error during augmentation or saving for {original_basename}, aug_idx {aug_idx}: {e}")
                 continue
+
+        # Finally, also move the original image to the target directory
+        original_image_save_path = os.path.join(output_images_dir, f"{original_basename}_orig.jpg")
+        original_label_save_path = os.path.join(output_labels_dir, f"{original_basename}_orig.txt")
+        cv2.imwrite(original_image_save_path, original_image)
+        yolo_label_strings = convert_mask_to_yolo_format(original_mask, original_image.shape)
+        with open(original_label_save_path, 'w') as f:
+            for line in yolo_label_strings:
+                f.write(line + "\n")
 
 
     thread_map(

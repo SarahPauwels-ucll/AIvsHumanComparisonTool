@@ -26,3 +26,10 @@ augments=
 
 train8 = continuation of train7 (300 epochs)
 train9 = continuation of train8 (200 epochs)
+train10 = 500 epochs (yolo11 large seg) on augmented data (lola+andre data) no mask scaling (ratio = 1) + imgsize=1024 + batch size 9
+5 augments=
+    A.HorizontalFlip(p=0.5),
+    A.RandomScale(scale_limit=0.05, p=0.6, interpolation=cv2.INTER_NEAREST),
+    A.RandomBrightnessContrast(brightness_limit=0.1, contrast_limit=0.1, p=0.75),
+    A.ElasticTransform(p=0.4, alpha=100, sigma=100 * 0.07,
+                       border_mode=cv2.BORDER_CONSTANT)
