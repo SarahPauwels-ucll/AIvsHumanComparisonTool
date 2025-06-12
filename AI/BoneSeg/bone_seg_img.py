@@ -8,6 +8,8 @@ from shapely.geometry.multipolygon import MultiPolygon
 from shapely.validation import explain_validity
 from ultralytics import YOLO
 
+from AI.augmented_data_to_splits import OUTPUT_DIR
+
 
 # -------- 1.  LOAD YOLO .TXT GROUND-TRUTH  -----------------------------------
 def load_ground_truth_yolo(txt_path: str, image_path: str):
@@ -70,6 +72,7 @@ def load_ground_truth_yolo(txt_path: str, image_path: str):
 
 # -------- 2.  REMAINING UTILITY FUNCTIONS  ----------------------------------
 def compute_iou(poly1, poly2):
+
     if not poly1.is_valid:
         print("GT polygon invalid:", explain_validity(poly1))
     if not poly2.is_valid:
@@ -155,30 +158,58 @@ def draw_polygons(img, gt_polys, pred_polys):
     out = img.copy()
     overlay = img.copy()
     opacity = 0.4
+
     def draw(poly, color):
         if isinstance(poly, Polygon):
-            contours = [np.int32(poly.exterior.coords)]
+            contours = [np.int32(poly.exterior.coords).reshape((-1, 1, 2))]
         elif isinstance(poly, MultiPolygon):
-            contours = [np.int32(p.exterior.coords) for p in poly.geoms]
+            contours = [np.int32(p.exterior.coords).reshape((-1, 1, 2)) for p in poly.geoms]
         else:
             return  # unsupported geometry
 
         for cnt in contours:
-            cv2.polylines(out, [cnt], True, color, 2)
+            cv2.fillPoly(overlay, [cnt], color)
 
-    # if pred_polys:
-    #     for p in pred_polys:
-    #         pts = np.int32([p.exterior.coords])
-    #         cv2.fillPoly(overlay, pts, (255, 0, 255))
+    # Don't draw ground truth polygons
+    # for p in gt_polys:
+    #     draw(p, (0, 255, 0))  # previously green for ground truth
 
-    for p in gt_polys:
-        draw(p, (0, 255, 0))  # green = ground truth
+    # Draw predicted polygons in green
     for p in pred_polys:
-        draw(p, (0, 0, 255))  # red = predictionout = cv2.addWeighted(overlay, opacity, out, 1 - opacity, 0)
+        draw(p, (0, 255, 0))  # green = prediction
+
     out = cv2.addWeighted(overlay, opacity, out, 1 - opacity, 0)
     return out
+def predict_and_save(image_path, model_path, output_path=OUTPUT_DIR):
+    """
+    Runs prediction on a single image, draws predicted polygons, saves and optionally shows the result.
 
+    Parameters
+    ----------
+    image_path : str
+        Path to the input image.
+    model_path : str
+        Path to the YOLO model.
+    output_path : str or None
+        Path to save the output image. If None, saves in same directory as input with '_pred' suffix.
+    show : bool
+        Whether to display the image using matplotlib.
+    """
+    # Run inference
+    pred_polys, w, h, img = run_inference(model_path, image_path)
 
+    # Draw only predicted polygons
+    vis = draw_polygons(img, gt_polys=[], pred_polys=pred_polys)
+
+    # Prepare output path
+    if output_path is None:
+        dir_name, file_name = os.path.split(image_path)
+        name, ext = os.path.splitext(file_name)
+        output_path = os.path.join(dir_name, name + "_pred" + ext)
+
+    # Save the image
+    cv2.imwrite(output_path, vis)
+    print(f"[INFO] Saved prediction image to: {output_path}")
 def average_iou_for_folder(image_folder, label_folder, model_path):
     max_iou_scores_mandible = []
     max_iou_scores_maxilla = []
@@ -276,58 +307,59 @@ def average_iou_for_folder(image_folder, label_folder, model_path):
 
 
 # -------- 3.  MAIN -----------------------------------------------------------
-# if __name__ == "__main__":
-#     # === CONFIG ===
-#     base_path = "yolo_dataset_segmentation_extra_data_bone_seg_splits/"
-#     image_end_path = "images/test/104_1_aug_001.jpg"
-#     txt_end_path   = "labels/test/104_1_aug_001.txt"      # <-- YOLO label file
-#     model_path = "AI/models/yolo11m_bone_segmentation_finetuned.pt"
-#     output_path = "comparison_output.jpg"
-#
-#     # === RUN ===
-#     image_path = base_path + image_end_path
-#     txt_path   = base_path + txt_end_path
-#
-#     pred_polys, w_pred, h_pred, img = run_inference(model_path, image_path)
-#     gt_polys,   w_gt,   h_gt        = load_ground_truth_yolo(txt_path, image_path)
-#
-#     if (w_pred, h_pred) != (w_gt, h_gt):
-#         raise ValueError("[ERROR] Image dimensions mismatch.")
-#
-#     print(f"GT polygons: {len(gt_polys)}, Predictions: {len(pred_polys)}")
-#
-#     if len(gt_polys) == 2 and len(pred_polys) == 2:
-#         # Compute IoU for (GT0, Pred0) and (GT1, Pred1)
-#         iou_00 = compute_iou(gt_polys[0], pred_polys[0])
-#         iou_11 = compute_iou(gt_polys[1], pred_polys[1])
-#
-#         # Compute IoU for swapped pairs (GT0, Pred1) and (GT1, Pred0)
-#         iou_01 = compute_iou(gt_polys[0], pred_polys[1])
-#         iou_10 = compute_iou(gt_polys[1], pred_polys[0])
-#
-#         # Sum IoUs for both assignments
-#         sum_orig = iou_00 + iou_11
-#         sum_swapped = iou_01 + iou_10
-#
-#         if sum_swapped > sum_orig:
-#             print(f"Swapping predicted polygons for better matching.")
-#             print(f"GT Polygon 1 matched with Pred Polygon 2 (IoU: {iou_01:.4f})")
-#             print(f"GT Polygon 2 matched with Pred Polygon 1 (IoU: {iou_10:.4f})")
-#         else:
-#             print(f"GT Polygon 1 matched with Pred Polygon 1 (IoU: {iou_00:.4f})")
-#             print(f"GT Polygon 2 matched with Pred Polygon 2 (IoU: {iou_11:.4f})")
-#
-#     else:
-#         # For more polygons, do your existing matching or fallback logic
-#         for i, gt_poly in enumerate(gt_polys, 1):
-#             pred_poly = pred_polys[i - 1] if i - 1 < len(pred_polys) else None
-#             if pred_poly is not None:
-#                 iou = compute_iou(gt_poly, pred_poly)
-#                 print(f"GT Polygon {i} matched with Pred Polygon {i} (IoU: {iou:.4f})")
-#
-#     # === DRAW & SAVE ===
-#     vis = draw_polygons(img, gt_polys, pred_polys)
-#     cv2.imwrite(output_path, vis)
+if __name__ == "__main__":
+    # === CONFIG ===
+    base_path = ""
+    image_end_path = "AI/output/segmentation_v2_test_unlabeled/pred_case_1.jpeg"
+    txt_end_path   = "yolo_dataset_segmentation_extra_data_bone_seg_splits/labels/test/104_1_aug_001.txt"      # <-- YOLO label file
+    model_path = "AI/models/yolo11m_bone_segmentation_finetuned.pt"
+    output_path = "comparison_output.jpg"
+
+    # === RUN ===
+    image_path = base_path + image_end_path
+    txt_path   = base_path + txt_end_path
+
+    pred_polys, w_pred, h_pred, img = run_inference(model_path, image_path)
+    gt_polys, classes,  w_gt,   h_gt        = load_ground_truth_yolo(txt_path, image_path)
+
+    if (w_pred, h_pred) != (w_gt, h_gt):
+        raise ValueError("[ERROR] Image dimensions mismatch.")
+
+    print(f"GT polygons: {len(gt_polys)}, Predictions: {len(pred_polys)}")
+
+    if len(gt_polys) == 2 and len(pred_polys) == 2:
+        # Compute IoU for (GT0, Pred0) and (GT1, Pred1)
+        iou_00 = compute_iou(gt_polys[0], pred_polys[0])
+        iou_11 = compute_iou(gt_polys[1], pred_polys[1])
+
+        # Compute IoU for swapped pairs (GT0, Pred1) and (GT1, Pred0)
+        iou_01 = compute_iou(gt_polys[0], pred_polys[1])
+        iou_10 = compute_iou(gt_polys[1], pred_polys[0])
+
+        # Sum IoUs for both assignments
+        sum_orig = iou_00 + iou_11
+        sum_swapped = iou_01 + iou_10
+
+        if sum_swapped > sum_orig:
+            print(f"Swapping predicted polygons for better matching.")
+            print(f"GT Polygon 1 matched with Pred Polygon 2 (IoU: {iou_01:.4f})")
+            print(f"GT Polygon 2 matched with Pred Polygon 1 (IoU: {iou_10:.4f})")
+        else:
+            print(f"GT Polygon 1 matched with Pred Polygon 1 (IoU: {iou_00:.4f})")
+            print(f"GT Polygon 2 matched with Pred Polygon 2 (IoU: {iou_11:.4f})")
+
+    else:
+        # For more polygons, do your existing matching or fallback logic
+        for i, gt_poly in enumerate(gt_polys, 1):
+            pred_poly = pred_polys[i - 1] if i - 1 < len(pred_polys) else None
+            if pred_poly is not None:
+                iou = compute_iou(gt_poly, pred_poly)
+                print(f"GT Polygon {i} matched with Pred Polygon {i} (IoU: {iou:.4f})")
+
+    # === DRAW & SAVE ===
+    vis = draw_polygons(img, gt_polys, pred_polys)
+    cv2.imwrite(output_path, vis)
+    predict_and_save(image_path, model_path, output_path)
 
 
 # if __name__ == "__main__":

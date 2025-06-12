@@ -37,11 +37,10 @@ from typing import Iterable, List
 import cv2
 import numpy as np
 import torch
-from PIL import Image
 from ultralytics import YOLO
 
 MODEL_PATH: str = "AI/models/yolo11l_segmentation_finetuned_v2.pt"
-# DATASET_ROOT: str = "yolo_dataset_segmentation_extra_data_splits"
+# DATASET_ROOT: str = "C:/Users/jorri/Documents/3TI/BAP/Trial_cases/case_1"
 DATASET_ROOT: str = "C:/Users/Jarne/KU Leuven/Lola Gracea - UCLL_dataset_28/AI_training/Teeth/Test set"
 CONF_THRESHOLD: float = 0.50
 IMG_SIZE: int = 1024
