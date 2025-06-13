@@ -3,7 +3,7 @@ image
 .venv
 __pycache__/
 .idea
-yolo_dataset
+yolo_dataset*
 yolo_dataset_segmentation
 runs
 yolo12n.pt
@@ -13,3 +13,7 @@ yolo11*
 filtered_output.jpg
 AI/data
 node_modules
+AI/Normal bone
+output
+comparison_output.jpg
+inference_output
