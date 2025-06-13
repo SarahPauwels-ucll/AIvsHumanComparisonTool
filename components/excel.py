@@ -11,10 +11,9 @@ def excel_button():
 
     manual_teeth: Dict[int, str] = st.session_state.get("manual_teeth", {})
     ai_teeth: Dict[int, str] = st.session_state.get("ai_teeth", {})
-    final_teeth: Dict[int, str] = st.session_state.get("final_teeth", {})
 
-    data_sources: List[Dict[int, str]] = [manual_teeth, ai_teeth, final_teeth]
-    source_names: List[str] = ["Manual", "AI", "Corrected"]
+    data_sources: List[Dict[int, str]] = [manual_teeth, ai_teeth]
+    source_names: List[str] = ["Manual", "AI"]
 
     def parse_tags(raw_value: str) -> List[str]:
         if raw_value is None:
