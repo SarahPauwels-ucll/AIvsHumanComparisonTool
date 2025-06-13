@@ -310,7 +310,7 @@ def average_iou_for_folder(image_folder, label_folder, model_path):
 if __name__ == "__main__":
     # === CONFIG ===
     base_path = ""
-    image_end_path = "AI/output/segmentation_v2_test_unlabeled/pred_case_1.jpeg"
+    image_end_path = "C:/Users/jorri/Documents/3TI/BAP/Trial_cases/case_1/case_1.jpeg"
     txt_end_path   = "yolo_dataset_segmentation_extra_data_bone_seg_splits/labels/test/104_1_aug_001.txt"      # <-- YOLO label file
     model_path = "AI/models/yolo11m_bone_segmentation_finetuned.pt"
     output_path = "comparison_output.jpg"
