@@ -125,7 +125,7 @@ load_sidebar("Comparison")
 
 if st.session_state.Teethkind == "Child":
     child = True
-if st.session_state.Teethkind == "Mixed":
+elif st.session_state.Teethkind == "Mixed":
     if "View" not in st.session_state:
         st.session_state.View = "Child"
     if st.session_state.View=="Child":

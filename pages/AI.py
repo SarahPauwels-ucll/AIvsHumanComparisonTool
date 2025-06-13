@@ -46,7 +46,7 @@ if os.path.exists(image_path) and "manual_image_bytes" in st.session_state:
     circleView=st.session_state.circleView if "circleView" in st.session_state and st.session_state.circleView is not None else False
     if st.session_state.Teethkind == "Child":
         child=True
-    if st.session_state.Teethkind == "Mixed":
+    elif st.session_state.Teethkind == "Mixed":
         if "View" not in st.session_state:
             st.session_state.View = "Child"
         if st.session_state.View=="Child":
