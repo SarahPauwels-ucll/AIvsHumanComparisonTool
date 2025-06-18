@@ -14,10 +14,9 @@ def combined_download_button():
     excel_buffer = io.BytesIO()
     manual_teeth: Dict[int, str] = st.session_state.get("manual_teeth", {})
     ai_teeth: Dict[int, str] = st.session_state.get("ai_teeth", {})
-    final_teeth: Dict[int, str] = st.session_state.get("final_teeth", {})
 
-    data_sources: List[Dict[int, str]] = [manual_teeth, ai_teeth, final_teeth]
-    source_names: List[str] = ["Manual", "AI", "Corrected"]
+    data_sources: List[Dict[int, str]] = [manual_teeth, ai_teeth]
+    source_names: List[str] = ["Manual", "AI"]
 
     def parse_tags(raw_value: str) -> List[str]:
         if raw_value is None:
@@ -143,6 +142,9 @@ def combined_download_button():
 
     manual_image_bytes = st.session_state["manual_image_bytes"]
 
+    with open("icons/dentists-approved.png", "rb") as f:
+        sign_image_bytes = f.read()
+
     pdf_bytes = create_pdf_professional(
         patient_id=patient_id,
         patient_name=patient_name,
@@ -154,6 +156,7 @@ def combined_download_button():
         manual_teeth=manual_teeth,
         top_row=top_row,
         bottom_row=bottom_row,
+        sign_image_bytes=sign_image_bytes
     )
 
     # --- Create ZIP ---

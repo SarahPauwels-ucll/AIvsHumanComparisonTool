@@ -56,6 +56,8 @@ def tooth_image(number: int, status: str, *, height_pt: float = TOOTH_H_PT) -> I
 
 # --- main function ---
 def create_pdf(
+        rnumber:str,
+        student_name:str,
         patient_id: str,
         scan_date: str,
         age: str,
@@ -91,6 +93,8 @@ def create_pdf(
     scan_date_color = "black"
     age_color = "black"
     gender_color = "black"
+    student_name_color="black"
+    rnumber_color="black"
 
     if patient_id == "Unknown":
         patient_id_color = "red"
@@ -103,9 +107,18 @@ def create_pdf(
 
     if gender == "Unknown":
         gender_color = "red"
+    
+    if student_name=="Unknown":
+        student_name_color="red"
+    
+    if rnumber=='Unknown':
+        rnumber_color="red"
 
     # --- patient details ---
     story.append(Paragraph(
+        f'<b> Student name: </b><font color="{student_name_color}"> {student_name} </font><br/>'
+        f'<b> R-number: </b><font color="{rnumber_color}"> {rnumber} </font><br/>'
+        
         f'<b> Patient ID: </b><font color="{patient_id_color}"> {patient_id} </font><br/>'
         f'<b> Scan date: </b><font color="{scan_date_color}"> {scan_date} </font><br/>'
         f'<b> Age: </b><font color="{age_color}"> {age} </font><br/>'
@@ -260,6 +273,13 @@ def pdf_button():
     top_row    = list(reversed(range(11,19))) + list(range(21,29))
     bottom_row = list(reversed(range(41,49))) + list(range(31,39))
 
+    # student
+    stored_rnumber = st.session_state.get("rnumber")
+    rnumber = stored_rnumber if stored_rnumber else "Unknown"
+
+    stored_studentName = st.session_state.get("studentName")
+    studentName = stored_studentName if stored_studentName else "Unknown"
+
     # ID
     stored_id = st.session_state.get("profile_number")
     patient_id = stored_id if stored_id else "Unknown"
@@ -291,6 +311,8 @@ def pdf_button():
     gender = stored_gender if stored_gender else "Unknown"
 
     pdf_bytes = create_pdf(
+        rnumber=rnumber,
+        student_name=studentName,
         patient_id=patient_id,
         scan_date=scandate_str,
         age=age,
